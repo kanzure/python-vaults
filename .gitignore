@@ -1,0 +1,5 @@
+# vim editor swap files
+*.sw*
+
+# python3 cache related
+__pycache__
