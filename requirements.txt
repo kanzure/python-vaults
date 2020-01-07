@@ -1,0 +1,5 @@
+# Be sure to update the install_requires variable in the setup.py file.
+# --------
+
+# for bitcoin primitives and RPC
+python-bitcoinlib>=0.10.2
