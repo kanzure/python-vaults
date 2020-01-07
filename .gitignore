@@ -3,3 +3,5 @@
 
 # python3 cache related
 __pycache__
+
+venv/
