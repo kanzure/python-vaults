@@ -9,8 +9,10 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.md")) as fd:
     README = fd.read()
 
+# see requirements.txt for explanations
 install_requires = [
-    "python-bitcoinlib>=0.10.2",
+    "python-bitcoinlib==0.10.2",
+    "click>=7.0",
 ]
 
 setup(name="python-vaults",
@@ -25,6 +27,11 @@ setup(name="python-vaults",
       keywords="bitcoin",
       packages=find_packages(),
       zip_safe=False,
+      include_package_data=True,
       install_requires=install_requires,
       test_suite="vaults.tests",
+      entry_points="""
+        [console_scripts]
+        vault=vaults.cli:cli
+      """,
 )
