@@ -44,4 +44,20 @@ pip3 install -r requirements.txt
 python3 setup.py install
 ```
 
+# Usage
+
+This package installs the `vault` command, which is an interface for working
+with the vault library based on vault files stored in the current working
+directory. The vault subcommands are as follows:
+
+```
+vault init
+vault info
+vault create
+vault sync
+vault stipend start
+vault stipend push-to-cold
+vault stipend re-vault-pending
+```
+
 
