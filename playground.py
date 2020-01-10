@@ -180,7 +180,8 @@ class UTXO(object):
         # This is the transaction that created this UTXO.
         self.transaction = transaction
 
-        # These are the transactions that reference this UTXO.
+        # These are the different potential transactions that reference (spend)
+        # this UTXO.
         self.child_transactions = []
 
 
@@ -191,12 +192,64 @@ vault_locking_transaction.input_utxos = [segwit_coin]
 
 vault_initial_utxo = UTXO(name="vault initial UTXO", transaction=vault_locking_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig")
 vault_locking_transaction.output_utxos = [vault_initial_utxo]
-# TODO: vault_initial_utxo can also be spent by another transaction, which pushes the whole amount to cold storage.
 
+# Optional transaction: Push the whole amount to cold storage.
+vault_initial_push_to_cold_storage_transaction = Transaction(name="Push vault initial UTXO into cold storage")
+vault_initial_utxo.child_transactions.append(vault_initial_push_to_cold_storage_transaction)
+vault_initial_push_to_cold_storage_transaction.input_utxos = [vault_initial_utxo]
+vault_initial_cold_storage_utxo = UTXO(name="vault initial cold storage UTXO", transaction=vault_initial_push_to_cold_storage_transaction, script_description_text="spendable by cold wallet keys")
+vault_initial_push_to_cold_storage_transaction.output_utxos = [vault_initial_cold_storage_utxo]
+
+# Optional transaction: split the UTXO up into 100 shards, when it's time to
+# start spending the coins.
 vault_stipend_start_transaction = Transaction(name="Vault stipend start transaction")
+vault_initial_utxo.child_transactions.append(vault_stipend_start_transaction)
 vault_stipend_start_transaction.input_utxos = [vault_initial_utxo]
-vault_stipend_start_transaction.output_utxos = [] # TODO: 100 UTXOs....
 
+shard_fragment_count = 100
+for shard_id in range(0, shard_fragment_count):
+    sharded_utxo_name = f"shard fragment UTXO {shard_id}/{shard_fragment_count}"
 
+    sharded_utxo = UTXO(name=shard_utxo_name, transaction=vault_stipend_start_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout OR re-vault")
+    vault_stipend_start_transaction.output_utxos.append(sharded_utxo)
+
+    make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
+    make_revault_transaction(incoming_utxo=sharded_utxo)
+
+def make_push_to_cold_storage_transaction(incoming_utxo):
+    push_transaction = Transaction(name="Push (sharded?) UTXO to cold storage wallet")
+    push_transaction.input_utxos = [incoming_utxo]
+
+    cold_storage_utxo = UTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys")
+    push_transaction.output_utxos = [cold_storage_utxo]
+
+    incoming_utxo.child_transactions.append(push_transaction)
+
+    return push_transaction
+
+# TODO: This deserves some re-thinking. Instead of re-vaulting the other coins
+# one at a time, what about having a "vaulted UTXO" spend transaction that only
+# spends one sharded UTXO? This is for when the user knows how much money they
+# want to be moving. There's no reason to split it up into 100 shards.
+#
+# The alternative - "re-vaulting" - is only useful if you accidentally
+# unvaulted some coins, and would rather that they go back into the same vault.
+# But you should just be certain when you un-vault, instead. Another use case
+# is, someone has started the un-vault procedure, and you want to undo that.
+# But you should just exit to cold storage anyway in that situation.
+#
+# So which is it? Well. We can actually defer this decision until later.
+def make_revault_transaction(incoming_utxo, recursion_depth=0):
+    # Note: re-vaulting should lock up the coin for at least 1 week...
+    # otherwise we might run out of pre-signed re-vaults.
+
+    # recursion!
+    # TODO: take a different action if recursion_depth > 100 ?
+    vaulting_transaction = create_vaulting_transaction(incoming_utxo, sharding=False, recursion_depth=recursion_depth+1)
+
+    if vaulting_transaction not in incoming_utxo.child_transactions:
+        incoming_utxo.child_transactions.append(vaulting_transaction)
+
+    return vaulting_transaction
 
 
