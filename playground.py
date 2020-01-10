@@ -78,6 +78,31 @@ class VaultsTest(BitcoinTestFramework):
         private_key1 = ...
         private_key2 = ...
 
+"""
+
+sw UTXO -> 2-of-2 vault UTXO -> (100 UTXOs)
+                                             -> OR(2-of-2 vault UTXO, cold storage UTXO, hot wallet UTXO)
+
+send_utxo_to_2of2_vault_utxo(input_utxo, splitting=True):
+
+    if splitting:
+        utxo_value = value / 100
+        utxo_count = 100
+    else:
+        utxo_value = value
+        utxo_count = 1
+
+    for utxo_id in range(0, utxo_count):
+
+        output = "spendable by key-sending-to-2-of-2-vault-UTXO, key-spending-to-cold-storage-UTXO, or hot-wallet-key"
+
+        send_utxo_to_2of2_vault_utxo(......
+
+        outputs.append(output)
+
+"""
+
+
         # TODO: construct the final 2-of-2 P2WSH multisig script. This script
         # should only be spendable by one of the previously-created pre-signed
         # transactions.
@@ -95,8 +120,11 @@ class VaultsTest(BitcoinTestFramework):
         # TODO: sign transaction2, using the two private keys
 
 
-        # For each UTXO, make: (1) a push to cold storage transaction, (2) a push to new identical vault (using same keys).
-
+        # For each UTXO, make: (1) a push to cold storage transaction, (2) a
+        # push to new identical vault (using same keys).
+        for utxo in created_utxos:
+            make_push_to_cold_storage_transaction_for_utxo(utxo)
+            make_push_to_vault_transaction_for_utxo(utxo, splitting=False)
 
         # TODO: sign the tree of transactions (in any order)
 
@@ -106,6 +134,7 @@ class VaultsTest(BitcoinTestFramework):
 
         # Now sign the transaction that starts the whole thing.
         self.nodes[0].signrawtransaction(transaction1)
+
 
 # start a new bitcoind instance, in regtest mode
 # mine 110 blocks
@@ -122,8 +151,51 @@ class VaultsTest(BitcoinTestFramework):
 #
 # Then move the segwit coins into that top-level P2WSH scriptpubkey.
 
+class Transaction(object):
+    def __init__(self, name=None):
+        self.name = name
+
+        self.input_utxos = []
+        self.output_utxos = []
+
+    @property
+    def parent_transactions():
+        _parent_transactions = []
+        for some_utxo in self.input_utxos:
+            _parent_transactions.append(some_utxo.transaction)
+        return _parent_transactions
+
+    @property
+    def child_transactions():
+        _child_transactions = []
+        for some_utxo in self.output_utxos:
+            _child_transactions.extend(some_utxo.child_transactions)
+        return _child_transactions
+
+class UTXO(object):
+    def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE"):
+        self.name = name
+        self.script_description_text = script_description_text
+
+        # This is the transaction that created this UTXO.
+        self.transaction = transaction
+
+        # These are the transactions that reference this UTXO.
+        self.child_transactions = []
 
 
+segwit_coin = UTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
+
+vault_locking_transaction = Transaction(name="Vault locking transaction")
+vault_locking_transaction.input_utxos = [segwit_coin]
+
+vault_initial_utxo = UTXO(name="vault initial UTXO", transaction=vault_locking_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig")
+vault_locking_transaction.output_utxos = [vault_initial_utxo]
+# TODO: vault_initial_utxo can also be spent by another transaction, which pushes the whole amount to cold storage.
+
+vault_stipend_start_transaction = Transaction(name="Vault stipend start transaction")
+vault_stipend_start_transaction.input_utxos = [vault_initial_utxo]
+vault_stipend_start_transaction.output_utxos = [] # TODO: 100 UTXOs....
 
 
 
