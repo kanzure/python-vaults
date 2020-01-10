@@ -1,3 +1,5 @@
+import hashlib
+
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 
@@ -23,6 +25,30 @@ import sys
 sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
+
+"""
+
+sw UTXO -> 2-of-2 vault UTXO -> (100 UTXOs)
+                                             -> OR(2-of-2 vault UTXO, cold storage UTXO, hot wallet UTXO)
+
+send_utxo_to_2of2_vault_utxo(input_utxo, splitting=True):
+
+    if splitting:
+        utxo_value = value / 100
+        utxo_count = 100
+    else:
+        utxo_value = value
+        utxo_count = 1
+
+    for utxo_id in range(0, utxo_count):
+
+        output = "spendable by key-sending-to-2-of-2-vault-UTXO, key-spending-to-cold-storage-UTXO, or hot-wallet-key"
+
+        send_utxo_to_2of2_vault_utxo(......
+
+        outputs.append(output)
+
+"""
 
 class VaultsTest(BitcoinTestFramework):
     def set_test_params(self):
@@ -75,32 +101,8 @@ class VaultsTest(BitcoinTestFramework):
         # TODO: create 2 private keys, for the 2-of-2 P2WSH multisig script.
         # Calculate their public keys. These private keys will be deleted
         # later.
-        private_key1 = ...
-        private_key2 = ...
-
-"""
-
-sw UTXO -> 2-of-2 vault UTXO -> (100 UTXOs)
-                                             -> OR(2-of-2 vault UTXO, cold storage UTXO, hot wallet UTXO)
-
-send_utxo_to_2of2_vault_utxo(input_utxo, splitting=True):
-
-    if splitting:
-        utxo_value = value / 100
-        utxo_count = 100
-    else:
-        utxo_value = value
-        utxo_count = 1
-
-    for utxo_id in range(0, utxo_count):
-
-        output = "spendable by key-sending-to-2-of-2-vault-UTXO, key-spending-to-cold-storage-UTXO, or hot-wallet-key"
-
-        send_utxo_to_2of2_vault_utxo(......
-
-        outputs.append(output)
-
-"""
+        private_key1 = ""
+        private_key2 = ""
 
 
         # TODO: construct the final 2-of-2 P2WSH multisig script. This script
@@ -108,14 +110,14 @@ send_utxo_to_2of2_vault_utxo(input_utxo, splitting=True):
         # transactions.
         input_txid = segwit_utxo["txid"]
         input_txid_vout = segwit_utxo["vout"]
-        output_script = # TODO: 2-of-2 multisig, spendable by the two private keys
+        output_script = None # TODO: 2-of-2 multisig, spendable by the two private keys
         (txid1, transaction1) = createrawtransaction(inputs, outputs)
 
         # Make a pre-signed transaction that spends the 2-of-2 PWSH utxo txid,
         # and creates 100 UTXOs. Delete the ephemeral key after signing.
         input_txid2 = txid1
         input_txid2_vout = 0
-        outputs2 = ... # TODO: make 100 outputs, each with a similar script
+        outputs2 = None # TODO: make 100 outputs, each with a similar script
         (txid2, transaction2) = createrawtransaction(inputs2, outputs2)
         # TODO: sign transaction2, using the two private keys
 
@@ -172,6 +174,17 @@ class Transaction(object):
             _child_transactions.extend(some_utxo.child_transactions)
         return _child_transactions
 
+    def to_text(self):
+        num_utxos = len(self.output_utxos)
+        print(f"Transaction ({self.name}) has {num_utxos}. They are:\n\n")
+
+        for utxo in self.output_utxos:
+            print(f"Transaction ({self.name}) - UTXO {utxo.name} (start)")
+            utxo.to_text()
+            print(f"-- Transaction ({self.name}) - UTXO {utxo.name} (end)")
+
+        print(f"-- Transaction ({self.name}) end")
+
 class UTXO(object):
     def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE"):
         self.name = name
@@ -184,11 +197,23 @@ class UTXO(object):
         # this UTXO.
         self.child_transactions = []
 
+    def to_text(self):
+        possible_children = len(self.child_transactions)
+        print(f"UTXO {self.name} has {possible_children} possible child transactions. They are:\n\n")
+
+        for child_transaction in self.child_transactions:
+            print(f"UTXO {self.name} -> {child_transaction.name} (start)")
+            child_transaction.to_text()
+            print(f"-- UTXO {self.name} -> {child_transaction.name} (end)")
+
+        print(f"-- UTXO {self.name} (end)")
+
 
 segwit_coin = UTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
 
 vault_locking_transaction = Transaction(name="Vault locking transaction")
 vault_locking_transaction.input_utxos = [segwit_coin]
+segwit_coin.child_transactions.append(vault_locking_transaction)
 
 vault_initial_utxo = UTXO(name="vault initial UTXO", transaction=vault_locking_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig")
 vault_locking_transaction.output_utxos = [vault_initial_utxo]
@@ -205,16 +230,6 @@ vault_initial_push_to_cold_storage_transaction.output_utxos = [vault_initial_col
 vault_stipend_start_transaction = Transaction(name="Vault stipend start transaction")
 vault_initial_utxo.child_transactions.append(vault_stipend_start_transaction)
 vault_stipend_start_transaction.input_utxos = [vault_initial_utxo]
-
-shard_fragment_count = 100
-for shard_id in range(0, shard_fragment_count):
-    sharded_utxo_name = f"shard fragment UTXO {shard_id}/{shard_fragment_count}"
-
-    sharded_utxo = UTXO(name=shard_utxo_name, transaction=vault_stipend_start_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout OR re-vault")
-    vault_stipend_start_transaction.output_utxos.append(sharded_utxo)
-
-    make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
-    make_revault_transaction(incoming_utxo=sharded_utxo)
 
 def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = Transaction(name="Push (sharded?) UTXO to cold storage wallet")
@@ -253,3 +268,15 @@ def make_revault_transaction(incoming_utxo, recursion_depth=0):
     return vaulting_transaction
 
 
+shard_fragment_count = 100
+for shard_id in range(0, shard_fragment_count):
+    sharded_utxo_name = f"shard fragment UTXO {shard_id}/{shard_fragment_count}"
+
+    sharded_utxo = UTXO(name=sharded_utxo_name, transaction=vault_stipend_start_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout OR re-vault")
+    vault_stipend_start_transaction.output_utxos.append(sharded_utxo)
+
+    make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
+    #make_revault_transaction(incoming_utxo=sharded_utxo)
+
+
+segwit_coin.to_text()
