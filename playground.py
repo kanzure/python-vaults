@@ -314,6 +314,57 @@ def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=
 shard_fragment_count = 100
 make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=vault_initial_cold_storage_utxo)
 
-# TODO: make multiple sharding transactions (for different amounts)
+
+def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards):
+    """
+    Make a possible transaction for the vault UTXO that has two possibilities
+    hanging off of it: one to spend a single sharded UTXO (either to the cold
+    storage layer, or to the hot wallet), and then a second vault UTXO that has
+    the remaining funds minus that one sharded UTXO, and then the typical vault
+    possibilities hanging off of that.
+    """
+    # TODO: spend initial vault UTXO into two UTXOs- one for the hot
+    # wallet/push to cold storage, one for re-vaulting the remaining amount-
+    # and then all the appropriate child transactions too. The re-vaulted path
+    # should not split up the UTXOs into 100 pieces, but rather the remaining
+    # number of pieces based on the amount already spent into the hot wallet.
+    #
+    # This path is another route of possible transactions, as a
+    # possible-sibling to the vault stipend initiation transaction.
+    vault_spend_one_shard_transaction = Transaction(name="Vault transaction: spend one shard, re-vault the remaining shards")
+    incoming_utxo.child_transactions.append(vault_spend_one_shard_transaction)
+    vault_spend_one_shard_transaction.input_utxos = [incoming_utxo]
+
+    # Next, add two UTXOs to vault_spend_one_shard transaction.
+
+    exiting_utxo = UTXO(name="shard fragment UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout")
+    vault_spend_one_shard_transaction.output_utxos.append(exiting_utxo)
+
+    # For the exit UTXO, it should also be posisble to send that UTXO to cold
+    # storage instead of letting the multisig hot wallet control it.
+    make_push_to_cold_storage_transaction(exiting_utxo)
+    # The hot wallet spend transaction is not represented here because t's not
+    # a pre-signed transaction. It can be created at a later time, by the hot
+    # wallet keys.
+
+    # Second UTXO attached to vault_spend_one_shard_transaction.
+    revault_utxo = UTXO(name="vault UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig (after some relative timelock)")
+    vault_spend_one_shard_transaction.output_utxos.append(revault_utxo)
+
+    # The vault UTXO can also be spent directly to cold storage.
+    make_push_to_cold_storage_transaction(revault_utxo)
+
+    if num_shards == 0:
+        return
+    else:
+        # The re-vault UTXO can be sharded into "100" pieces (but not really 100..
+        # it should be 100 minus the depth).
+        make_sharding_transaction(per_shard_amount=per_shard_amount, num_shards=num_shards - 1, incoming_utxo=revault_utxo)
+        # The re-vault UTXO can also be spent using the one-shard possible spend
+        # method.
+        make_one_shard_possible_spend(incoming_utxo=revault_utxo, per_shard_amount=per_shard_amount, num_shards=num_shards - 1)
+
+make_one_shard_possible_spend(incoming_utxo=vault_initial_utxo, per_shard_amount=1, num_shards=100)
+
 
 print(segwit_coin.to_text())
