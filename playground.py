@@ -174,16 +174,22 @@ class Transaction(object):
             _child_transactions.extend(some_utxo.child_transactions)
         return _child_transactions
 
-    def to_text(self):
+    def to_text(self, depth=0):
+        output = ""
+
+        prefix = "--" * depth
+
         num_utxos = len(self.output_utxos)
-        print(f"Transaction ({self.name}) has {num_utxos}. They are:\n\n")
+        output += f"{prefix} Transaction ({self.name}) has {num_utxos} UTXOs. They are:\n\n"
 
         for utxo in self.output_utxos:
-            print(f"Transaction ({self.name}) - UTXO {utxo.name} (start)")
-            utxo.to_text()
-            print(f"-- Transaction ({self.name}) - UTXO {utxo.name} (end)")
+            output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (start)\n"
+            output += utxo.to_text(depth=depth+1)
+            output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (end)\n"
 
-        print(f"-- Transaction ({self.name}) end")
+        output += f"{prefix} Transaction ({self.name}) end\n"
+
+        return output
 
 class UTXO(object):
     def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE"):
@@ -197,16 +203,22 @@ class UTXO(object):
         # this UTXO.
         self.child_transactions = []
 
-    def to_text(self):
+    def to_text(self, depth=0):
+        output = ""
+
+        prefix = "--" * depth
+
         possible_children = len(self.child_transactions)
-        print(f"UTXO {self.name} has {possible_children} possible child transactions. They are:\n\n")
+        output += f"{prefix} UTXO {self.name} has {possible_children} possible child transactions. They are:\n\n"
 
         for child_transaction in self.child_transactions:
-            print(f"UTXO {self.name} -> {child_transaction.name} (start)")
-            child_transaction.to_text()
-            print(f"-- UTXO {self.name} -> {child_transaction.name} (end)")
+            output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (start)\n"
+            output += child_transaction.to_text(depth=depth+1)
+            output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (end)\n"
 
-        print(f"-- UTXO {self.name} (end)")
+        output += f"{prefix} UTXO {self.name} (end)\n"
+
+        return output
 
 
 segwit_coin = UTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
@@ -279,4 +291,4 @@ for shard_id in range(0, shard_fragment_count):
     #make_revault_transaction(incoming_utxo=sharded_utxo)
 
 
-segwit_coin.to_text()
+print(segwit_coin.to_text())
