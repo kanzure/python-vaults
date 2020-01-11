@@ -265,7 +265,12 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
 # is, someone has started the un-vault procedure, and you want to undo that.
 # But you should just exit to cold storage anyway in that situation.
 #
-# So which is it? Well. We can actually defer this decision until later.
+# So: the vault UTXO can have 1/100th spent at a time, the rest goes back into
+# a vault. So you can either do the stipend-spend, or the one-at-a-time spend.
+# So if the user knows they only want a small amount, they use the one-time
+# spend. If they know they want more, then they can use the stipend (or migrate
+# out of the vault by first broadcasting the stipend setup transaction).
+#
 def make_revault_transaction(incoming_utxo, recursion_depth=0):
     # Note: re-vaulting should lock up the coin for at least 1 week...
     # otherwise we might run out of pre-signed re-vaults.
@@ -279,16 +284,36 @@ def make_revault_transaction(incoming_utxo, recursion_depth=0):
 
     return vaulting_transaction
 
+def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=None):
+    """
+    Make a new sharding transaction.
+    """
+
+    if num_shards < 100:
+        partial ="(partial) "
+    elif num_shards == 100:
+        partial = ""
+
+    sharding_transaction = Transaction(name=f"Vault {partial}stipend start transaction.")
+    incoming_utxo.child_transactions.append(sharding_transaction)
+
+    for shard_id in range(0, num_shards):
+        sharded_utxo_name = f"shard fragment UTXO {shard_id}/{num_shards}"
+
+        # Note: can't re-vault from this point. Must pass through the cold
+        # wallet or the hot wallet before it can get back into a vault.
+        sharded_utxo = UTXO(name=sharded_utxo_name, transaction=sharding_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout")
+
+        sharding_transaction.output_utxos.append(sharded_utxo)
+
+        make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
+        #make_revault_transaction(incoming_utxo=sharded_utxo)
+
+    return sharding_transaction
 
 shard_fragment_count = 100
-for shard_id in range(0, shard_fragment_count):
-    sharded_utxo_name = f"shard fragment UTXO {shard_id}/{shard_fragment_count}"
+make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=vault_initial_cold_storage_utxo)
 
-    sharded_utxo = UTXO(name=sharded_utxo_name, transaction=vault_stipend_start_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout OR re-vault")
-    vault_stipend_start_transaction.output_utxos.append(sharded_utxo)
-
-    make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
-    #make_revault_transaction(incoming_utxo=sharded_utxo)
-
+# TODO: make multiple sharding transactions (for different amounts)
 
 print(segwit_coin.to_text())
