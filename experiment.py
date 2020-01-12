@@ -313,11 +313,8 @@ def setup_vault(segwit_utxo):
     vault_locking_transaction.output_utxos = [vault_initial_utxo]
 
     # Optional transaction: Push the whole amount to cold storage.
-    vault_initial_push_to_cold_storage_transaction = PlannedTransaction(name="Push vault initial UTXO into cold storage")
-    vault_initial_utxo.child_transactions.append(vault_initial_push_to_cold_storage_transaction)
-    vault_initial_push_to_cold_storage_transaction.input_utxos = [vault_initial_utxo]
-    vault_initial_cold_storage_utxo = PlannedUTXO(name="vault initial cold storage UTXO", transaction=vault_initial_push_to_cold_storage_transaction, script_description_text="spendable by cold wallet keys")
-    vault_initial_push_to_cold_storage_transaction.output_utxos = [vault_initial_cold_storage_utxo]
+    make_push_to_cold_storage_transaction(incoming_utxo=vault_initial_utxo)
+
 
     # Optional transaction: split the UTXO up into 100 shards, when it's time
     # to start spending the coins.
