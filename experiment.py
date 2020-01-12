@@ -200,6 +200,13 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys")
     push_transaction.output_utxos = [cold_storage_utxo]
 
+    # TODO: update the push-to-cold-wallet transaction to place a relative
+    # timelock before the cold wallet can spend the UTXO. The purpose of this
+    # relative timelock is to make it so that not all cold wallet UTXOs can be
+    # spent at the same time. Before they can be spent by the cold wallet key,
+    # the user has the option of destroying/burning the coins in the event that
+    # an adversary has compromised the cold wallet keys.
+
     incoming_utxo.child_transactions.append(push_transaction)
 
     return push_transaction
@@ -226,6 +233,10 @@ def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=
         sharding_transaction.output_utxos.append(sharded_utxo)
 
         make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
+
+    # TODO: make a variety of push-to-cold-storage (sweep) transactions that
+    # each take 2 or more UTXOs. Note that the UTXOs get spent in order, so
+    # this fortunately limits the total number of transactions to generate.
 
     return sharding_transaction
 
@@ -330,6 +341,10 @@ def setup_vault(segwit_utxo):
     make_one_shard_possible_spend(incoming_utxo=vault_initial_utxo, per_shard_amount=1, num_shards=100)
 
 
+if __name__ == "__main__":
+    segwit_utxo = PlannedUTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
+    setup_vault(segwit_utxo)
+
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
     print(segwit_utxo.to_text())
@@ -337,9 +352,4 @@ def setup_vault(segwit_utxo):
     # stats
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
-
-
-if __name__ == "__main__":
-    segwit_utxo = PlannedUTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
-    setup_vault(segwit_utxo)
 
