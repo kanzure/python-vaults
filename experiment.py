@@ -243,18 +243,24 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
     push_transaction.input_utxos = [incoming_utxo]
 
-    cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys")
+    cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable")
     push_transaction.output_utxos = [cold_storage_utxo]
 
-    # TODO: update the push-to-cold-wallet transaction to place a relative
-    # timelock before the cold wallet can spend the UTXO. The purpose of this
-    # relative timelock is to make it so that not all cold wallet UTXOs can be
-    # spent at the same time. Before they can be spent by the cold wallet key,
-    # the user has the option of destroying/burning the coins in the event that
-    # an adversary has compromised the cold wallet keys.
+    # The purpose of the relative timelock before the cold storage keys are
+    # able to spend is so that not all cold storage UTXOs can be spent at once.
+    # The user is thus given an option of burning the other UTXOs if they think
+    # that an adversary is about to steal the remaining UTXOs after observing
+    # the theft of a single UTXO.
+
+
+    # Make a possible transaction: burn/donate the cold storage UTXO.
+    burn_transaction = PlannedTransaction(name="Burn cold storage UTXO")
+    burn_transaction.input_utxos = [cold_storage_utxo]
+    burn_utxo = PlannedUTXO(name="burned cold storage UTXO", transaction=burn_transaction, script_description_text="unspendable (burned)")
+    burn_transaction.output_utxos = [burn_utxo]
+    cold_storage_utxo.child_transactions.append(burn_transaction)
 
     incoming_utxo.child_transactions.append(push_transaction)
-
     return push_transaction
 
 def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=None):
