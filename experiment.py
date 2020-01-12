@@ -239,6 +239,14 @@ class AbstractPlanningTests(unittest.TestCase):
         del utxo1
         self.assertEqual(counter_end - counter_start, 1)
 
+def make_burn_transaction(incoming_utxo):
+    burn_transaction = PlannedTransaction(name="Burn some UTXO")
+    burn_transaction.input_utxos = [incoming_utxo]
+    burn_utxo = PlannedUTXO(name="burned UTXO", transaction=burn_transaction, script_description_text="unspendable (burned)")
+    burn_transaction.output_utxos = [burn_utxo]
+    incoming_utxo.child_transactions.append(burn_transaction)
+    return burn_transaction
+
 def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
     push_transaction.input_utxos = [incoming_utxo]
@@ -254,11 +262,7 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
 
 
     # Make a possible transaction: burn/donate the cold storage UTXO.
-    burn_transaction = PlannedTransaction(name="Burn cold storage UTXO")
-    burn_transaction.input_utxos = [cold_storage_utxo]
-    burn_utxo = PlannedUTXO(name="burned cold storage UTXO", transaction=burn_transaction, script_description_text="unspendable (burned)")
-    burn_transaction.output_utxos = [burn_utxo]
-    cold_storage_utxo.child_transactions.append(burn_transaction)
+    burn_transaction = make_burn_transaction(cold_storage_utxo)
 
     incoming_utxo.child_transactions.append(push_transaction)
     return push_transaction
