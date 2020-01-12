@@ -315,28 +315,24 @@ def setup_vault(segwit_utxo):
     # Optional transaction: Push the whole amount to cold storage.
     make_push_to_cold_storage_transaction(incoming_utxo=vault_initial_utxo)
 
-
-    # Optional transaction: split the UTXO up into 100 shards, when it's time
-    # to start spending the coins.
-    vault_stipend_start_transaction = PlannedTransaction(name="Vault stipend start transaction")
-    vault_initial_utxo.child_transactions.append(vault_stipend_start_transaction)
-    vault_stipend_start_transaction.input_utxos = [vault_initial_utxo]
-
-
     # The number of shards that we made at this level of the transaction tree.
     # Inside the make_one_shard_possible_spend function, this amount will be
     # decremented before it is used to create the next sharding/stipend-setup
     # transaction.
     shard_fragment_count = 100
 
+    # Optional transaction: split the UTXO up into 100 shards, when it's time
+    # to start spending the coins.
     # Make a transaction that sets up 100 UTXOs (with appropriate relative
     # timelocks).
     make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=vault_initial_utxo)
 
+    # Another optional transaction
     # Make a transaction that lets the user spend one shard, but re-vaults
     # everything else.
     make_one_shard_possible_spend(incoming_utxo=vault_initial_utxo, per_shard_amount=1, num_shards=100)
 
+    return vault_initial_utxo
 
 if __name__ == "__main__":
     segwit_utxo = PlannedUTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
