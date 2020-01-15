@@ -144,7 +144,7 @@ class PlannedUTXO(object):
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
 
-    def to_text(self, depth=0):
+    def to_text(self, depth=0, cache=[]):
         output = ""
 
         prefix = "-" * depth
@@ -160,7 +160,7 @@ class PlannedUTXO(object):
 
             for child_transaction in self.child_transactions:
                 output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (start)\n"
-                output += child_transaction.to_text(depth=depth+1)
+                output += child_transaction.to_text(depth=depth+1, cache=cache)
                 output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (end)\n"
 
             output += f"{prefix} UTXO {self.name} (end)\n\n"
@@ -195,7 +195,7 @@ class PlannedTransaction(object):
             _child_transactions.extend(some_utxo.child_transactions)
         return _child_transactions
 
-    def to_text(self, depth=0):
+    def to_text(self, depth=0, cache=[]):
         output = ""
 
         prefix = "-" * depth
@@ -203,16 +203,21 @@ class PlannedTransaction(object):
         num_utxos = len(self.output_utxos)
 
         if num_utxos == 0:
-            output += f"{prefix} Transaction ({self.name}) has no UTXOs.\n\n"
+            output += f"{prefix} Transaction {self.internal_id} ({self.name}) has no UTXOs.\n\n"
         else:
-            output += f"{prefix} Transaction ({self.name}) has {num_utxos} UTXOs. They are:\n\n"
+            if self.internal_id in cache:
+                output += f"{prefix} Transaction {self.internal_id} ({self.name}) previously rendered. (Another input)\n"
+            else:
+                cache.append(self.internal_id)
 
-            for utxo in self.output_utxos:
-                output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (start)\n"
-                output += utxo.to_text(depth=depth+1)
-                output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (end)\n"
+                output += f"{prefix} Transaction {self.internal_id} ({self.name}) has {num_utxos} UTXOs. They are:\n\n"
 
-            output += f"{prefix} Transaction ({self.name}) end\n\n"
+                for utxo in self.output_utxos:
+                    output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (start)\n"
+                    output += utxo.to_text(depth=depth+1, cache=cache)
+                    output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (end)\n"
+
+                output += f"{prefix} Transaction {self.internal_id} ({self.name}) end\n\n"
 
         return output
 
@@ -277,7 +282,7 @@ def make_burn_transaction(incoming_utxo):
 
 def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
-    push_transaction.input_utxos = [incoming_utxo]
+    push_transaction.input_utxos.extend([incoming_utxo])
 
     cold_storage_utxo_amount = incoming_utxo.amount
     cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable", amount=cold_storage_utxo_amount)
@@ -289,14 +294,31 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     # that an adversary is about to steal the remaining UTXOs after observing
     # the theft of a single UTXO.
 
-
     # Make a possible transaction: burn/donate the cold storage UTXO.
     burn_transaction = make_burn_transaction(cold_storage_utxo)
 
     incoming_utxo.child_transactions.append(push_transaction)
     return push_transaction
 
-def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None):
+def make_sweep_to_cold_storage_transaction(incoming_utxos):
+    push_transaction = PlannedTransaction(name="Sweep UTXOs to cold storage wallet")
+    push_transaction.input_utxos.extend(incoming_utxos)
+
+    for incoming_utxo in incoming_utxos:
+        amount = incoming_utxo.amount
+        cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable", amount=amount)
+        push_transaction.output_utxos.append(cold_storage_utxo)
+        burn_transaction = make_burn_transaction(cold_storage_utxo)
+
+    return push_transaction
+
+def make_telescoping_subsets(some_set):
+    item_sets = []
+    for x in range(0, len(some_set)-1):
+        item_sets.append(some_set[x:len(some_set)])
+    return item_sets
+
+def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None, make_sweeps=False):
     """
     Make a new sharding transaction.
     """
@@ -309,6 +331,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
     sharding_transaction = PlannedTransaction(name=f"Vault {partial}stipend start transaction.")
     incoming_utxo.child_transactions.append(sharding_transaction)
 
+    shard_utxos = []
     for shard_id in range(0, num_shards):
         amount = per_shard_amount
         if shard_id == 0 and first_shard_extra_amount != None:
@@ -319,11 +342,12 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
         # Note: can't re-vault from this point. Must pass through the cold
         # wallet or the hot wallet before it can get back into a vault.
         sharded_utxo = PlannedUTXO(name=sharded_utxo_name, transaction=sharding_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout", amount=amount)
+        shard_utxos.append(sharded_utxo)
         sharding_transaction.output_utxos.append(sharded_utxo)
 
         make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
 
-    # TODO: make a variety of push-to-cold-storage (sweep) transactions that
+    # Make a variety of push-to-cold-storage (sweep) transactions that
     # each take 2 or more UTXOs. Note that the UTXOs get spent in order, so
     # this fortunately limits the total number of transactions to generate.
     #
@@ -331,6 +355,19 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
     # broadcast up to 100 transactions that each individually move each UTXO
     # into cold storage. By aggregating it into these sweep transactions, they
     # don't need to do that anymore.
+    #
+    # Note: this makes the transaction tree planner pretty slow. It's
+    # unreasonably slow. By comparison, having 100 separate transactions that
+    # need to be CPFPed would be easier to deal with.
+    if make_sweeps == True:
+        subsets = make_telescoping_subsets(shard_utxos)
+        #sweep_transactions = []
+        for some_subset in subsets:
+            sweep_transaction = make_sweep_to_cold_storage_transaction(some_subset)
+            #sweep_transactions.append(sweep_transaction)
+
+            for utxo in some_subset:
+                utxo.child_transactions.append(sweep_transaction)
 
     return sharding_transaction
 
@@ -453,7 +490,8 @@ if __name__ == "__main__":
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    print(segwit_utxo.to_text())
+    output = segwit_utxo.to_text()
+    print(output)
 
     # stats
     print("*** Stats and numbers")
