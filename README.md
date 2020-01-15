@@ -67,7 +67,7 @@ vault lock
 vault sync
 vault unlock single
 vault sync
-vault unlock many
+vault unlock all
 vault sync
 vault rotate
 vault burn

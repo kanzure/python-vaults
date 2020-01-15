@@ -60,7 +60,7 @@ def single():
     raise VaultNotImplementedError
 
 @unlock.command()
-def many():
+def all():
     """
     Withdraw multiple sharded UTXOs from the vault.
     """
