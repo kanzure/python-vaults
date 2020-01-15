@@ -149,6 +149,8 @@ class PlannedUTXO(object):
 
         prefix = "-" * depth
 
+        output += f"{prefix} UTXO {self.name} amount = {self.amount}\n"
+
         possible_children = len(self.child_transactions)
 
         if possible_children == 0:
@@ -262,7 +264,13 @@ class AbstractPlanningTests(unittest.TestCase):
 def make_burn_transaction(incoming_utxo):
     burn_transaction = PlannedTransaction(name="Burn some UTXO")
     burn_transaction.input_utxos = [incoming_utxo]
-    burn_utxo = PlannedUTXO(name="burned UTXO", transaction=burn_transaction, script_description_text="unspendable (burned)")
+
+    # TODO: Should the amount be burned to miner fee (which seems sort of
+    # dangerous- incents attacks by miner-thiefs) or just perpetually unspendable.
+    burn_utxo_amount = incoming_utxo.amount # unspendable
+    #burn_utxo_amount = 0 # burn to miner fee
+
+    burn_utxo = PlannedUTXO(name="burned UTXO", transaction=burn_transaction, script_description_text="unspendable (burned)", amount=burn_utxo_amount)
     burn_transaction.output_utxos = [burn_utxo]
     incoming_utxo.child_transactions.append(burn_transaction)
     return burn_transaction
@@ -271,7 +279,8 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
     push_transaction.input_utxos = [incoming_utxo]
 
-    cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable")
+    cold_storage_utxo_amount = incoming_utxo.amount
+    cold_storage_utxo = PlannedUTXO(name="cold storage UTXO", transaction=push_transaction, script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable", amount=cold_storage_utxo_amount)
     push_transaction.output_utxos = [cold_storage_utxo]
 
     # The purpose of the relative timelock before the cold storage keys are
@@ -287,25 +296,29 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     incoming_utxo.child_transactions.append(push_transaction)
     return push_transaction
 
-def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=None):
+def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None):
     """
     Make a new sharding transaction.
     """
 
-    if num_shards < 100:
+    if num_shards < original_num_shards:
         partial ="(partial) "
-    elif num_shards == 100:
+    elif num_shards == original_num_shards:
         partial = ""
 
     sharding_transaction = PlannedTransaction(name=f"Vault {partial}stipend start transaction.")
     incoming_utxo.child_transactions.append(sharding_transaction)
 
     for shard_id in range(0, num_shards):
+        amount = per_shard_amount
+        if shard_id == 0 and first_shard_extra_amount != None:
+            amount += first_shard_extra_amount
+
         sharded_utxo_name = f"shard fragment UTXO {shard_id}/{num_shards}"
 
         # Note: can't re-vault from this point. Must pass through the cold
         # wallet or the hot wallet before it can get back into a vault.
-        sharded_utxo = PlannedUTXO(name=sharded_utxo_name, transaction=sharding_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout")
+        sharded_utxo = PlannedUTXO(name=sharded_utxo_name, transaction=sharding_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout", amount=amount)
         sharding_transaction.output_utxos.append(sharded_utxo)
 
         make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
@@ -326,7 +339,7 @@ def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=
 # So if the user knows they only want a small amount, they use the one-time
 # spend. If they know they want more, then they can use the stipend (or migrate
 # out of the vault by first broadcasting the stipend setup transaction).
-def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards):
+def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, original_num_shards=None, first_shard_extra_amount=None):
     """
     Make a possible transaction for the vault UTXO that has two possibilities
     hanging off of it: one to spend a single sharded UTXO (either to the cold
@@ -349,7 +362,11 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards):
 
     # Next, add two UTXOs to vault_spend_one_shard transaction.
 
-    exiting_utxo = PlannedUTXO(name="shard fragment UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout")
+    amount = per_shard_amount
+    if first_shard_extra_amount != None:
+        amount += first_shard_extra_amount
+
+    exiting_utxo = PlannedUTXO(name="shard fragment UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout", amount=amount)
     vault_spend_one_shard_transaction.output_utxos.append(exiting_utxo)
 
     # For the exit UTXO, it should also be posisble to send that UTXO to cold
@@ -359,22 +376,26 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards):
     # a pre-signed transaction. It can be created at a later time, by the hot
     # wallet keys.
 
-    # Second UTXO attached to vault_spend_one_shard_transaction.
-    revault_utxo = PlannedUTXO(name="vault UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig (after some relative timelock)")
-    vault_spend_one_shard_transaction.output_utxos.append(revault_utxo)
-
-    # The vault UTXO can also be spent directly to cold storage.
-    make_push_to_cold_storage_transaction(revault_utxo)
-
     if num_shards == 1:
         return
     else:
+        # TODO: should this be num_shards or (num_shards - 1) ?
+        remaining_amount = (num_shards - 1) * per_shard_amount
+
+        # Second UTXO attached to vault_spend_one_shard_transaction.
+        revault_utxo = PlannedUTXO(name="vault UTXO", transaction=vault_spend_one_shard_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig (after some relative timelock)", amount=remaining_amount)
+        vault_spend_one_shard_transaction.output_utxos.append(revault_utxo)
+
+        # The vault UTXO can also be spent directly to cold storage.
+        make_push_to_cold_storage_transaction(revault_utxo)
+
         # The re-vault UTXO can be sharded into "100" pieces (but not really 100..
         # it should be 100 minus the depth).
-        make_sharding_transaction(per_shard_amount=per_shard_amount, num_shards=num_shards - 1, incoming_utxo=revault_utxo)
+        make_sharding_transaction(per_shard_amount=per_shard_amount, num_shards=num_shards - 1, incoming_utxo=revault_utxo, original_num_shards=original_num_shards, first_shard_extra_amount=None)
+
         # The re-vault UTXO can also be spent using the one-shard possible spend
         # method.
-        make_one_shard_possible_spend(incoming_utxo=revault_utxo, per_shard_amount=per_shard_amount, num_shards=num_shards - 1)
+        make_one_shard_possible_spend(incoming_utxo=revault_utxo, per_shard_amount=per_shard_amount, num_shards=num_shards - 1, original_num_shards=original_num_shards, first_shard_extra_amount=None)
 
 # Now that we have segwit outputs, proceed with the protocol.
 #
@@ -390,7 +411,8 @@ def setup_vault(segwit_utxo):
     vault_locking_transaction.input_utxos = [segwit_utxo]
     segwit_utxo.child_transactions.append(vault_locking_transaction)
 
-    vault_initial_utxo = PlannedUTXO(name="vault initial UTXO", transaction=vault_locking_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig")
+    vault_initial_utxo_amount = segwit_utxo.amount
+    vault_initial_utxo = PlannedUTXO(name="vault initial UTXO", transaction=vault_locking_transaction, script_description_text="spendable by 2-of-2 ephemeral multisig", amount=vault_initial_utxo_amount)
     vault_locking_transaction.output_utxos = [vault_initial_utxo]
 
     # Optional transaction: Push the whole amount to cold storage.
@@ -400,24 +422,34 @@ def setup_vault(segwit_utxo):
     # Inside the make_one_shard_possible_spend function, this amount will be
     # decremented before it is used to create the next sharding/stipend-setup
     # transaction.
-    shard_fragment_count = 100
+    num_shards = 100
+
+    amount_per_shard = int(vault_initial_utxo.amount / num_shards)
+    first_shard_extra_amount = vault_initial_utxo.amount - (int(vault_initial_utxo.amount/num_shards)*num_shards)
+
+    assert (amount_per_shard * num_shards) + first_shard_extra_amount == vault_initial_utxo.amount
 
     # Optional transaction: split the UTXO up into 100 shards, when it's time
     # to start spending the coins.
     # Make a transaction that sets up 100 UTXOs (with appropriate relative
     # timelocks).
-    make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=vault_initial_utxo)
+    make_sharding_transaction(per_shard_amount=amount_per_shard, num_shards=num_shards, first_shard_extra_amount=first_shard_extra_amount, incoming_utxo=vault_initial_utxo, original_num_shards=num_shards)
 
     # Another optional transaction
     # Make a transaction that lets the user spend one shard, but re-vaults
     # everything else.
-    make_one_shard_possible_spend(incoming_utxo=vault_initial_utxo, per_shard_amount=1, num_shards=100)
+    make_one_shard_possible_spend(incoming_utxo=vault_initial_utxo, per_shard_amount=amount_per_shard, num_shards=num_shards, first_shard_extra_amount=first_shard_extra_amount, original_num_shards=num_shards)
 
     return vault_initial_utxo
 
 if __name__ == "__main__":
-    segwit_utxo = PlannedUTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig")
+    #amount = random.randrange(0, 100 * COIN)
+    amount = 7084449357
+    segwit_utxo = PlannedUTXO(name="segwit input coin", transaction=None, script_description_text="spendable by user single-sig", amount=amount)
     setup_vault(segwit_utxo)
+
+    # To test that the sharded UTXOs have the right amounts, do the following:
+    # assert (second_utxo_amount * 99) + first_utxo_amount == amount
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
