@@ -4,6 +4,8 @@ Command line interface for the Vault library.
 
 import click
 
+from vaults.exceptions import VaultNotImplementedError
+
 @click.group()
 def cli():
     pass
@@ -13,35 +15,35 @@ def init():
     """
     Create a new vault in the current working directory.
     """
-    pass
+    raise VaultNotImplementedError
 
 @cli.command()
 def info():
     """
     Display vault state information, including last sync time.
     """
-    pass
+    raise VaultNotImplementedError
 
 @cli.command()
 def clone():
     """
     Copy another vault's parameters (hot wallet keys etc).
     """
-    pass
+    raise VaultNotImplementedError
 
 @cli.command()
 def lock():
     """
     Initialize the vault and fund it with on-chain UTXOs.
     """
-    pass
+    raise VaultNotImplementedError
 
 @cli.command()
 def sync():
     """
     Synchronize against the blockchain and update local vault state data.
     """
-    pass
+    raise VaultNotImplementedError
 
 @click.group()
 def unlock():
@@ -55,21 +57,21 @@ def single():
     """
     Withdraw a single sharded UTXO from the vault.
     """
-    pass
+    raise VaultNotImplementedError
 
 @unlock.command()
 def many():
     """
     Withdraw multiple sharded UTXOs from the vault.
     """
-    pass
+    raise VaultNotImplementedError
 
 @cli.command()
 def rotate():
     """
     Push all remaining UTXOs in the vault to the cold storage layer.
     """
-    pass
+    raise VaultNotImplementedError
 
 cli.add_command(unlock)
 
