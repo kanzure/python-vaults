@@ -124,6 +124,44 @@ class VaultsBlah:
         # Now sign the transaction that starts the whole thing.
         self.nodes[0].signrawtransaction(transaction1)
 
+class PlannedUTXO(object):
+    __counter__ = 0
+
+    def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE", amount=None):
+        self.name = name
+        self.script_description_text = script_description_text
+
+        # This is the transaction that created this UTXO.
+        self.transaction = transaction
+
+        # These are the different potential transactions that reference (spend)
+        # this UTXO.
+        self.child_transactions = []
+
+        self.amount = amount
+
+        self.__class__.__counter__ += 1
+
+    def to_text(self, depth=0):
+        output = ""
+
+        prefix = "-" * depth
+
+        possible_children = len(self.child_transactions)
+
+        if possible_children == 0:
+            output += f"{prefix} UTXO {self.name} has no children.\n"
+        else:
+            output += f"{prefix} UTXO {self.name} has {possible_children} possible child transactions. They are:\n\n"
+
+            for child_transaction in self.child_transactions:
+                output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (start)\n"
+                output += child_transaction.to_text(depth=depth+1)
+                output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (end)\n"
+
+            output += f"{prefix} UTXO {self.name} (end)\n\n"
+
+        return output
 
 class PlannedTransaction(object):
     __counter__ = 0
@@ -131,8 +169,10 @@ class PlannedTransaction(object):
     def __init__(self, name=None):
         self.name = name
 
+        cpfp_hook_utxo = PlannedUTXO(name="CPFP hook", transaction=self, script_description_text="OP_TRUE", amount=0)
+
         self.input_utxos = []
-        self.output_utxos = []
+        self.output_utxos = [cpfp_hook_utxo]
 
         self.__class__.__counter__ += 1
 
@@ -153,50 +193,21 @@ class PlannedTransaction(object):
     def to_text(self, depth=0):
         output = ""
 
-        prefix = "--" * depth
+        prefix = "-" * depth
 
         num_utxos = len(self.output_utxos)
-        output += f"{prefix} Transaction ({self.name}) has {num_utxos} UTXOs. They are:\n\n"
 
-        for utxo in self.output_utxos:
-            output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (start)\n"
-            output += utxo.to_text(depth=depth+1)
-            output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (end)\n"
+        if num_utxos == 0:
+            output += f"{prefix} Transaction ({self.name}) has no UTXOs.\n\n"
+        else:
+            output += f"{prefix} Transaction ({self.name}) has {num_utxos} UTXOs. They are:\n\n"
 
-        output += f"{prefix} Transaction ({self.name}) end\n"
+            for utxo in self.output_utxos:
+                output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (start)\n"
+                output += utxo.to_text(depth=depth+1)
+                output += f"{prefix} Transaction ({self.name}) - UTXO {utxo.name} (end)\n"
 
-        return output
-
-class PlannedUTXO(object):
-    __counter__ = 0
-
-    def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE"):
-        self.name = name
-        self.script_description_text = script_description_text
-
-        # This is the transaction that created this UTXO.
-        self.transaction = transaction
-
-        # These are the different potential transactions that reference (spend)
-        # this UTXO.
-        self.child_transactions = []
-
-        self.__class__.__counter__ += 1
-
-    def to_text(self, depth=0):
-        output = ""
-
-        prefix = "--" * depth
-
-        possible_children = len(self.child_transactions)
-        output += f"{prefix} UTXO {self.name} has {possible_children} possible child transactions. They are:\n\n"
-
-        for child_transaction in self.child_transactions:
-            output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (start)\n"
-            output += child_transaction.to_text(depth=depth+1)
-            output += f"{prefix} UTXO {self.name} -> {child_transaction.name} (end)\n"
-
-        output += f"{prefix} UTXO {self.name} (end)\n"
+            output += f"{prefix} Transaction ({self.name}) end\n\n"
 
         return output
 
@@ -238,6 +249,12 @@ class AbstractPlanningTests(unittest.TestCase):
         self.assertEqual(counter_end - counter_start, 1)
         del utxo1
         self.assertEqual(counter_end - counter_start, 1)
+
+    def test_planned_transaction_cpfp_hook_utxo(self):
+        planned_transaction = PlannedTransaction(name="name goes here")
+        self.assertEqual(len(planned_transaction.output_utxos), 1)
+        self.assertEqual(planned_transaction.output_utxos[0].name, "CPFP hook")
+
 
 def make_burn_transaction(incoming_utxo):
     burn_transaction = PlannedTransaction(name="Burn some UTXO")
@@ -293,6 +310,11 @@ def make_sharding_transaction(per_shard_amount=1, num_shards=100, incoming_utxo=
     # TODO: make a variety of push-to-cold-storage (sweep) transactions that
     # each take 2 or more UTXOs. Note that the UTXOs get spent in order, so
     # this fortunately limits the total number of transactions to generate.
+    #
+    # Without these sweep transactions, the user would have to individually
+    # broadcast up to 100 transactions that each individually move each UTXO
+    # into cold storage. By aggregating it into these sweep transactions, they
+    # don't need to do that anymore.
 
     return sharding_transaction
 
