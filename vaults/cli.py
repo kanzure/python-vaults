@@ -23,7 +23,14 @@ def info():
     pass
 
 @cli.command()
-def create():
+def clone():
+    """
+    Copy another vault's parameters (hot wallet keys etc).
+    """
+    pass
+
+@cli.command()
+def lock():
     """
     Initialize the vault and fund it with on-chain UTXOs.
     """
@@ -37,33 +44,32 @@ def sync():
     pass
 
 @click.group()
-def stipend():
+def unlock():
     """
     Commands dealing with regular, pre-scheduled withdrawals from the vault.
     """
     pass
 
-@stipend.command()
-def start():
+@unlock.command()
+def single():
     """
-    Begin the process of withdrawing sharded UTXOs from the vault.
+    Withdraw a single sharded UTXO from the vault.
     """
     pass
 
-@stipend.command()
-def push_to_cold():
+@unlock.command()
+def many():
+    """
+    Withdraw multiple sharded UTXOs from the vault.
+    """
+    pass
+
+@cli.command()
+def rotate():
     """
     Push all remaining UTXOs in the vault to the cold storage layer.
     """
     pass
 
-@stipend.command()
-def re_vault_pending():
-    """
-    Push all pending UTXOs (about to be unlocked on-chain) to a new vault made
-    with the keys used to create the original vault.
-    """
-    pass
-
-cli.add_command(stipend)
+cli.add_command(unlock)
 

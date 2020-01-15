@@ -61,13 +61,15 @@ with the vault library based on vault files stored in the current working
 directory. The vault subcommands are as follows:
 
 ```
-vault init
+vault init (or vault clone)
 vault info
-vault create
+vault lock
 vault sync
-vault stipend start
-vault stipend push-to-cold
-vault stipend re-vault-pending
+vault unlock single
+vault sync
+vault unlock many
+vault sync
+vault rotate
 ```
 
 
