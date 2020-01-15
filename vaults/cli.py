@@ -73,5 +73,13 @@ def rotate():
     """
     raise VaultNotImplementedError
 
+@cli.command()
+def burn():
+    """
+    Burn (or donate) the UTXOs.
+    """
+    # Note: can't burn the coins until they are in the cold storage layer.
+    raise VaultNotImplementedError
+
 cli.add_command(unlock)
 

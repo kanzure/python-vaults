@@ -70,6 +70,7 @@ vault sync
 vault unlock many
 vault sync
 vault rotate
+vault burn
 ```
 
 
