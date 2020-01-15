@@ -4,6 +4,7 @@ Run the unit tests with:
 
 """
 
+import uuid
 import unittest
 import hashlib
 
@@ -141,6 +142,7 @@ class PlannedUTXO(object):
         self.amount = amount
 
         self.__class__.__counter__ += 1
+        self.internal_id = uuid.uuid4()
 
     def to_text(self, depth=0):
         output = ""
@@ -175,6 +177,7 @@ class PlannedTransaction(object):
         self.output_utxos = [cpfp_hook_utxo]
 
         self.__class__.__counter__ += 1
+        self.internal_id = uuid.uuid4()
 
     @property
     def parent_transactions():
