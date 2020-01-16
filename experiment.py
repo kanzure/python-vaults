@@ -134,11 +134,26 @@ class UserScriptTemplate(ScriptTemplate):
     # and then signing the send-to-vault transaction.
     script_description_text = "spendable by: user single-sig"
 
+    miniscript_policy = "pk(user_key)"
+    miniscript_policy_definitions = {"user_key": "user public key"}
+
+    script_template = "<user_key> OP_CHECKSIG"
+
 class ColdStorageScriptTemplate(ScriptTemplate):
     script_description_text = "spendable by: cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
 
-    miniscript_policy = "pk(key_1)"
-    miniscript_policy_definitions = {"key_1": "user public key"}
+
+    miniscript_policy = "or(and(pk(ephemeral_key_1),pk(ephemeral_key_2)),and(pk(cold_key1),and(pk(cold_key2),older(144))))"
+    miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "...", "cold_key1": "...", "cold_key2": "..."}
+
+    script_template = """
+<ephemeral_key_1> OP_CHECKSIG OP_NOTIF
+  <cold_key1> OP_CHECKSIGVERIFY <cold_key2> OP_CHECKSIGVERIFY
+  <9000> OP_CHECKSEQUENCEVERIFY
+OP_ELSE
+  <ephemeral_key_2> OP_CHECKSIG
+OP_ENDIF
+    """
 
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     script_description_text = "unspendable (burned)"
@@ -146,14 +161,18 @@ class BurnUnspendableScriptTemplate(ScriptTemplate):
     miniscript_policy = "pk(key_1)"
     miniscript_policy_definitions = {"key_1": "some unknowable key"}
 
+    script_template = "<key_1> OP_CHECKSIG"
+
 class BasicPresignedScriptTemplate(ScriptTemplate):
     # Represents a script that can only be spent by one child transaction,
     # which is pre-signed.
     script_description_text = "spendable by: n-of-n ephemeral multisig after relative timelock"
 
     # TODO: pick an appropriate relative timelock
-    miniscript_policy = "and(pk(ephemeral_key_1),pk(ephemeral_key_2),older(144))"
+    miniscript_policy = "and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144)))"
     miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "..."}
+
+    script_template = "<ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY <9000> OP_CHECKSEQUENCEVERIFY"
 
 class ShardScriptTemplate(ScriptTemplate):
     script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
@@ -163,6 +182,16 @@ class ShardScriptTemplate(ScriptTemplate):
     # increasing in each sharded UTXO).
     miniscript_policy = f"or(and(pk(hot_wallet_key),older(144)),{ephemeral_multisig_gated})"
     miniscript_policy_definitions = {"hot_wallet_key": "...", "ephemeral_key_1": "...", "ephemeral_key_2": "..."}
+    # or(and(pk(hot_wallet_key),older(144)),and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144))))
+
+    script_template = """
+<hot_wallet_key> OP_CHECKSIG OP_NOTIF
+  <ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY
+  <9000> OP_CHECKSEQUENCEVERIFY
+OP_ELSE
+  <9000> OP_CHECKSEQUENCEVERIFY
+OP_ENDIF
+    """
 
 class CPFPHookScriptTemplate(ScriptTemplate):
     script_description_text = "OP_TRUE"
