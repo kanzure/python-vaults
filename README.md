@@ -73,4 +73,30 @@ vault rotate
 vault burn
 ```
 
+**vault init** turns the current working directory into a new vault with new
+parameters.
+
+**vault info** gives information about the current status of the vault.
+
+**vault lock** takes a user-given UTXO and locks the UTXO and its amount into a
+new vault with the parameters defined by the current working directory.
+
+**vault unlock single** gives a single shard UTXO and makes it available to the
+first layer hot wallet. The remaining amount is put back into the vault in a
+new vault UTXO.
+
+**vault sync** synchronizes the vault's internal database with the bitcoin
+blockchain by communicating with a bitcoind node over RPC.
+
+**vault unlock many** starts the pre-determined stipend. This creates many
+sharded UTXOs.
+
+**vault rotate** sends all of the UTXOs and coins to the cold storage layer.
+
+**vault burn** broadcasts transactions that will burn coins. These transactions
+are very dangerous and it is important to think carefully about where they are
+stored. They are nearly as dangerous as a private key, and although the
+possibilities are constrained compared to a thief stealing a private key, the
+end result is the same (loss of funds).
+
 
