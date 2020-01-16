@@ -132,24 +132,42 @@ class UserScriptTemplate(ScriptTemplate):
     # Represents a script that the user picks. This is the input UTXO that gets
     # sent into the vault. The user is responsible for specifying this script,
     # and then signing the send-to-vault transaction.
-    script_description_text = "spendable by user single-sig"
+    script_description_text = "spendable by: user single-sig"
 
 class ColdStorageScriptTemplate(ScriptTemplate):
-    script_description_text = "spendable by cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
+    script_description_text = "spendable by: cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
+
+    miniscript_policy = "pk(key_1)"
+    miniscript_policy_definitions = {"key_1": "user public key"}
 
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     script_description_text = "unspendable (burned)"
 
-class ShardScriptTemplate(ScriptTemplate):
-    script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
+    miniscript_policy = "pk(key_1)"
+    miniscript_policy_definitions = {"key_1": "some unknowable key"}
 
 class BasicPresignedScriptTemplate(ScriptTemplate):
     # Represents a script that can only be spent by one child transaction,
     # which is pre-signed.
     script_description_text = "spendable by: n-of-n ephemeral multisig after relative timelock"
 
+    # TODO: pick an appropriate relative timelock
+    miniscript_policy = "and(pk(ephemeral_key_1),pk(ephemeral_key_2),older(144))"
+    miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "..."}
+
+class ShardScriptTemplate(ScriptTemplate):
+    script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
+
+    ephemeral_multisig_gated = BasicPresignedScriptTemplate.miniscript_policy
+    # TODO: pick an appropriate timelock length (also, it sohuld be variable-
+    # increasing in each sharded UTXO).
+    miniscript_policy = f"or(and(pk(hot_wallet_key),older(144)),{ephemeral_multisig_gated})"
+    miniscript_policy_definitions = {"hot_wallet_key": "...", "ephemeral_key_1": "...", "ephemeral_key_2": "..."}
+
 class CPFPHookScriptTemplate(ScriptTemplate):
     script_description_text = "OP_TRUE"
+
+    # TODO: does miniscript policy language support this?
 
 class PlannedUTXO(object):
     __counter__ = 0
