@@ -125,12 +125,38 @@ class VaultsBlah:
         # Now sign the transaction that starts the whole thing.
         self.nodes[0].signrawtransaction(transaction1)
 
+class ScriptTemplate(object):
+    pass
+
+class UserScriptTemplate(ScriptTemplate):
+    # Represents a script that the user picks. This is the input UTXO that gets
+    # sent into the vault. The user is responsible for specifying this script,
+    # and then signing the send-to-vault transaction.
+    script_description_text = "spendable by user single-sig"
+
+class ColdStorageScriptTemplate(ScriptTemplate):
+    script_description_text = "spendable by cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
+
+class BurnUnspendableScriptTemplate(ScriptTemplate):
+    script_description_text = "unspendable (burned)"
+
+class ShardScriptTemplate(ScriptTemplate):
+    script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
+
+class BasicPresignedScriptTemplate(ScriptTemplate):
+    # Represents a script that can only be spent by one child transaction,
+    # which is pre-signed.
+    script_description_text = "spendable by: n-of-n ephemeral multisig after relative timelock"
+
+class CPFPHookScriptTemplate(ScriptTemplate):
+    script_description_text = "OP_TRUE"
+
 class PlannedUTXO(object):
     __counter__ = 0
 
-    def __init__(self, name=None, transaction=None, script_description_text="OP_TRUE", amount=None):
+    def __init__(self, name=None, transaction=None, script_template=None, amount=None):
         self.name = name
-        self.script_description_text = script_description_text
+        self.script_template = script_template
 
         # This is the transaction that created this UTXO.
         self.transaction = transaction
@@ -173,7 +199,12 @@ class PlannedTransaction(object):
     def __init__(self, name=None):
         self.name = name
 
-        cpfp_hook_utxo = PlannedUTXO(name="CPFP hook", transaction=self, script_description_text="OP_TRUE", amount=0)
+        cpfp_hook_utxo = PlannedUTXO(
+            name="CPFP hook",
+            transaction=self,
+            script_template=CPFPHookScriptTemplate,
+            amount=0,
+        )
 
         self.input_utxos = []
         self.output_utxos = [cpfp_hook_utxo]
@@ -244,7 +275,7 @@ class AbstractPlanningTests(unittest.TestCase):
         self.assertEqual(counter_end - counter_start, 3)
 
     def test_planned_utxo(self):
-        utxo1 = PlannedUTXO(name="some UTXO", transaction=None, script_description_text="blah")
+        utxo1 = PlannedUTXO(name="some UTXO", transaction=None, script_template=ScriptTemplate)
         utxo2 = PlannedUTXO(name="second UTXO", transaction=None)
         utxo3 = PlannedUTXO(name="another UTXO")
         del utxo3
@@ -278,7 +309,7 @@ def make_burn_transaction(incoming_utxo):
     burn_utxo = PlannedUTXO(
         name="burned UTXO",
         transaction=burn_transaction,
-        script_description_text="unspendable (burned)",
+        script_template=BurnUnspendableScriptTemplate,
         amount=burn_utxo_amount,
     )
     burn_transaction.output_utxos = [burn_utxo]
@@ -293,7 +324,7 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     cold_storage_utxo = PlannedUTXO(
         name="cold storage UTXO",
         transaction=push_transaction,
-        script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable",
+        script_template=ColdStorageScriptTemplate,
         amount=cold_storage_utxo_amount,
     )
     push_transaction.output_utxos = [cold_storage_utxo]
@@ -319,7 +350,7 @@ def make_sweep_to_cold_storage_transaction(incoming_utxos):
         cold_storage_utxo = PlannedUTXO(
             name="cold storage UTXO",
             transaction=push_transaction,
-            script_description_text="spendable by cold wallet keys (after a relative timelock) OR immediately burnable",
+            script_template=ColdStorageScriptTemplate,
             amount=amount,
         )
         push_transaction.output_utxos.append(cold_storage_utxo)
@@ -359,7 +390,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
         sharded_utxo = PlannedUTXO(
             name=sharded_utxo_name,
             transaction=sharding_transaction,
-            script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout",
+            script_template=ShardScriptTemplate,
             amount=amount,
         )
         shard_utxos.append(sharded_utxo)
@@ -426,7 +457,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
     exiting_utxo = PlannedUTXO(
         name="shard fragment UTXO",
         transaction=vault_spend_one_shard_transaction,
-        script_description_text="spendable by: push to cold storage OR spendable by hot wallet after timeout",
+        script_template=ShardScriptTemplate,
         amount=amount,
     )
     vault_spend_one_shard_transaction.output_utxos.append(exiting_utxo)
@@ -448,7 +479,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
         revault_utxo = PlannedUTXO(
             name="vault UTXO",
             transaction=vault_spend_one_shard_transaction,
-            script_description_text="spendable by 2-of-2 ephemeral multisig (after some relative timelock)",
+            script_template=BasicPresignedScriptTemplate,
             amount=remaining_amount,
         )
         vault_spend_one_shard_transaction.output_utxos.append(revault_utxo)
@@ -494,7 +525,7 @@ def setup_vault(segwit_utxo):
     vault_initial_utxo = PlannedUTXO(
         name="vault initial UTXO",
         transaction=vault_locking_transaction,
-        script_description_text="spendable by 2-of-2 ephemeral multisig",
+        script_template=BasicPresignedScriptTemplate,
         amount=vault_initial_utxo_amount,
     )
     vault_locking_transaction.output_utxos = [vault_initial_utxo]
@@ -543,7 +574,7 @@ if __name__ == "__main__":
     segwit_utxo = PlannedUTXO(
         name="segwit input coin",
         transaction=None,
-        script_description_text="spendable by user single-sig",
+        script_template=UserScriptTemplate,
         amount=amount,
     )
     setup_vault(segwit_utxo)
