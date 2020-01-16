@@ -160,6 +160,7 @@ class UserScriptTemplate(ScriptTemplate):
     miniscript_policy_definitions = {"user_key": "user public key"}
 
     script_template = "<user_key> OP_CHECKSIG"
+    witness_template_map = {"user_key_sig": "user_key"}
     witness_templates = {
         "user": "<user_key_sig>",
     }
@@ -180,10 +181,15 @@ OP_ELSE
 OP_ENDIF
     """
 
+    witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2", "cold_key1_sig": "cold_key1", "cold_key2_sig": "cold_key2"}
     witness_templates = {
         "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
         "cold-wallet": "<cold_key1_sig> <cold_key2_sig>",
     }
+    # TODO: Note that the "cold-wallet" witness template cannot be used to make
+    # a valid witness unless the cold keys's private keys are accessed. In
+    # contrast, the "presigned" witness can be parameterized and correct before
+    # secure key deletion occurs.
 
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     script_description_text = "unspendable (burned)"
@@ -193,6 +199,7 @@ class BurnUnspendableScriptTemplate(ScriptTemplate):
 
     script_template = "<unspendable_key_1> OP_CHECKSIG"
 
+    witness_template_map = {}
     witness_templates = {} # (intentionally empty)
 
 class BasicPresignedScriptTemplate(ScriptTemplate):
@@ -206,6 +213,7 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
 
     script_template = "<ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY <9000> OP_CHECKSEQUENCEVERIFY"
 
+    witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2"}
     witness_templates = {
         "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
     }
@@ -229,6 +237,7 @@ OP_ELSE
 OP_ENDIF
     """
 
+    witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2", "hot_wallet_key_sig": "hot_wallet_key"}
     witness_templates = {
         "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
         "hot-wallet": "<hot_wallet_key_sig>",
@@ -237,9 +246,15 @@ OP_ENDIF
 class CPFPHookScriptTemplate(ScriptTemplate):
     script_description_text = "OP_TRUE"
 
-    # TODO: does miniscript policy language support this?
+    # TODO: does miniscript policy language support this? andytoshi says no,
+    # although miniscript does support this.
 
     script_template = "OP_TRUE"
+
+    # TODO: What is a good witness for this script? Can it be empty? I would
+    # know this if I actually knew anything about bitcoin scripting.....
+    witness_template_map = {}
+    witness_templates = {} # (intentionally empty)
 
 class PlannedUTXO(object):
     __counter__ = 0
