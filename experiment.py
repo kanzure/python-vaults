@@ -126,7 +126,20 @@ class VaultsBlah:
         self.nodes[0].signrawtransaction(transaction1)
 
 class ScriptTemplate(object):
-    pass
+
+    @classmethod
+    def parameterize_script_template(cls, parameters):
+        """
+        Take a bag of parameters and populate the script template with those
+        parameters. Return the parameterized script.
+        """
+        parameter_names = list(cls.miniscript_policy_definitions.keys())
+        miniscript_policy_definitionsparameterized_script = cls.script_template
+
+        for parameter_name in parameter_names:
+            parameterized_script = parameterized_script.replace(parameter_name, parameters[parameter_name])
+
+        return parameterized_script
 
 class UserScriptTemplate(ScriptTemplate):
     # Represents a script that the user picks. This is the input UTXO that gets
