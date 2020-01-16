@@ -128,7 +128,7 @@ class VaultsBlah:
 class ScriptTemplate(object):
 
     @classmethod
-    def parameterize_script_template(cls, parameters):
+    def parameterize(cls, parameters):
         """
         Take a bag of parameters and populate the script template with those
         parameters. Return the parameterized script.
