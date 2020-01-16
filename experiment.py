@@ -220,6 +220,8 @@ class CPFPHookScriptTemplate(ScriptTemplate):
 
     # TODO: does miniscript policy language support this?
 
+    script_template = "OP_TRUE"
+
 class PlannedUTXO(object):
     __counter__ = 0
 
