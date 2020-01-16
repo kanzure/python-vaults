@@ -160,6 +160,9 @@ class UserScriptTemplate(ScriptTemplate):
     miniscript_policy_definitions = {"user_key": "user public key"}
 
     script_template = "<user_key> OP_CHECKSIG"
+    witness_templates = {
+        "user": "<user_key_sig>",
+    }
 
 class ColdStorageScriptTemplate(ScriptTemplate):
     script_description_text = "spendable by: cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
@@ -177,6 +180,11 @@ OP_ELSE
 OP_ENDIF
     """
 
+    witness_templates = {
+        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+        "cold-wallet": "<cold_key1_sig> <cold_key2_sig>",
+    }
+
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     script_description_text = "unspendable (burned)"
 
@@ -184,6 +192,8 @@ class BurnUnspendableScriptTemplate(ScriptTemplate):
     miniscript_policy_definitions = {"unspendable_key_1": "some unknowable key"}
 
     script_template = "<unspendable_key_1> OP_CHECKSIG"
+
+    witness_templates = {} # (intentionally empty)
 
 class BasicPresignedScriptTemplate(ScriptTemplate):
     # Represents a script that can only be spent by one child transaction,
@@ -195,6 +205,10 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
     miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "..."}
 
     script_template = "<ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY <9000> OP_CHECKSEQUENCEVERIFY"
+
+    witness_templates = {
+        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+    }
 
 class ShardScriptTemplate(ScriptTemplate):
     script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
@@ -214,6 +228,11 @@ OP_ELSE
   <9000> OP_CHECKSEQUENCEVERIFY
 OP_ENDIF
     """
+
+    witness_templates = {
+        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+        "hot-wallet": "<hot_wallet_key_sig>",
+    }
 
 class CPFPHookScriptTemplate(ScriptTemplate):
     script_description_text = "OP_TRUE"
