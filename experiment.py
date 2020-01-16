@@ -151,10 +151,15 @@ class ScriptTemplate(object):
         return list(set(required_parameters))
 
 class UserScriptTemplate(ScriptTemplate):
-    # Represents a script that the user picks. This is the input UTXO that gets
-    # sent into the vault. The user is responsible for specifying this script,
-    # and then signing the send-to-vault transaction.
-    script_description_text = "spendable by: user single-sig"
+    """
+    Represents a script that the user picks. This is the input UTXO that gets
+    sent into the vault. The user is responsible for specifying this script,
+    and then signing the send-to-vault transaction.
+
+    This is spendable by some user-provided signature. The vault is not
+    responsible for producing this signature, but it is responsible for
+    producing a scriptpubkey for where the coins are going to be sent to.
+    """
 
     miniscript_policy = "pk(user_key)"
     miniscript_policy_definitions = {"user_key": "user public key"}
@@ -166,8 +171,10 @@ class UserScriptTemplate(ScriptTemplate):
     }
 
 class ColdStorageScriptTemplate(ScriptTemplate):
-    script_description_text = "spendable by: cold wallet keys (after a relative timelock) OR immediately burnable (gated by ephemeral multisig)"
-
+    """
+    spendable by: cold wallet keys (after a relative timelock) OR immediately
+    burnable (gated by ephemeral multisig)
+    """
 
     miniscript_policy = "or(and(pk(ephemeral_key_1),pk(ephemeral_key_2)),and(pk(cold_key1),and(pk(cold_key2),older(144))))"
     miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "...", "cold_key1": "...", "cold_key2": "..."}
@@ -192,7 +199,9 @@ OP_ENDIF
     # secure key deletion occurs.
 
 class BurnUnspendableScriptTemplate(ScriptTemplate):
-    script_description_text = "unspendable (burned)"
+    """
+    unspendable (burned)
+    """
 
     miniscript_policy = "pk(unspendable_key_1)"
     miniscript_policy_definitions = {"unspendable_key_1": "some unknowable key"}
@@ -203,9 +212,12 @@ class BurnUnspendableScriptTemplate(ScriptTemplate):
     witness_templates = {} # (intentionally empty)
 
 class BasicPresignedScriptTemplate(ScriptTemplate):
-    # Represents a script that can only be spent by one child transaction,
-    # which is pre-signed.
-    script_description_text = "spendable by: n-of-n ephemeral multisig after relative timelock"
+    """
+    Represents a script that can only be spent by one child transaction,
+    which is pre-signed.
+
+    spendable by: n-of-n ephemeral multisig after relative timelock
+    """
 
     # TODO: pick an appropriate relative timelock
     miniscript_policy = "and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144)))"
@@ -219,7 +231,10 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
     }
 
 class ShardScriptTemplate(ScriptTemplate):
-    script_description_text = "spendable by: push to cold storage (gated by ephemeral multisig) OR spendable by hot wallet after timeout"
+    """
+    spendable by: push to cold storage (gated by ephemeral multisig) OR
+    spendable by hot wallet after timeout
+    """
 
     ephemeral_multisig_gated = BasicPresignedScriptTemplate.miniscript_policy
     # TODO: pick an appropriate timelock length (also, it sohuld be variable-
@@ -244,7 +259,9 @@ OP_ENDIF
     }
 
 class CPFPHookScriptTemplate(ScriptTemplate):
-    script_description_text = "OP_TRUE"
+    """
+    OP_TRUE -- a simple script for anyone-can-spend.
+    """
 
     # TODO: does miniscript policy language support this? andytoshi says no,
     # although miniscript does support this.
