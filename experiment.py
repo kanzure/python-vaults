@@ -134,12 +134,21 @@ class ScriptTemplate(object):
         parameters. Return the parameterized script.
         """
         parameter_names = list(cls.miniscript_policy_definitions.keys())
-        miniscript_policy_definitionsparameterized_script = cls.script_template
+        parameterized_script = cls.script_template
 
         for parameter_name in parameter_names:
             parameterized_script = parameterized_script.replace(parameter_name, parameters[parameter_name])
 
         return parameterized_script
+
+    @classmethod
+    def get_required_parameters(cls):
+        required_parameters = []
+        subclasses = cls.__subclasses__()
+        for subclass in subclasses:
+            if hasattr(subclass, "miniscript_policy_definitions"):
+                required_parameters.extend(list(subclass.miniscript_policy_definitions.keys()))
+        return list(set(required_parameters))
 
 class UserScriptTemplate(ScriptTemplate):
     # Represents a script that the user picks. This is the input UTXO that gets
@@ -171,10 +180,10 @@ OP_ENDIF
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     script_description_text = "unspendable (burned)"
 
-    miniscript_policy = "pk(key_1)"
-    miniscript_policy_definitions = {"key_1": "some unknowable key"}
+    miniscript_policy = "pk(unspendable_key_1)"
+    miniscript_policy_definitions = {"unspendable_key_1": "some unknowable key"}
 
-    script_template = "<key_1> OP_CHECKSIG"
+    script_template = "<unspendable_key_1> OP_CHECKSIG"
 
 class BasicPresignedScriptTemplate(ScriptTemplate):
     # Represents a script that can only be spent by one child transaction,
@@ -631,13 +640,41 @@ def setup_vault(segwit_utxo):
 if __name__ == "__main__":
     #amount = random.randrange(0, 100 * COIN)
     amount = 7084449357
+
+    parameters = {
+        "amount": amount,
+
+        "user_key": "user_key",
+        "unspendable_key_1": "unspendable_key_1",
+        "ephemeral_key_1": "ephemeral_key_1",
+        "ephemeral_key_2": "ephemeral_key_2",
+        "cold_key1": "cold_key1",
+        "cold_key2": "cold_key2",
+        "hot_wallet_key": "hot_wallet_key",
+    }
+
+    required_parameters = ScriptTemplate.get_required_parameters()
+
+    missing_parameters = False
+    for required_parameter in required_parameters:
+        if required_parameter not in parameters.keys():
+            print(f"Missing parameter: {required_parameter}")
+            missing_parameters = True
+    if missing_parameters:
+        print("Missing parameters!")
+        sys.exit(1)
+
     segwit_utxo = PlannedUTXO(
         name="segwit input coin",
         transaction=None,
         script_template=UserScriptTemplate,
         amount=amount,
     )
+
+    # ===============
+    # Here's where the magic happens.
     setup_vault(segwit_utxo)
+    # ===============
 
     # To test that the sharded UTXOs have the right amounts, do the following:
     # assert (second_utxo_amount * 99) + first_utxo_amount == amount
