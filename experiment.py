@@ -10,6 +10,7 @@ import hashlib
 
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
+from vaults.exceptions import VaultException
 
 from bitcoin.wallet import CBitcoinSecret
 
