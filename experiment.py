@@ -326,6 +326,16 @@ class PlannedInput(object):
         if witness_template_selection not in utxo.script_template.witness_templates.keys():
             raise VaultException("Invalid witness selection")
 
+    def parameterize_witness_template_by_signing(self, parameters):
+        """
+        Take a specific witness template, a bag of parameters, and a
+        transaction, and then produce a parameterized witness (including all
+        necessary valid signatures).
+
+        Make a sighash for the bitcoin transaction.
+        """
+        raise NotImplementedError
+
 class PlannedTransaction(object):
     __counter__ = 0
 
@@ -677,7 +687,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
 # 2-of-2 root P2SH), delete the key.
 #
 # Then move the segwit coins into that top-level P2WSH scriptpubkey.
-def setup_vault(segwit_utxo):
+def setup_vault(segwit_utxo, parameters):
     vault_locking_transaction = PlannedTransaction(name="Vault locking transaction")
     segwit_utxo.child_transactions.append(vault_locking_transaction)
 
@@ -733,6 +743,21 @@ def setup_vault(segwit_utxo):
         original_num_shards=num_shards,
     )
 
+    # Crawl the planned transaciton tree. Parameterize each PlannedUTXO's
+    # script template, based on the input parameters.
+
+    # Next, turn each PlannedTransaction into a bitcoin (segwit) transaction.
+
+    # Add signatures to the planned transaction tree.
+    #
+    # Crawl the planned transaction tree. Find all PlannedInput objects. Then
+    # take each PlannedInput object, and call
+    # parameterize_witness_template_by_signing. Store the resulting witness on
+    # the PlannedInput object.
+    #
+    # Finally, make sure the PlannedTransaciton object can be serialized into a
+    # bitcoin transaction including the witness data.
+
     return vault_initial_utxo
 
 if __name__ == "__main__":
@@ -771,7 +796,7 @@ if __name__ == "__main__":
 
     # ===============
     # Here's where the magic happens.
-    setup_vault(segwit_utxo)
+    setup_vault(segwit_utxo, parameters)
     # ===============
 
     # To test that the sharded UTXOs have the right amounts, do the following:
