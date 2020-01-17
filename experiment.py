@@ -315,6 +315,16 @@ class PlannedUTXO(object):
 
         return output
 
+class PlannedInput(object):
+    def __init__(self, utxo, witness_template_selection, transaction):
+        self.utxo = utxo
+        self.witness_template_selection = witness_template_selection
+        self.transaction = transaction
+
+        # sanity check
+        if witness_template_selection not in utxo.script_template.witness_templates.keys():
+            raise VaultException("Invalid witness selection")
+
 class PlannedTransaction(object):
     __counter__ = 0
 
@@ -328,11 +338,15 @@ class PlannedTransaction(object):
             amount=0,
         )
 
-        self.input_utxos = []
+        self.inputs = []
         self.output_utxos = [cpfp_hook_utxo]
 
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
+
+    @property
+    def input_utxos():
+        return [some_input.utxo for some_input in self.inputs]
 
     @property
     def parent_transactions():
@@ -421,7 +435,12 @@ class AbstractPlanningTests(unittest.TestCase):
 
 def make_burn_transaction(incoming_utxo):
     burn_transaction = PlannedTransaction(name="Burn some UTXO")
-    burn_transaction.input_utxos = [incoming_utxo]
+    incoming_input = PlannedInput(
+        utxo=incoming_utxo,
+        witness_template_selection="presigned",
+        transaction=burn_transaction,
+    )
+    burn_transaction.inputs.append(incoming_input)
 
     # TODO: Should the amount be burned to miner fee (which seems sort of
     # dangerous- incents attacks by miner-thiefs) or just perpetually unspendable.
@@ -440,7 +459,12 @@ def make_burn_transaction(incoming_utxo):
 
 def make_push_to_cold_storage_transaction(incoming_utxo):
     push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
-    push_transaction.input_utxos.extend([incoming_utxo])
+    planned_input = PlannedInput(
+        utxo=incoming_utxo,
+        witness_template_selection="presigned",
+        transaction=push_transaction,
+    )
+    push_transaction.inputs.append(planned_input)
 
     cold_storage_utxo_amount = incoming_utxo.amount
     cold_storage_utxo = PlannedUTXO(
@@ -465,9 +489,17 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
 
 def make_sweep_to_cold_storage_transaction(incoming_utxos):
     push_transaction = PlannedTransaction(name="Sweep UTXOs to cold storage wallet")
-    push_transaction.input_utxos.extend(incoming_utxos)
 
     for incoming_utxo in incoming_utxos:
+        # Inputs
+        planned_input = PlannedInput(
+            utxo=incoming_utxo,
+            witness_template_selection="presigned",
+            transaction=push_transaction,
+        )
+        push_transaction.inputs.append(planned_input)
+
+        # Outputs
         amount = incoming_utxo.amount
         cold_storage_utxo = PlannedUTXO(
             name="cold storage UTXO",
@@ -568,7 +600,13 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
 
     vault_spend_one_shard_transaction = PlannedTransaction(name="Vault transaction: spend one shard, re-vault the remaining shards")
     incoming_utxo.child_transactions.append(vault_spend_one_shard_transaction)
-    vault_spend_one_shard_transaction.input_utxos = [incoming_utxo]
+
+    planned_input = PlannedInput(
+        utxo=incoming_utxo,
+        witness_template_selection="presigned",
+        transaction=vault_spend_one_shard_transaction,
+    )
+    vault_spend_one_shard_transaction.inputs.append(planned_input)
 
     # Next, add two UTXOs to vault_spend_one_shard transaction.
 
@@ -640,8 +678,14 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
 # Then move the segwit coins into that top-level P2WSH scriptpubkey.
 def setup_vault(segwit_utxo):
     vault_locking_transaction = PlannedTransaction(name="Vault locking transaction")
-    vault_locking_transaction.input_utxos = [segwit_utxo]
     segwit_utxo.child_transactions.append(vault_locking_transaction)
+
+    planned_input = PlannedInput(
+        utxo=segwit_utxo,
+        witness_template_selection="user",
+        transaction=vault_locking_transaction,
+    )
+    vault_locking_transaction.inputs.append(planned_input)
 
     vault_initial_utxo_amount = segwit_utxo.amount
     vault_initial_utxo = PlannedUTXO(
