@@ -717,6 +717,13 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
     sharding_transaction = PlannedTransaction(name=f"Vault {partial}stipend start transaction.")
     incoming_utxo.child_transactions.append(sharding_transaction)
 
+    planned_input = PlannedInput(
+        utxo=incoming_utxo,
+        witness_template_selection="presigned",
+        transaction=sharding_transaction,
+    )
+    sharding_transaction.inputs.append(planned_input)
+
     shard_utxos = []
     for shard_id in range(0, num_shards):
         amount = per_shard_amount
@@ -1017,8 +1024,9 @@ def sign_transaction_tree(initial_utxo, parameters):
     # a bitcoin transaction) representing the planned transaction.
     #
     # TODO: In theory, this should be correctly ordered.
-    for planned_transaction in planned_transactions:
+    for (counter, planned_transaction) in enumerate(planned_transactions):
         print("current transaction name: ", planned_transaction.name)
+        print("counter: ", counter)
 
         for planned_input in planned_transaction.inputs:
             print("parent transaction name: ", planned_input.utxo.transaction.name)
@@ -1072,19 +1080,36 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_transaction.bitcoin_outputs = bitcoin_outputs
         planned_transaction.bitcoin_transaction = Transaction(bitcoin_inputs, bitcoin_outputs, has_segwit=True)
 
+        # Without this, somehow each transaction has a list of all the other
+        # witnesses.... wtf?
+        planned_transaction.bitcoin_transaction.witnesses = []
+
+        if len(bitcoin_inputs) == 0 and planned_transaction.name != "fake transaction (from user)":
+            raise Exception("Can't have a transaction with zero inputs")
+
+        print("num inputs: ", len(bitcoin_inputs))
+        print("size inputs: ", sum([len(inp.stream()) for inp in bitcoin_inputs]))
+        print("num outputs: ", len(bitcoin_outputs))
+        print("size outputs: ", sum([len(inp.stream()) for inp in bitcoin_outputs]))
+        #print("tx len: ", len(planned_transaction.serialize()))
+        print("len(tx.witnesses): ", len(planned_transaction.bitcoin_transaction.witnesses))
+
         # Now that the inputs are finalized, it should be possible to sign each
         # input on this transaction and add to the list of witnesses.
         for planned_input in planned_transaction.inputs:
             witness = planned_input.parameterize_witness_template_by_signing(parameters)
             planned_transaction.bitcoin_transaction.witnesses.append(witness)
+            print("wit len: ", len(witness.to_bytes()))
 
         planned_transaction.is_finalized = True
 
         if planned_transaction.name == "fake transaction (from user)":
             continue
 
-        print("Serialized transaction: " + planned_transaction.serialize())
-        print("txid: " + planned_transaction.bitcoin_transaction.get_txid())
+        #serialized_transaction = planned_transaction.serialize()
+        #print("Serialized transaction: ", serialized_transaction)
+        print("tx len: ", len(planned_transaction.serialize()))
+        print("txid: ", planned_transaction.bitcoin_transaction.get_txid())
 
     return
 
