@@ -7,6 +7,7 @@ Run the unit tests with:
 import uuid
 import unittest
 import hashlib
+from copy import copy
 
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
@@ -18,9 +19,10 @@ from bitcoin.wallet import CBitcoinSecret
 #CBitcoinAddress.from_bytes(some_private_key.pub)
 
 from bitcoin import SelectParams
-from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
-from bitcoin.core.script import CScript, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
-from bitcoin.core.scripteval import VerifyScript, SCRIPT_VERIFY_P2SH
+import bitcoin.core
+#from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
+#from bitcoin.core.script import CScript, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
+#from bitcoin.core.scripteval import VerifyScript, SCRIPT_VERIFY_P2SH
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret
 
 SelectParams("regtest")
@@ -34,6 +36,16 @@ import sys
 sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
+
+
+# from the python-bitcoin-utils library
+from bitcoinutils.setup import setup as setup_bitcoin_utils
+from bitcoinutils.transactions import Transaction, TxInput, TxOutput, Sequence
+from bitcoinutils.keys import P2pkhAddress, P2shAddress, PrivateKey, P2wshAddress, P2wpkhAddress
+from bitcoinutils.script import Script
+from bitcoinutils.constants import TYPE_RELATIVE_TIMELOCK
+
+
 
 #class VaultsTest(BitcoinTestFramework):
 class VaultsBlah:
@@ -128,6 +140,8 @@ class VaultsBlah:
 
 class ScriptTemplate(object):
 
+    relative_timelocks = {}
+
     @classmethod
     def parameterize(cls, parameters):
         """
@@ -183,7 +197,7 @@ class ColdStorageScriptTemplate(ScriptTemplate):
     script_template = """
 <ephemeral_key_1> OP_CHECKSIG OP_NOTIF
   <cold_key1> OP_CHECKSIGVERIFY <cold_key2> OP_CHECKSIGVERIFY
-  <9000> OP_CHECKSEQUENCEVERIFY
+  <TIMELOCK1> OP_CHECKSEQUENCEVERIFY
 OP_ELSE
   <ephemeral_key_2> OP_CHECKSIG
 OP_ENDIF
@@ -198,6 +212,15 @@ OP_ENDIF
     # a valid witness unless the cold keys's private keys are accessed. In
     # contrast, the "presigned" witness can be parameterized and correct before
     # secure key deletion occurs.
+
+    relative_timelocks = {
+        "replacements": {
+            "TIMELOCK1": 144,
+        },
+        "selections": {
+            "cold-storage": "TIMELOCK1",
+        },
+    }
 
 class BurnUnspendableScriptTemplate(ScriptTemplate):
     """
@@ -224,11 +247,19 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
     miniscript_policy = "and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144)))"
     miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "..."}
 
-    script_template = "<ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY <9000> OP_CHECKSEQUENCEVERIFY"
+    script_template = "<ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY <TIMELOCK1> OP_CHECKSEQUENCEVERIFY"
 
     witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2"}
     witness_templates = {
         "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+    }
+    relative_timelocks = {
+        "replacements": {
+            "TIMELOCK1": 144,
+        },
+        "selections": {
+            "presigned": "TIMELOCK1",
+        },
     }
 
 class ShardScriptTemplate(ScriptTemplate):
@@ -238,7 +269,7 @@ class ShardScriptTemplate(ScriptTemplate):
     """
 
     ephemeral_multisig_gated = BasicPresignedScriptTemplate.miniscript_policy
-    # TODO: pick an appropriate timelock length (also, it sohuld be variable-
+    # TODO: pick an appropriate timelock length (also, it should be variable
     # increasing in each sharded UTXO).
     miniscript_policy = f"or(and(pk(hot_wallet_key),older(144)),{ephemeral_multisig_gated})"
     miniscript_policy_definitions = {"hot_wallet_key": "...", "ephemeral_key_1": "...", "ephemeral_key_2": "..."}
@@ -247,9 +278,8 @@ class ShardScriptTemplate(ScriptTemplate):
     script_template = """
 <hot_wallet_key> OP_CHECKSIG OP_NOTIF
   <ephemeral_key_1> OP_CHECKSIGVERIFY <ephemeral_key_2> OP_CHECKSIGVERIFY
-  <9000> OP_CHECKSEQUENCEVERIFY
 OP_ELSE
-  <9000> OP_CHECKSEQUENCEVERIFY
+  <TIMELOCK1> OP_CHECKSEQUENCEVERIFY
 OP_ENDIF
     """
 
@@ -257,6 +287,15 @@ OP_ENDIF
     witness_templates = {
         "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
         "hot-wallet": "<hot_wallet_key_sig>",
+    }
+    relative_timelocks = {
+        "replacements": {
+            "TIMELOCK1": 144,
+        },
+        "selections": {
+            #"presigned": None,
+            "hot-wallet": "TIMELOCK1",
+        },
     }
 
 class CPFPHookScriptTemplate(ScriptTemplate):
@@ -277,7 +316,7 @@ class CPFPHookScriptTemplate(ScriptTemplate):
 class PlannedUTXO(object):
     __counter__ = 0
 
-    def __init__(self, name=None, transaction=None, script_template=None, amount=None):
+    def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1):
         self.name = name
         self.script_template = script_template
 
@@ -290,8 +329,26 @@ class PlannedUTXO(object):
 
         self.amount = amount
 
+        self.timelock_multiplier = timelock_multiplier
+
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
+
+    def crawl(self):
+        """
+        Return a tuple that contains two items: a list of UTXOs and a list of
+        transactions.
+        """
+        utxos = set([self])
+        transactions = set([self.transaction])
+
+        for child_transaction in self.child_transactions:
+            for child_utxo in child_transaction.output_utxos:
+                (more_utxos, more_transactions) = child_utxo.crawl()
+                utxos.update(more_utxos)
+                transactions.update(more_transactions)
+
+        return (utxos, transactions)
 
     def to_text(self, depth=0, cache=[]):
         output = ""
@@ -325,6 +382,26 @@ class PlannedInput(object):
         # sanity check
         if witness_template_selection not in utxo.script_template.witness_templates.keys():
             raise VaultException("Invalid witness selection")
+
+        # There might be multiple separate relative timelocks specified for
+        # this UTXO. There are different routes for spending. Some of them have
+        # different timelocks. The spending path was put on the PlannedUTXO
+        # object.
+        self.sequence = None
+        timelock_multiplier = utxo.timelock_multiplier
+        if self.utxo.script_template.relative_timelocks != None:
+            timelock_data = self.utxo.script_template.relative_timelocks
+
+            if witness_template_selection in timelock_data["selections"].keys():
+                var_name = timelock_data["selections"][witness_template_selection]
+                relative_timelock_value = timelock_data["replacements"][var_name]
+
+                # Some PlannedUTXO objects have a "timelock multiplier", like
+                # if they are a sharded UTXO and have a variable-rate timelock.
+                relative_timelock_value = relative_timelock_value * timelock_multiplier
+                self.sequence = Sequence(TYPE_RELATIVE_TIMELOCK, relative_timelock)
+                # Note that timelock_multiplier should appear again in another
+                # place, when inserting the timelocks into the script itself.
 
     def parameterize_witness_template_by_signing(self, parameters):
         """
@@ -372,6 +449,13 @@ class PlannedTransaction(object):
         for some_utxo in self.output_utxos:
             _child_transactions.extend(some_utxo.child_transactions)
         return _child_transactions
+
+    @property
+    def txid():
+        # It's important to note that the txid can only be calculated after the
+        # rest of the transaction has been finalized, and it is possible to
+        # serialize the transaction.
+        raise NotImplementedError
 
     def to_text(self, depth=0, cache=[]):
         output = ""
@@ -557,6 +641,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
             transaction=sharding_transaction,
             script_template=ShardScriptTemplate,
             amount=amount,
+            timelock_multiplier=shard_id,
         )
         shard_utxos.append(sharded_utxo)
         sharding_transaction.output_utxos.append(sharded_utxo)
@@ -743,8 +828,121 @@ def setup_vault(segwit_utxo, parameters):
         original_num_shards=num_shards,
     )
 
-    # Crawl the planned transaciton tree. Parameterize each PlannedUTXO's
-    # script template, based on the input parameters.
+    return vault_initial_utxo
+
+
+
+def walk_tree_do_stuff(initial_utxo, parameters):
+    """
+    Walk the planned transaction tree and convert everything into bitcoin
+    transactions. Convert the script templates and witness templates into real
+    values.
+    """
+
+    # for python-bitcoin-utils, probably like python-bitcoinlib's SelecParams()
+    setup_bitcoin_utils("testnet")
+
+    # Crawl the planned transaction tree and get a list of all planned
+    # transactions and all planned UTXOs.
+    (planned_utxos, planned_transactions) = initial_utxo.crawl()
+3
+    if len(planned_utxos) != PlannedUTXO.__counter__:
+        raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
+
+    if len(planned_transactions) != PlannedTransaction.__counter__:
+        raise Exception("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
+
+
+    # also get a list of all inputs
+    planned_inputs = set()
+    for planned_transaction in planned_transactions:
+        planned_inputs.update(planned_transaction.inputs)
+
+    # Parameterize each PlannedUTXO's script template, based on the given
+    # config/parameters.
+
+    for planned_utxo in planned_utxos:
+        script = copy(planned_utxo.script_template.script_template)
+        miniscript_policy_definitions = script_template.miniscript_policy_definitions
+
+        for some_variable in miniscript_policy_definitions.keys():
+            script = script.replace("<" + some_variable + ">", parameters[some_variable])
+
+        # Insert the appropriate relative timelocks, based on the timelock
+        # multiplier.
+        relative_timelocks = planned_utxo.script_template.relative_timelocks
+        timelock_multiplier = planned_utxo.timelock_multiplier
+        if relative_timelocks not in [{}, None]:
+            replacements = relative_timelocks["replacements"]
+
+            # Update these values to take into account the timelock multiplier.
+            replacements = {(key, value*timelock_multiplier) for (key, value) in replacements.items()}
+
+            # Insert the new value into the script. The value has to be
+            # converted to the right value (vch), though.
+            for (replacement_name, replacement_value) in replacements.items():
+                replacement_value = bitcoin.core._bignum.bn2vch(replacement_value)
+                replacement_value = b2x(replacement_value)
+
+                script = script.replace("<" + replacement_name + ">", replacement_value)
+
+                # For testing later:
+                #   int.from_bytes(b"\x40\x38", byteorder="little") == 144*100
+                #   b2x(bitcoin.core._bignum.bn2vch(144*100)) == "4038"
+                #   bitcoin.core._bignum.vch2bn(b"\x90\x00") == 144
+
+        # There might be other things in the script that need to be replaced.
+        #script = script.replace("<", "")
+        #script = script.replace(">", "")
+        if "<" in script:
+            raise Exception("Script not finished cooking? {}".format(script))
+
+        # remove newlines
+        script = script.replace("\n", " ")
+        # reduce any excess whitespace
+        while (" " * 2) in script:
+            script = script.replace("  ", " ")
+
+        # convert script into a parsed python object
+        p2wsh_redeem_script = Script(script.split(" "))
+
+        p2wsh_address = P2wshAddress.from_script(p2wsh_redeem_script)
+        scriptpubkey = p2wsh_address.to_script_pub_key()
+        assert type(scriptpubkey) == Script
+
+        planned_utxo.scriptpubkey = scriptpubkey
+        planned_utxo.p2wsh_redeem_script = p2wsh_redeem_script
+
+    for planned_input in planned_inputs:
+        sequence = planned_input.sequence
+
+        planned_utxo = planned_input.utxo
+        witness_template_selection = planned_input.witness_template_selection
+        #planned_input.transaction
+
+        # sanity check
+        if witness_template_selection not in planned_utxo.script_template.witness_templates.keys():
+            raise Exception("UTXO {} is missing witness template \"{}\"".format(planned_utxo.internal_id, witness_template_selection))
+
+        witness_template = planned_utxo.script_template.witness_templates[witness_template_selection]
+
+        txid = planned_utxo.transaction.txid
+        vout = planned_utxo.transaction.output_utxos.index(planned_utxo)
+
+        # TODO: implement txid() property on PlannedTransaction
+
+        # Note that it's not enough to just have the relative timelock in the
+        # script; you also have to set it on the TxInput object.
+        #   seq = Sequence(TYPE_RELATIVE_TIMELOCK, 144)
+        #   TxInput(txid, vout, sequence=self.seq.for_input_sequence())
+        # TODO: do the above^
+
+        # TODO: Use witness_template_map and witness_template to construct a
+        # valid witness for this input. Use the key from the parameters to make
+        # a valid signature, and inject it into the witness template where
+        # appropriate.
+
+        raise NotImplementedError
 
     # Next, turn each PlannedTransaction into a bitcoin (segwit) transaction.
 
@@ -755,10 +953,10 @@ def setup_vault(segwit_utxo, parameters):
     # parameterize_witness_template_by_signing. Store the resulting witness on
     # the PlannedInput object.
     #
-    # Finally, make sure the PlannedTransaciton object can be serialized into a
+    # Finally, make sure the PlannedTransaction object can be serialized into a
     # bitcoin transaction including the witness data.
 
-    return vault_initial_utxo
+    raise NotImplementedError
 
 if __name__ == "__main__":
     #amount = random.randrange(0, 100 * COIN)
