@@ -42,7 +42,7 @@ from test_framework.util import connect_nodes
 # from the python-bitcoin-utils library
 from bitcoinutils.setup import setup as setup_bitcoin_utils
 from bitcoinutils.transactions import Transaction, TxInput, TxOutput, Sequence
-from bitcoinutils.keys import P2pkhAddress, P2shAddress, PrivateKey, P2wshAddress, P2wpkhAddress
+from bitcoinutils.keys import P2pkhAddress, P2shAddress, PublicKey, PrivateKey, P2wshAddress, P2wpkhAddress
 from bitcoinutils.script import Script
 from bitcoinutils.constants import TYPE_RELATIVE_TIMELOCK
 
@@ -462,7 +462,7 @@ class PlannedInput(object):
                     raise Exception("Missing key mapping for {}".format(section))
 
                 key_param_name = script_template.witness_template_map[section]
-                private_key = parameters[key_param_name]
+                private_key = parameters[key_param_name]["private_key"]
                 private_key = PrivateKey(private_key)
 
                 signature = private_key.sign_segwit_input(tx, txin_idx, p2wsh_redeem_script, amount)
@@ -925,9 +925,6 @@ def sign_transaction_tree(initial_utxo, parameters):
     values.
     """
 
-    # for python-bitcoin-utils, probably like python-bitcoinlib's SelecParams()
-    setup_bitcoin_utils("testnet")
-
     # Crawl the planned transaction tree and get a list of all planned
     # transactions and all planned UTXOs.
     (planned_utxos, planned_transactions) = initial_utxo.crawl()
@@ -952,7 +949,12 @@ def sign_transaction_tree(initial_utxo, parameters):
         script = copy(planned_utxo.script_template.script_template)
 
         for some_variable in miniscript_policy_definitions.keys():
-            script = script.replace("<" + some_variable + ">", parameters[some_variable])
+            some_param = parameters[some_variable]
+            if type(some_param) == dict:
+                some_public_key = some_param["public_key"].to_hex()
+            else:
+                some_public_key = some_param.to_hex()
+            script = script.replace("<" + some_variable + ">", some_public_key)
 
         # Insert the appropriate relative timelocks, based on the timelock
         # multiplier.
@@ -1091,6 +1093,7 @@ def make_private_keys():
         "correct horse battery staple 3",
         "correct horse battery staple 4",
     ]
+    passphrases = [bytes(each, "utf-8") for each in passphrases]
 
     for passphrase in passphrases:
         hashed = sha256(passphrase)
@@ -1108,6 +1111,11 @@ def make_private_keys():
     return private_keys
 
 if __name__ == "__main__":
+    # for python-bitcoin-utils, probably like python-bitcoinlib's SelecParams()
+    setup_bitcoin_utils("testnet")
+
+
+
     #amount = random.randrange(0, 100 * COIN)
     amount = 7084449357
 
