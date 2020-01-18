@@ -1025,12 +1025,12 @@ def sign_transaction_tree(initial_utxo, parameters):
     #
     # TODO: In theory, this should be correctly ordered.
     for (counter, planned_transaction) in enumerate(planned_transactions):
+        print("--------")
         print("current transaction name: ", planned_transaction.name)
+        print("parent transaction name: ", planned_input.utxo.transaction.name)
         print("counter: ", counter)
 
         for planned_input in planned_transaction.inputs:
-            print("parent transaction name: ", planned_input.utxo.transaction.name)
-
             # Sanity test: all parent transactions should already be finalized
             assert planned_input.utxo.transaction.is_finalized == True
 
@@ -1087,19 +1087,11 @@ def sign_transaction_tree(initial_utxo, parameters):
         if len(bitcoin_inputs) == 0 and planned_transaction.name != "fake transaction (from user)":
             raise Exception("Can't have a transaction with zero inputs")
 
-        print("num inputs: ", len(bitcoin_inputs))
-        print("size inputs: ", sum([len(inp.stream()) for inp in bitcoin_inputs]))
-        print("num outputs: ", len(bitcoin_outputs))
-        print("size outputs: ", sum([len(inp.stream()) for inp in bitcoin_outputs]))
-        #print("tx len: ", len(planned_transaction.serialize()))
-        print("len(tx.witnesses): ", len(planned_transaction.bitcoin_transaction.witnesses))
-
         # Now that the inputs are finalized, it should be possible to sign each
         # input on this transaction and add to the list of witnesses.
         for planned_input in planned_transaction.inputs:
             witness = planned_input.parameterize_witness_template_by_signing(parameters)
             planned_transaction.bitcoin_transaction.witnesses.append(witness)
-            print("wit len: ", len(witness.to_bytes()))
 
         planned_transaction.is_finalized = True
 
