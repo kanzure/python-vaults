@@ -462,14 +462,15 @@ class PlannedInput(object):
                 computed_witness.append(" ")
 
             if section[0] == "<" and section[-1] == ">":
+                section = section[1:-1]
                 if section not in script_template.witness_template_map.keys():
                     raise Exception("Missing key mapping for {}".format(section))
 
                 key_param_name = script_template.witness_template_map[section]
                 private_key = parameters[key_param_name]["private_key"]
-                private_key = PrivateKey(private_key)
+                #private_key = PrivateKey(private_key) # redundant
 
-                signature = private_key.sign_segwit_input(tx, txin_idx, p2wsh_redeem_script, amount)
+                signature = private_key.sign_segwit_input(tx, txin_index, p2wsh_redeem_script, amount)
                 computed_witness.append(signature)
 
             else:
@@ -1052,7 +1053,12 @@ def sign_transaction_tree(initial_utxo, parameters):
             sequence = planned_input.sequence
 
             # TODO: implement bitcoin_input on PlannedInput
-            planned_input.bitcoin_input = TxInput(txid, vout, sequence=sequence)
+            if sequence != None:
+                sequence = sequence.for_input_sequence()
+                planned_input.bitcoin_input = TxInput(txid, vout, sequence=sequence)
+            else:
+                planned_input.bitcoin_input = TxInput(txid, vout)
+
             # TODO: is_finalized is misnamed here.. since the signature isn't
             # there yet.
             planned_input.is_finalized = True
