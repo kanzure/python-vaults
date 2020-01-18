@@ -461,7 +461,7 @@ class PlannedInput(object):
             if section[0] == "<" and section[-1] == ">":
                 section = section[1:-1]
                 if section not in script_template.witness_template_map.keys():
-                    raise Exception("Missing key mapping for {}".format(section))
+                    raise VaultException("Missing key mapping for {}".format(section))
 
                 key_param_name = script_template.witness_template_map[section]
                 private_key = parameters[key_param_name]["private_key"]
@@ -942,10 +942,10 @@ def sign_transaction_tree(initial_utxo, parameters):
     (planned_utxos, planned_transactions) = initial_utxo.crawl()
 
     #if len(planned_transactions) < PlannedTransaction.__counter__:
-    #    raise Exception("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
+    #    raise VaultException("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
     #
     #if len(planned_utxos) < PlannedUTXO.__counter__:
-    #    raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
+    #    raise VaultException("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
 
 
     # also get a list of all inputs
@@ -999,7 +999,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         #script = script.replace("<", "")
         #script = script.replace(">", "")
         if "<" in script:
-            raise Exception("Script not finished cooking? {}".format(script))
+            raise VaultException("Script not finished cooking? {}".format(script))
 
         # remove newlines
         script = script.replace("\n", " ")
@@ -1022,8 +1022,6 @@ def sign_transaction_tree(initial_utxo, parameters):
 
     # Finalize each transaction by creating a set of bitcoin objects (including
     # a bitcoin transaction) representing the planned transaction.
-    #
-    # TODO: In theory, this should be correctly ordered.
     for (counter, planned_transaction) in enumerate(planned_transactions):
         print("--------")
         print("current transaction name: ", planned_transaction.name)
@@ -1039,7 +1037,7 @@ def sign_transaction_tree(initial_utxo, parameters):
 
             # sanity check
             if witness_template_selection not in planned_utxo.script_template.witness_templates.keys():
-                raise Exception("UTXO {} is missing witness template \"{}\"".format(planned_utxo.internal_id, witness_template_selection))
+                raise VaultException("UTXO {} is missing witness template \"{}\"".format(planned_utxo.internal_id, witness_template_selection))
 
             witness_template = planned_utxo.script_template.witness_templates[witness_template_selection]
 
@@ -1085,7 +1083,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_transaction.bitcoin_transaction.witnesses = []
 
         if len(bitcoin_inputs) == 0 and planned_transaction.name != "fake transaction (from user)":
-            raise Exception("Can't have a transaction with zero inputs")
+            raise VaultException("Can't have a transaction with zero inputs")
 
         # Now that the inputs are finalized, it should be possible to sign each
         # input on this transaction and add to the list of witnesses.
@@ -1096,6 +1094,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_transaction.is_finalized = True
 
         if planned_transaction.name == "fake transaction (from user)":
+            # serialization function fails, so just skip
             continue
 
         #serialized_transaction = planned_transaction.serialize()
@@ -1240,6 +1239,6 @@ if __name__ == "__main__":
     #sign_transaction_tree(vault_initial_utxo, parameters)
     sign_transaction_tree(segwit_utxo, parameters)
 
-    # TODO: Persist the pre-signed transactions to persist storage system.
+    # TODO: Persist the pre-signed transactions to persistant storage system.
 
     # TODO: Delete the ephemeral keys.
