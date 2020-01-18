@@ -316,7 +316,7 @@ class CPFPHookScriptTemplate(ScriptTemplate):
 class PlannedUTXO(object):
     __counter__ = 0
 
-    def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1):
+    def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1, vout=None):
         self.name = name
         self.script_template = script_template
 
@@ -333,6 +333,12 @@ class PlannedUTXO(object):
 
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
+
+        self.is_finalized = False
+
+    @property
+    def vout(self):
+        return self.transaction.output_utxos.index(self)
 
     def crawl(self):
         """
@@ -403,6 +409,8 @@ class PlannedInput(object):
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
 
+        self.is_finalized = False
+
     def parameterize_witness_template_by_signing(self, parameters):
         """
         Take a specific witness template, a bag of parameters, and a
@@ -432,6 +440,9 @@ class PlannedTransaction(object):
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
 
+        self.bitcoin_transaction = None
+        self.is_finalized = False
+
     @property
     def input_utxos():
         return [some_input.utxo for some_input in self.inputs]
@@ -455,7 +466,22 @@ class PlannedTransaction(object):
         # It's important to note that the txid can only be calculated after the
         # rest of the transaction has been finalized, and it is possible to
         # serialize the transaction.
-        raise NotImplementedError
+        return self.bitcoin_transaction.get_txid()
+
+    def check_inputs_outputs_are_finalized(self):
+        """
+        Check whether the inputs and outputs are ready.
+        """
+
+        for some_input in self.inputs:
+            if not some_input.is_finalized:
+                return False
+
+        for some_output in self.output_utxos:
+            if not some_output.is_finalized:
+                return False
+
+        return True
 
     def to_text(self, depth=0, cache=[]):
         output = ""
@@ -859,8 +885,7 @@ def walk_tree_do_stuff(initial_utxo, parameters):
         planned_inputs.update(planned_transaction.inputs)
 
     # Parameterize each PlannedUTXO's script template, based on the given
-    # config/parameters.
-
+    # config/parameters. Loop through all of the PlannedUTXOs in any order.
     for planned_utxo in planned_utxos:
         script = copy(planned_utxo.script_template.script_template)
         miniscript_policy_definitions = script_template.miniscript_policy_definitions
@@ -913,36 +938,69 @@ def walk_tree_do_stuff(initial_utxo, parameters):
         planned_utxo.scriptpubkey = scriptpubkey
         planned_utxo.p2wsh_redeem_script = p2wsh_redeem_script
 
-    for planned_input in planned_inputs:
-        sequence = planned_input.sequence
+        planned_utxo.bitcoin_output = TxOutput(amount, scriptpubkey)
+        planned_utxo.is_finalized = True
 
-        planned_utxo = planned_input.utxo
-        witness_template_selection = planned_input.witness_template_selection
-        #planned_input.transaction
+    # Finalize each transaction by creating a set of bitcoin objects (including
+    # a bitcoin transaction) representing the planned transaction.
+    #
+    # TODO: In theory, this should be correctly ordered.
+    for planned_transaction in planned_transactions:
+
+        for planned_input in planned_transaction.inputs:
+            # Sanity test: all parent transactions should already be finalized
+            assert planned_input.utxo.transaction.is_finalized == True
+
+            planned_utxo = planned_input.utxo
+            witness_template_selection = planned_input.witness_template_selection
+
+            # sanity check
+            if witness_template_selection not in planned_utxo.script_template.witness_templates.keys():
+                raise Exception("UTXO {} is missing witness template \"{}\"".format(planned_utxo.internal_id, witness_template_selection))
+
+            witness_template = planned_utxo.script_template.witness_templates[witness_template_selection]
+
+            # Would use transaction.bitcoin_transaction.get_txid() but for the
+            # very first utxo, the txid is going to be mocked for testing
+            # purposes. So it's better to just use the txid property...
+            txid = planned_utxo.transaction.txid
+            vout = planned_utxo.vout
+
+            # Note that it's not enough to just have the relative timelock in the
+            # script; you also have to set it on the TxInput object.
+            #   seq = Sequence(TYPE_RELATIVE_TIMELOCK, 144)
+            #   TxInput(txid, vout, sequence=self.seq.for_input_sequence())
+            sequence = planned_input.sequence
+
+            # TODO: implement bitcoin_input on PlannedInput
+            planned_input.bitcoin_input = TxInput(txid, vout, sequence=sequence)
+            # TODO: is_finalized is misnamed here.. since the signature isn't
+            # there yet.
+            planned_input.is_finalized = True
+
+            # Can't sign the input yet because the other inputs aren't finalized.
 
         # sanity check
-        if witness_template_selection not in planned_utxo.script_template.witness_templates.keys():
-            raise Exception("UTXO {} is missing witness template \"{}\"".format(planned_utxo.internal_id, witness_template_selection))
+        finalized = planned_transaction.check_inputs_outputs_are_finalized()
+        assert finalized == True
 
-        witness_template = planned_utxo.script_template.witness_templates[witness_template_selection]
+        bitcoin_inputs = [planned_input.bitcoin_input for planned_input in planned_transaction.inputs]
+        bitcoin_outputs = [planned_output.bitcoin_output for planned_output in planned_transaction.output_utxos]
+        witnesses = []
 
-        txid = planned_utxo.transaction.txid
-        vout = planned_utxo.transaction.output_utxos.index(planned_utxo)
+        # Now that the inputs are finalized, it should be possible to sign each
+        # input on this transaction and add to the list of witnesses.
+        for planned_input in planned_transaction.inputs:
 
-        # TODO: implement txid() property on PlannedTransaction
+            # TODO: Use witness_template_map and witness_template to construct a
+            # valid witness for this input. Use the key from the parameters to make
+            # a valid signature, and inject it into the witness template where
+            # appropriate.
 
-        # Note that it's not enough to just have the relative timelock in the
-        # script; you also have to set it on the TxInput object.
-        #   seq = Sequence(TYPE_RELATIVE_TIMELOCK, 144)
-        #   TxInput(txid, vout, sequence=self.seq.for_input_sequence())
-        # TODO: do the above^
+            raise NotImplementedError
 
-        # TODO: Use witness_template_map and witness_template to construct a
-        # valid witness for this input. Use the key from the parameters to make
-        # a valid signature, and inject it into the witness template where
-        # appropriate.
-
-        raise NotImplementedError
+        planned_transaction.bitcoin_transaction = ...
+        planned_transaction.is_finalized = True
 
     # Next, turn each PlannedTransaction into a bitcoin (segwit) transaction.
 
