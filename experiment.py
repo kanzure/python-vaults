@@ -403,14 +403,17 @@ class PlannedInput(object):
         if self.utxo.script_template.relative_timelocks != None:
             timelock_data = self.utxo.script_template.relative_timelocks
 
-            if witness_template_selection in timelock_data["selections"].keys():
+            # Some script templates don't have any timelocks.
+            if len(timelock_data.keys()) == 0:
+                pass
+            elif witness_template_selection in timelock_data["selections"].keys():
                 var_name = timelock_data["selections"][witness_template_selection]
                 relative_timelock_value = timelock_data["replacements"][var_name]
 
                 # Some PlannedUTXO objects have a "timelock multiplier", like
                 # if they are a sharded UTXO and have a variable-rate timelock.
                 relative_timelock_value = relative_timelock_value * timelock_multiplier
-                self.sequence = Sequence(TYPE_RELATIVE_TIMELOCK, relative_timelock)
+                self.sequence = Sequence(TYPE_RELATIVE_TIMELOCK, relative_timelock_value)
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
 
@@ -923,7 +926,7 @@ def sign_transaction_tree(initial_utxo, parameters):
     # Crawl the planned transaction tree and get a list of all planned
     # transactions and all planned UTXOs.
     (planned_utxos, planned_transactions) = initial_utxo.crawl()
-3
+
     if len(planned_utxos) != PlannedUTXO.__counter__:
         raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
 
