@@ -211,8 +211,8 @@ OP_ENDIF
 
     witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2", "cold_key1_sig": "cold_key1", "cold_key2_sig": "cold_key2"}
     witness_templates = {
-        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
-        "cold-wallet": "<cold_key1_sig> <cold_key2_sig>",
+        "presigned": "<ephemeral_sig_2> <ephemeral_sig_1>",
+        "cold-wallet": "<cold_key2_sig> <cold_key1_sig>",
     }
     # TODO: Note that the "cold-wallet" witness template cannot be used to make
     # a valid witness unless the cold keys's private keys are accessed. In
@@ -257,7 +257,7 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
 
     witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2"}
     witness_templates = {
-        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+        "presigned": "<ephemeral_sig_2> <ephemeral_sig_1>",
     }
     relative_timelocks = {
         "replacements": {
@@ -291,7 +291,7 @@ OP_ENDIF
 
     witness_template_map = {"ephemeral_sig_1": "ephemeral_key_1", "ephemeral_sig_2": "ephemeral_key_2", "hot_wallet_key_sig": "hot_wallet_key"}
     witness_templates = {
-        "presigned": "<ephemeral_sig_1> <ephemeral_sig_2>",
+        "presigned": "<ephemeral_sig_2> <ephemeral_sig_1>",
         "hot-wallet": "<hot_wallet_key_sig>",
     }
     relative_timelocks = {
