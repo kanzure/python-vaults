@@ -1066,6 +1066,43 @@ def sign_transaction_tree(initial_utxo, parameters):
 
     return
 
+def sha256(data):
+    """
+    Compute the sha256 digest of the given data.
+    """
+    return hashlib.sha256(data).digest()
+
+def make_private_keys():
+    """
+    Convert a list of passphrases into a list of private keys.
+    """
+    # Note that this function uses python-bitcoinlib CBitcoinSecret objects.
+
+    private_keys = []
+
+    passphrases = [
+        "password",
+        "passphrase",
+        "hello world",
+        "hello cruel world",
+        "correct horse battery staple",
+        "correct horse battery staple 1",
+        "correct horse battery staple 2",
+        "correct horse battery staple 3",
+        "correct horse battery staple 4",
+    ]
+
+    for passphrase in passphrases:
+        hashed = sha256(passphrase)
+
+        # compressed=True is default
+        bitcoin_secret = CBitcoinSecret.from_secret_bytes(hashed, compressed=True)
+
+        private_key = str(bitcoin_secret)
+        private_keys.append(private_key)
+
+    return private_keys
+
 if __name__ == "__main__":
     #amount = random.randrange(0, 100 * COIN)
     amount = 7084449357
