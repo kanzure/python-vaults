@@ -23,6 +23,7 @@ import bitcoin.core
 #from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
 #from bitcoin.core.script import CScript, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
 #from bitcoin.core.scripteval import VerifyScript, SCRIPT_VERIFY_P2SH
+from bitcoin.core import COIN
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret
 
 SelectParams("regtest")
@@ -142,19 +143,23 @@ class ScriptTemplate(object):
 
     relative_timelocks = {}
 
-    @classmethod
-    def parameterize(cls, parameters):
-        """
-        Take a bag of parameters and populate the script template with those
-        parameters. Return the parameterized script.
-        """
-        parameter_names = list(cls.miniscript_policy_definitions.keys())
-        parameterized_script = cls.script_template
+    #@classmethod
+    #def parameterize(cls, parameters):
+    #    """
+    #    Take a bag of parameters and populate the script template with those
+    #    parameters. Return the parameterized script.
+    #    """
+    #    # TODO: Use witness_template_map and witness_template to construct a
+    #    # valid witness for this input. Use the key from the parameters to make
+    #    # a valid signature, and inject it into the witness template where
+    #    # appropriate.
+    #    parameter_names = list(cls.miniscript_policy_definitions.keys())
+    #    parameterized_script = cls.script_template
 
-        for parameter_name in parameter_names:
-            parameterized_script = parameterized_script.replace(parameter_name, parameters[parameter_name])
-
-        return parameterized_script
+    #    for parameter_name in parameter_names:
+    #        parameterized_script = parameterized_script.replace(parameter_name, parameters[parameter_name])
+    #
+    #    return parameterized_script
 
     @classmethod
     def get_required_parameters(cls):
@@ -419,7 +424,51 @@ class PlannedInput(object):
 
         Make a sighash for the bitcoin transaction.
         """
-        raise NotImplementedError
+        p2wsh_redeem_script = self.utxo.p2wsh_redeem_script
+        tx = self.transaction.bitcoin_transaction
+        txin_index = self.transaction.inputs.index(self)
+
+        # P2WSH: start with OP_0 ...
+        computed_witness = ["OP_0"]
+
+        selection = self.witness_template_selection
+        script_template = self.utxo.script_template
+        witness_template = script_template.witness_templates[selection]
+
+        # TODO: Don't use floats... python-bitcoin-utils uses floats. Blargh. I
+        # have submitted a pull request to fix this but I will probably just
+        # migrate over to python-bitcoinlib instead.
+        amount = self.utxo.amount / COIN
+        # COIN == 1e8
+
+        # TODO: Might have to update the witness_templates values to give a
+        # correct ordering for which signature should be supplied first.
+
+        witness_tmp = witness_template.split(" ")
+        for (idx, section) in enumerate(witness_tmp):
+            if idx > 0:
+                computed_witness.append(" ")
+
+            if section[0] == "<" and section[-1] == ">":
+                if section not in script_template.witness_template_map.keys():
+                    raise Exception("Missing key mapping for {}".format(section))
+
+                key_param_name = script_template.witness_template_map[section]
+                private_key = parameters[key_param_name]
+                private_key = PrivateKey(private_key)
+
+                signature = private_key.sign_segwit_input(tx, txin_idx, p2wsh_redeem_script, amount)
+                computed_witness.append(signature)
+
+            else:
+                # dunno what to do with this, probably just pass it on really..
+                computed_witness.append(section)
+
+        # Append the p2wsh redeem script.
+        computed_witness.append(p2wsh_redeem_script.to_hex())
+
+        computed_witness = Script(computed_witness)
+        return computed_witness
 
 class PlannedTransaction(object):
     __counter__ = 0
@@ -462,11 +511,14 @@ class PlannedTransaction(object):
         return _child_transactions
 
     @property
-    def txid():
+    def txid(self):
         # It's important to note that the txid can only be calculated after the
         # rest of the transaction has been finalized, and it is possible to
         # serialize the transaction.
         return self.bitcoin_transaction.get_txid()
+
+    def serialize(self):
+        return self.bitcoin_transaction.serialize()
 
     def check_inputs_outputs_are_finalized(self):
         """
@@ -858,7 +910,7 @@ def setup_vault(segwit_utxo, parameters):
 
 
 
-def walk_tree_do_stuff(initial_utxo, parameters):
+def sign_transaction_tree(initial_utxo, parameters):
     """
     Walk the planned transaction tree and convert everything into bitcoin
     transactions. Convert the script templates and witness templates into real
@@ -988,33 +1040,22 @@ def walk_tree_do_stuff(initial_utxo, parameters):
         bitcoin_outputs = [planned_output.bitcoin_output for planned_output in planned_transaction.output_utxos]
         witnesses = []
 
+        planned_transaction.bitcoin_inputs = bitcoin_inputs
+        planned_transaction.bitcoin_outputs = bitcoin_outputs
+        planned_transaction.bitcoin_transaction = Transaction(bitcoin_inputs, bitcoin_outputs, has_segwit=True)
+
         # Now that the inputs are finalized, it should be possible to sign each
         # input on this transaction and add to the list of witnesses.
         for planned_input in planned_transaction.inputs:
+            witness = planned_input.parameterize_witness_template_by_signing(parameters)
+            planned_transaction.bitcoin_transaction.witnesses.append(witness)
 
-            # TODO: Use witness_template_map and witness_template to construct a
-            # valid witness for this input. Use the key from the parameters to make
-            # a valid signature, and inject it into the witness template where
-            # appropriate.
-
-            raise NotImplementedError
-
-        planned_transaction.bitcoin_transaction = ...
         planned_transaction.is_finalized = True
 
-    # Next, turn each PlannedTransaction into a bitcoin (segwit) transaction.
+        print("Serialized transaction: " + planned_transaction.serialize())
+        print("txid: " + planned_transaction.bitcoin_transaction.get_txid())
 
-    # Add signatures to the planned transaction tree.
-    #
-    # Crawl the planned transaction tree. Find all PlannedInput objects. Then
-    # take each PlannedInput object, and call
-    # parameterize_witness_template_by_signing. Store the resulting witness on
-    # the PlannedInput object.
-    #
-    # Finally, make sure the PlannedTransaction object can be serialized into a
-    # bitcoin transaction including the witness data.
-
-    raise NotImplementedError
+    return
 
 if __name__ == "__main__":
     #amount = random.randrange(0, 100 * COIN)
@@ -1060,10 +1101,16 @@ if __name__ == "__main__":
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    output = segwit_utxo.to_text()
-    print(output)
+    if False:
+        output = segwit_utxo.to_text()
+        print(output)
 
     # stats
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
+    sign_transaction_tree(segwit_utxo, parameters)
+
+    # TODO: Persist the pre-signed transactions to persist storage system.
+
+    # TODO: Delete the ephemeral keys.
