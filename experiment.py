@@ -956,8 +956,6 @@ def sign_transaction_tree(initial_utxo, parameters):
     # Parameterize each PlannedUTXO's script template, based on the given
     # config/parameters. Loop through all of the PlannedUTXOs in any order.
     for planned_utxo in planned_utxos:
-        print("Finalizng utxo ", planned_utxo.internal_id)
-
         script_template = planned_utxo.script_template
         miniscript_policy_definitions = script_template.miniscript_policy_definitions
         script = copy(planned_utxo.script_template.script_template)
@@ -1015,7 +1013,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_utxo.scriptpubkey = scriptpubkey
         planned_utxo.p2wsh_redeem_script = p2wsh_redeem_script
 
-        planned_utxo.bitcoin_output = TxOutput(amount, scriptpubkey)
+        planned_utxo.bitcoin_output = TxOutput(amount / 1e8, scriptpubkey)
         planned_utxo.is_finalized = True
 
     # Finalize each transaction by creating a set of bitcoin objects (including
@@ -1084,6 +1082,9 @@ def sign_transaction_tree(initial_utxo, parameters):
             planned_transaction.bitcoin_transaction.witnesses.append(witness)
 
         planned_transaction.is_finalized = True
+
+        if planned_transaction.name == "fake transaction (from user)":
+            continue
 
         print("Serialized transaction: " + planned_transaction.serialize())
         print("txid: " + planned_transaction.bitcoin_transaction.get_txid())
