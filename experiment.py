@@ -337,6 +337,7 @@ class PlannedUTXO(object):
 
         self.timelock_multiplier = timelock_multiplier
 
+        self.id = copy(self.__class__.__counter__)
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
 
@@ -363,6 +364,9 @@ class PlannedUTXO(object):
                 (more_utxos, more_transactions) = child_utxo.crawl()
                 utxos.extend(more_utxos)
                 transactions.extend(more_transactions)
+
+        utxos = list(set(utxos))
+        transactions = list(set(transactions))
 
         return (utxos, transactions)
 
@@ -494,6 +498,7 @@ class PlannedTransaction(object):
         self.inputs = []
         self.output_utxos = [cpfp_hook_utxo]
 
+        self.id = copy(self.__class__.__counter__)
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
 
@@ -540,7 +545,7 @@ class PlannedTransaction(object):
 
         for some_output in self.output_utxos:
             if not some_output.is_finalized:
-                print("output not finalized: ", some_output.name)
+                print("output not finalized: ", some_output.name, some_output.internal_id)
                 return False
 
         return True
@@ -943,9 +948,15 @@ def sign_transaction_tree(initial_utxo, parameters):
     for planned_transaction in planned_transactions:
         planned_inputs.update(planned_transaction.inputs)
 
+    # Sort the objects such that the lowest IDs get processed first.
+    planned_utxos = sorted(planned_utxos, key=lambda utxo: utxo.id)
+    planned_transactions = sorted(planned_transactions, key=lambda tx: tx.id)
+
     # Parameterize each PlannedUTXO's script template, based on the given
     # config/parameters. Loop through all of the PlannedUTXOs in any order.
     for planned_utxo in planned_utxos:
+        print("Finalizng utxo ", planned_utxo.internal_id)
+
         script_template = planned_utxo.script_template
         miniscript_policy_definitions = script_template.miniscript_policy_definitions
         script = copy(planned_utxo.script_template.script_template)
@@ -1166,6 +1177,17 @@ if __name__ == "__main__":
         txid = "38bdefa8a5d0b5fe98c91e141d43104226f86aa876791a171f6f55b75caeedb8"
         is_finalized = True
         output_utxos = []
+        inputs = [] # coinbase? heh
+        id = -1
+
+        @classmethod
+        def check_inputs_outputs_are_finalized(cls):
+            return True
+
+        @classmethod
+        def serialize(self):
+            return "(not implemented)"
+
     fake_tx = FakeTransaction
 
     segwit_utxo = PlannedUTXO(
@@ -1194,8 +1216,8 @@ if __name__ == "__main__":
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
-    sign_transaction_tree(vault_initial_utxo, parameters)
-    #sign_transaction_tree(segwit_utxo, parameters)
+    #sign_transaction_tree(vault_initial_utxo, parameters)
+    sign_transaction_tree(segwit_utxo, parameters)
 
     # TODO: Persist the pre-signed transactions to persist storage system.
 
