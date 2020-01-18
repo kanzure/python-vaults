@@ -1099,6 +1099,10 @@ def make_private_keys():
         bitcoin_secret = CBitcoinSecret.from_secret_bytes(hashed, compressed=True)
 
         private_key = str(bitcoin_secret)
+
+        # Might as well convert them into python-bitcoin-utils objects...
+        private_key = PrivateKey(private_key)
+
         private_keys.append(private_key)
 
     return private_keys
@@ -1111,18 +1115,28 @@ if __name__ == "__main__":
     # key... update everywhere that "parameters" is used. Sometimes the public
     # key is required, sometimes the private key is required.
 
+    some_private_keys = make_private_keys()
+
+    parameter_names = [
+        "user_key",
+        "ephemeral_key_1",
+        "ephemeral_key_2",
+        "cold_key1",
+        "cold_key2",
+        "hot_wallet_key",
+    ]
+
     parameters = {
         "amount": amount,
-
-        "user_key": "user_key",
-        "unspendable_key_1": "unspendable_key_1",
-        "ephemeral_key_1": "ephemeral_key_1",
-        "ephemeral_key_2": "ephemeral_key_2",
-        "cold_key1": "cold_key1",
-        "cold_key2": "cold_key2",
-        "hot_wallet_key": "hot_wallet_key",
+        "unspendable_key_1": PublicKey("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"),
     }
 
+    for some_name in parameter_names:
+        private_key = some_private_keys.pop()
+        public_key = private_key.get_public_key()
+        parameters[some_name] = {"private_key": private_key, "public_key": public_key}
+
+    # consistency check against required parameters
     required_parameters = ScriptTemplate.get_required_parameters()
 
     missing_parameters = False
