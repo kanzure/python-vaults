@@ -322,7 +322,7 @@ class CPFPHookScriptTemplate(ScriptTemplate):
 class PlannedUTXO(object):
     __counter__ = 0
 
-    def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1, vout=None):
+    def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1):
         self.name = name
         self.script_template = script_template
 
