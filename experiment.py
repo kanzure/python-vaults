@@ -354,7 +354,11 @@ class PlannedUTXO(object):
         transactions = set([self.transaction])
 
         for child_transaction in self.child_transactions:
+            transactions.add(child_transaction)
+
             for child_utxo in child_transaction.output_utxos:
+                utxos.add(child_utxo)
+
                 (more_utxos, more_transactions) = child_utxo.crawl()
                 utxos.update(more_utxos)
                 transactions.update(more_transactions)
@@ -629,7 +633,7 @@ def make_burn_transaction(incoming_utxo):
         script_template=BurnUnspendableScriptTemplate,
         amount=burn_utxo_amount,
     )
-    burn_transaction.output_utxos = [burn_utxo]
+    burn_transaction.output_utxos.append(burn_utxo)
     incoming_utxo.child_transactions.append(burn_transaction)
     return burn_transaction
 
@@ -649,7 +653,7 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
         script_template=ColdStorageScriptTemplate,
         amount=cold_storage_utxo_amount,
     )
-    push_transaction.output_utxos = [cold_storage_utxo]
+    push_transaction.output_utxos.append(cold_storage_utxo)
 
     # The purpose of the relative timelock before the cold storage keys are
     # able to spend is so that not all cold storage UTXOs can be spent at once.
@@ -871,7 +875,7 @@ def setup_vault(segwit_utxo, parameters):
         script_template=BasicPresignedScriptTemplate,
         amount=vault_initial_utxo_amount,
     )
-    vault_locking_transaction.output_utxos = [vault_initial_utxo]
+    vault_locking_transaction.output_utxos.append(vault_initial_utxo)
 
     # Optional transaction: Push the whole amount to cold storage.
     make_push_to_cold_storage_transaction(incoming_utxo=vault_initial_utxo)
@@ -927,11 +931,11 @@ def sign_transaction_tree(initial_utxo, parameters):
     # transactions and all planned UTXOs.
     (planned_utxos, planned_transactions) = initial_utxo.crawl()
 
-    if len(planned_utxos) != PlannedUTXO.__counter__:
-        raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
-
-    if len(planned_transactions) != PlannedTransaction.__counter__:
+    if len(planned_transactions) < PlannedTransaction.__counter__:
         raise Exception("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
+
+    if len(planned_utxos) < PlannedUTXO.__counter__:
+        raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
 
 
     # also get a list of all inputs
@@ -1096,7 +1100,7 @@ if __name__ == "__main__":
 
     # ===============
     # Here's where the magic happens.
-    setup_vault(segwit_utxo, parameters)
+    vault_initial_utxo = setup_vault(segwit_utxo, parameters)
     # ===============
 
     # To test that the sharded UTXOs have the right amounts, do the following:
@@ -1104,7 +1108,7 @@ if __name__ == "__main__":
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    if False:
+    if True:
         output = segwit_utxo.to_text()
         print(output)
 
@@ -1112,6 +1116,7 @@ if __name__ == "__main__":
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
+    #sign_transaction_tree(vault_initial_utxo, parameters)
     sign_transaction_tree(segwit_utxo, parameters)
 
     # TODO: Persist the pre-signed transactions to persist storage system.
