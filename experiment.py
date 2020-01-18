@@ -141,6 +141,7 @@ class VaultsBlah:
 
 class ScriptTemplate(object):
 
+    miniscript_policy_definitions = {}
     relative_timelocks = {}
 
     #@classmethod
@@ -931,11 +932,11 @@ def sign_transaction_tree(initial_utxo, parameters):
     # transactions and all planned UTXOs.
     (planned_utxos, planned_transactions) = initial_utxo.crawl()
 
-    if len(planned_transactions) < PlannedTransaction.__counter__:
-        raise Exception("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
-
-    if len(planned_utxos) < PlannedUTXO.__counter__:
-        raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
+    #if len(planned_transactions) < PlannedTransaction.__counter__:
+    #    raise Exception("Counted {} transactions but only found {}".format(PlannedTransaction.__counter__, len(planned_transactions)))
+    #
+    #if len(planned_utxos) < PlannedUTXO.__counter__:
+    #    raise Exception("Counted {} UTXOs but only found {}".format(PlannedUTXO.__counter__, len(planned_utxos)))
 
 
     # also get a list of all inputs
@@ -946,8 +947,9 @@ def sign_transaction_tree(initial_utxo, parameters):
     # Parameterize each PlannedUTXO's script template, based on the given
     # config/parameters. Loop through all of the PlannedUTXOs in any order.
     for planned_utxo in planned_utxos:
-        script = copy(planned_utxo.script_template.script_template)
+        script_template = planned_utxo.script_template
         miniscript_policy_definitions = script_template.miniscript_policy_definitions
+        script = copy(planned_utxo.script_template.script_template)
 
         for some_variable in miniscript_policy_definitions.keys():
             script = script.replace("<" + some_variable + ">", parameters[some_variable])
@@ -960,7 +962,7 @@ def sign_transaction_tree(initial_utxo, parameters):
             replacements = relative_timelocks["replacements"]
 
             # Update these values to take into account the timelock multiplier.
-            replacements = {(key, value*timelock_multiplier) for (key, value) in replacements.items()}
+            replacements = dict((key, value*timelock_multiplier) for (key, value) in replacements.items())
 
             # Insert the new value into the script. The value has to be
             # converted to the right value (vch), though.
@@ -1068,6 +1070,10 @@ if __name__ == "__main__":
     #amount = random.randrange(0, 100 * COIN)
     amount = 7084449357
 
+    # TODO: come up with a way to define both the public key and the private
+    # key... update everywhere that "parameters" is used. Sometimes the public
+    # key is required, sometimes the private key is required.
+
     parameters = {
         "amount": amount,
 
@@ -1108,7 +1114,7 @@ if __name__ == "__main__":
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    if True:
+    if False:
         output = segwit_utxo.to_text()
         print(output)
 
@@ -1116,8 +1122,8 @@ if __name__ == "__main__":
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
-    #sign_transaction_tree(vault_initial_utxo, parameters)
-    sign_transaction_tree(segwit_utxo, parameters)
+    sign_transaction_tree(vault_initial_utxo, parameters)
+    #sign_transaction_tree(segwit_utxo, parameters)
 
     # TODO: Persist the pre-signed transactions to persist storage system.
 
