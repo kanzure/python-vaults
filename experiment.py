@@ -458,9 +458,6 @@ class PlannedInput(object):
 
         witness_tmp = witness_template.split(" ")
         for (idx, section) in enumerate(witness_tmp):
-            if idx > 0:
-                computed_witness.append(" ")
-
             if section[0] == "<" and section[-1] == ">":
                 section = section[1:-1]
                 if section not in script_template.witness_template_map.keys():
