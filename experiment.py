@@ -351,18 +351,18 @@ class PlannedUTXO(object):
         Return a tuple that contains two items: a list of UTXOs and a list of
         transactions.
         """
-        utxos = set([self])
-        transactions = set([self.transaction])
+        utxos = [self]
+        transactions = [self.transaction]
 
         for child_transaction in self.child_transactions:
-            transactions.add(child_transaction)
+            transactions.append(child_transaction)
 
             for child_utxo in child_transaction.output_utxos:
-                utxos.add(child_utxo)
+                utxos.append(child_utxo)
 
                 (more_utxos, more_transactions) = child_utxo.crawl()
-                utxos.update(more_utxos)
-                transactions.update(more_transactions)
+                utxos.extend(more_utxos)
+                transactions.extend(more_transactions)
 
         return (utxos, transactions)
 
@@ -535,10 +535,12 @@ class PlannedTransaction(object):
 
         for some_input in self.inputs:
             if not some_input.is_finalized:
+                print("input not finalized: ", some_input.name)
                 return False
 
         for some_output in self.output_utxos:
             if not some_output.is_finalized:
+                print("output not finalized: ", some_output.name)
                 return False
 
         return True
@@ -1009,8 +1011,11 @@ def sign_transaction_tree(initial_utxo, parameters):
     #
     # TODO: In theory, this should be correctly ordered.
     for planned_transaction in planned_transactions:
+        print("current transaction name: ", planned_transaction.name)
 
         for planned_input in planned_transaction.inputs:
+            print("parent transaction name: ", planned_input.utxo.transaction.name)
+
             # Sanity test: all parent transactions should already be finalized
             assert planned_input.utxo.transaction.is_finalized == True
 
@@ -1156,12 +1161,20 @@ if __name__ == "__main__":
         print("Missing parameters!")
         sys.exit(1)
 
+    class FakeTransaction(object):
+        name = "fake transaction (from user)"
+        txid = "38bdefa8a5d0b5fe98c91e141d43104226f86aa876791a171f6f55b75caeedb8"
+        is_finalized = True
+        output_utxos = []
+    fake_tx = FakeTransaction
+
     segwit_utxo = PlannedUTXO(
         name="segwit input coin",
-        transaction=None,
+        transaction=fake_tx,
         script_template=UserScriptTemplate,
         amount=amount,
     )
+    fake_tx.output_utxos = [segwit_utxo] # for establishing vout
 
     # ===============
     # Here's where the magic happens.
