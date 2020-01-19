@@ -2,8 +2,8 @@
 # --------
 
 # for bitcoin primitives and RPC
-python-bitcoinlib>=0.10.2
-bitcoin-utils==0.4.1
+# need python-bitcoinlib>=0.11.0dev
+-e git://github.com/petertodd/python-bitcoinlib.git@master#egg=python-bitcoinlib
 
 # for command line argument parsing stuff
 click==7.0
