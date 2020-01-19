@@ -15,21 +15,16 @@ from vaults.exceptions import VaultException
 
 from bitcoin.wallet import CBitcoinSecret
 
-#some_private_key = CBitcoinSecret("Kyqg1PJsc5QzLC8rv5BwC156aXBiZZuEyt6FqRQRTXBjTX96bNkW")
-#CBitcoinAddress.from_bytes(some_private_key.pub)
-
 from bitcoin import SelectParams
-import bitcoin.core
-#from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
-#from bitcoin.core.script import CScript, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
-#from bitcoin.core.scripteval import VerifyScript, SCRIPT_VERIFY_P2SH
-from bitcoin.core import COIN
-from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret
+from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
+from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0
+from bitcoin.core.key import CPubKey
+from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress
+
+# TODO: VerifyScript doesn't work with segwit yet...
+#from bitcoin.core.scripteval import VerifyScript
 
 SelectParams("regtest")
-
-hashdigest = hashlib.sha256(b'correct horse battery staple').digest()
-secret_key = CBitcoinSecret.from_secret_bytes(hashdigest)
 
 
 # TODO: create a python library for bitcoin's test_framework
@@ -37,14 +32,6 @@ import sys
 sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
-
-
-# from the python-bitcoin-utils library
-from bitcoinutils.setup import setup as setup_bitcoin_utils
-from bitcoinutils.transactions import Transaction, TxInput, TxOutput, Sequence
-from bitcoinutils.keys import P2pkhAddress, P2shAddress, PublicKey, PrivateKey, P2wshAddress, P2wpkhAddress
-from bitcoinutils.script import Script
-from bitcoinutils.constants import TYPE_RELATIVE_TIMELOCK
 
 
 
@@ -312,7 +299,10 @@ class CPFPHookScriptTemplate(ScriptTemplate):
     # TODO: does miniscript policy language support this? andytoshi says no,
     # although miniscript does support this.
 
-    script_template = "OP_TRUE"
+    # python-bitcoinlib doesn't know that OP_TRUE==OP_1 so just set to OP_1
+    # directly.
+    # https://github.com/petertodd/python-bitcoinlib/issues/225
+    script_template = "OP_1"
 
     # TODO: What is a good witness for this script? Can it be empty? I would
     # know this if I actually knew anything about bitcoin scripting.....
@@ -407,7 +397,7 @@ class PlannedInput(object):
         # this UTXO. There are different routes for spending. Some of them have
         # different timelocks. The spending path was put on the PlannedUTXO
         # object.
-        self.sequence = None
+        self.relative_timelock = None
         timelock_multiplier = utxo.timelock_multiplier
         if self.utxo.script_template.relative_timelocks != None:
             timelock_data = self.utxo.script_template.relative_timelocks
@@ -422,7 +412,11 @@ class PlannedInput(object):
                 # Some PlannedUTXO objects have a "timelock multiplier", like
                 # if they are a sharded UTXO and have a variable-rate timelock.
                 relative_timelock_value = relative_timelock_value * timelock_multiplier
-                self.sequence = Sequence(TYPE_RELATIVE_TIMELOCK, relative_timelock_value)
+                self.relative_timelock = relative_timelock_value
+
+                if relative_timelock_value > 0xfff:
+                    raise Exception("Timelock {} exceeds max timelock {}".format(relative_timelock_value, 0xfff))
+
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
 
@@ -440,21 +434,17 @@ class PlannedInput(object):
         tx = self.transaction.bitcoin_transaction
         txin_index = self.transaction.inputs.index(self)
 
-        # P2WSH: start with OP_0 ...
-        computed_witness = ["OP_0"]
+        computed_witness = []
 
         selection = self.witness_template_selection
         script_template = self.utxo.script_template
         witness_template = script_template.witness_templates[selection]
 
-        # TODO: Don't use floats... python-bitcoin-utils uses floats. Blargh. I
-        # have submitted a pull request to fix this but I will probably just
-        # migrate over to python-bitcoinlib instead.
-        amount = self.utxo.amount / COIN
-        # COIN == 1e8
+        amount = self.utxo.amount
 
         # TODO: Might have to update the witness_templates values to give a
         # correct ordering for which signature should be supplied first.
+        # (already did this? Re-check for VerifyScript errors)
 
         witness_tmp = witness_template.split(" ")
         for (idx, section) in enumerate(witness_tmp):
@@ -465,9 +455,9 @@ class PlannedInput(object):
 
                 key_param_name = script_template.witness_template_map[section]
                 private_key = parameters[key_param_name]["private_key"]
-                #private_key = PrivateKey(private_key) # redundant
 
-                signature = private_key.sign_segwit_input(tx, txin_index, p2wsh_redeem_script, amount)
+                sighash = SignatureHash(p2wsh_redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
+                signature = private_key.sign(sighash) + bytes([SIGHASH_ALL])
                 computed_witness.append(signature)
 
             else:
@@ -475,9 +465,9 @@ class PlannedInput(object):
                 computed_witness.append(section)
 
         # Append the p2wsh redeem script.
-        computed_witness.append(p2wsh_redeem_script.to_hex())
+        computed_witness.append(p2wsh_redeem_script)
 
-        computed_witness = Script(computed_witness)
+        computed_witness = CScript(computed_witness)
         return computed_witness
 
 class PlannedTransaction(object):
@@ -526,7 +516,7 @@ class PlannedTransaction(object):
         # It's important to note that the txid can only be calculated after the
         # rest of the transaction has been finalized, and it is possible to
         # serialize the transaction.
-        return self.bitcoin_transaction.get_txid()
+        return self.bitcoin_transaction.GetTxid()
 
     def serialize(self):
         return self.bitcoin_transaction.serialize()
@@ -967,9 +957,10 @@ def sign_transaction_tree(initial_utxo, parameters):
         for some_variable in miniscript_policy_definitions.keys():
             some_param = parameters[some_variable]
             if type(some_param) == dict:
-                some_public_key = some_param["public_key"].to_hex()
+                some_public_key = b2x(some_param["public_key"])
             else:
-                some_public_key = some_param.to_hex()
+                # some_param is already the public key
+                some_public_key = b2x(some_param)
             script = script.replace("<" + some_variable + ">", some_public_key)
 
         # Insert the appropriate relative timelocks, based on the timelock
@@ -1007,28 +998,56 @@ def sign_transaction_tree(initial_utxo, parameters):
         while (" " * 2) in script:
             script = script.replace("  ", " ")
 
-        # convert script into a parsed python object
-        p2wsh_redeem_script = Script(script.split(" "))
+        # remove whitespace at the front, like for the cold storage UTXO script
+        if script[0] == " ":
+            script = script[1:]
 
-        p2wsh_address = P2wshAddress.from_script(p2wsh_redeem_script)
-        scriptpubkey = p2wsh_address.to_script_pub_key()
-        assert type(scriptpubkey) == Script
+        # remove trailing whitespace
+        if script[-1] == " ":
+            script = script[0:-1]
+
+        # hack for python-bitcoinlib
+        # see https://github.com/petertodd/python-bitcoinlib/pull/226
+        script = script.replace("OP_CHECKSEQUENCEVERIFY", "OP_NOP3")
+
+        # convert script into a parsed python object
+        script = script.split(" ")
+        script_items = []
+        for script_item in script:
+            if script_item in bitcoin.core.script.OPCODES_BY_NAME.keys():
+                parsed_script_item = bitcoin.core.script.OPCODES_BY_NAME[script_item]
+                script_items.append(parsed_script_item)
+            else:
+                script_items.append(x(script_item))
+
+        p2wsh_redeem_script = CScript(script_items)
+
+        scriptpubkey = CScript([OP_0, sha256(bytes(p2wsh_redeem_script))])
+        p2wsh_address = P2WSHBitcoinAddress.from_scriptPubKey(scriptpubkey)
 
         planned_utxo.scriptpubkey = scriptpubkey
         planned_utxo.p2wsh_redeem_script = p2wsh_redeem_script
+        planned_utxo.p2wsh_address = p2wsh_address
 
-        planned_utxo.bitcoin_output = TxOutput(amount / 1e8, scriptpubkey)
+        amount = planned_utxo.amount
+        planned_utxo.bitcoin_output = CTxOut(amount, scriptpubkey)
         planned_utxo.is_finalized = True
+
+        print("UTXO name: ", planned_utxo.name)
+        print("final script: {}".format(script))
+        #print("p2wsh_redeem_script: ", b2x(planned_utxo.p2wsh_redeem_script))
+        #print("p2wsh_redeem_script: ", CScript(planned_utxo.p2wsh_redeem_script))
 
     # Finalize each transaction by creating a set of bitcoin objects (including
     # a bitcoin transaction) representing the planned transaction.
     for (counter, planned_transaction) in enumerate(planned_transactions):
         print("--------")
         print("current transaction name: ", planned_transaction.name)
-        print("parent transaction name: ", planned_input.utxo.transaction.name)
         print("counter: ", counter)
 
         for planned_input in planned_transaction.inputs:
+            print("parent transaction name: ", planned_input.utxo.transaction.name)
+
             # Sanity test: all parent transactions should already be finalized
             assert planned_input.utxo.transaction.is_finalized == True
 
@@ -1047,18 +1066,14 @@ def sign_transaction_tree(initial_utxo, parameters):
             txid = planned_utxo.transaction.txid
             vout = planned_utxo.vout
 
-            # Note that it's not enough to just have the relative timelock in the
-            # script; you also have to set it on the TxInput object.
-            #   seq = Sequence(TYPE_RELATIVE_TIMELOCK, 144)
-            #   TxInput(txid, vout, sequence=self.seq.for_input_sequence())
-            sequence = planned_input.sequence
+            relative_timelock = planned_input.relative_timelock
 
-            # TODO: implement bitcoin_input on PlannedInput
-            if sequence != None:
-                sequence = sequence.for_input_sequence()
-                planned_input.bitcoin_input = TxInput(txid, vout, sequence=sequence)
+            if relative_timelock != None:
+                # Note that it's not enough to just have the relative timelock
+                # in the script; you also have to set it on the CTxIn object.
+                planned_input.bitcoin_input = CTxIn(COutPoint(txid, vout), nSequence=relative_timelock)
             else:
-                planned_input.bitcoin_input = TxInput(txid, vout)
+                planned_input.bitcoin_input = CTxIn(COutPoint(txid, vout))
 
             # TODO: is_finalized is misnamed here.. since the signature isn't
             # there yet.
@@ -1076,20 +1091,28 @@ def sign_transaction_tree(initial_utxo, parameters):
 
         planned_transaction.bitcoin_inputs = bitcoin_inputs
         planned_transaction.bitcoin_outputs = bitcoin_outputs
-        planned_transaction.bitcoin_transaction = Transaction(bitcoin_inputs, bitcoin_outputs, has_segwit=True)
 
-        # Without this, somehow each transaction has a list of all the other
-        # witnesses.... wtf?
-        planned_transaction.bitcoin_transaction.witnesses = []
+        # Must be a mutable transaction because the witnesses are added later.
+        planned_transaction.bitcoin_transaction = CMutableTransaction(bitcoin_inputs, bitcoin_outputs, nLockTime=0, nVersion=1, witness=None)
+
+        # python-bitcoin-utils had a bug where the witnesses weren't
+        # initialized blank.
+        #planned_transaction.bitcoin_transaction.witnesses = []
 
         if len(bitcoin_inputs) == 0 and planned_transaction.name != "fake transaction (from user)":
             raise VaultException("Can't have a transaction with zero inputs")
 
         # Now that the inputs are finalized, it should be possible to sign each
         # input on this transaction and add to the list of witnesses.
+        witnesses = []
         for planned_input in planned_transaction.inputs:
             witness = planned_input.parameterize_witness_template_by_signing(parameters)
-            planned_transaction.bitcoin_transaction.witnesses.append(witness)
+            witnesses.append(witness)
+
+        # Now take the list of CScript objects and do the needful.
+        ctxinwitnesses = [CTxInWitness(CScriptWitness([bytes(witness)])) for witness in witnesses]
+        witness = CTxWitness(ctxinwitnesses)
+        planned_transaction.bitcoin_transaction.wit = witness
 
         planned_transaction.is_finalized = True
 
@@ -1097,10 +1120,15 @@ def sign_transaction_tree(initial_utxo, parameters):
             # serialization function fails, so just skip
             continue
 
-        #serialized_transaction = planned_transaction.serialize()
-        #print("Serialized transaction: ", serialized_transaction)
-        print("tx len: ", len(planned_transaction.serialize()))
-        print("txid: ", planned_transaction.bitcoin_transaction.get_txid())
+        serialized_transaction = planned_transaction.serialize()
+        print("Serialized transaction: ", b2x(serialized_transaction))
+        print("tx len: ", len(serialized_transaction))
+        print("txid: ", b2lx(planned_transaction.bitcoin_transaction.GetTxid()))
+
+        # TODO: finish debugging burn transactions
+        #if planned_transaction.name == "Burn some UTXO":
+        #    import pdb
+        #    pdb.set_trace()
 
     return
 
@@ -1135,22 +1163,13 @@ def make_private_keys():
         hashed = sha256(passphrase)
 
         # compressed=True is default
-        bitcoin_secret = CBitcoinSecret.from_secret_bytes(hashed, compressed=True)
-
-        private_key = str(bitcoin_secret)
-
-        # Might as well convert them into python-bitcoin-utils objects...
-        private_key = PrivateKey(private_key)
+        private_key = CBitcoinSecret.from_secret_bytes(hashed, compressed=True)
 
         private_keys.append(private_key)
 
     return private_keys
 
 if __name__ == "__main__":
-    # for python-bitcoin-utils, probably like python-bitcoinlib's SelecParams()
-    setup_bitcoin_utils("testnet")
-
-
 
     #amount = random.randrange(0, 100 * COIN)
     amount = 7084449357
@@ -1172,12 +1191,12 @@ if __name__ == "__main__":
 
     parameters = {
         "amount": amount,
-        "unspendable_key_1": PublicKey("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"),
+        "unspendable_key_1": CPubKey(x("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")),
     }
 
     for some_name in parameter_names:
         private_key = some_private_keys.pop()
-        public_key = private_key.get_public_key()
+        public_key = private_key.pub
         parameters[some_name] = {"private_key": private_key, "public_key": public_key}
 
     # consistency check against required parameters
@@ -1194,7 +1213,7 @@ if __name__ == "__main__":
 
     class FakeTransaction(object):
         name = "fake transaction (from user)"
-        txid = "38bdefa8a5d0b5fe98c91e141d43104226f86aa876791a171f6f55b75caeedb8"
+        txid = lx("38bdefa8a5d0b5fe98c91e141d43104226f86aa876791a171f6f55b75caeedb8")
         is_finalized = True
         output_utxos = []
         inputs = [] # coinbase? heh
