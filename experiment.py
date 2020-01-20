@@ -1127,7 +1127,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_transaction.bitcoin_outputs = bitcoin_outputs
 
         # Must be a mutable transaction because the witnesses are added later.
-        planned_transaction.bitcoin_transaction = CMutableTransaction(bitcoin_inputs, bitcoin_outputs, nLockTime=0, nVersion=1, witness=None)
+        planned_transaction.bitcoin_transaction = CMutableTransaction(bitcoin_inputs, bitcoin_outputs, nLockTime=0, nVersion=2, witness=None)
 
         # python-bitcoin-utils had a bug where the witnesses weren't
         # initialized blank.
