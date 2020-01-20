@@ -17,9 +17,10 @@ from bitcoin.wallet import CBitcoinSecret
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
-from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0
+from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress
+from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
+import bitcoin.rpc
 
 # TODO: VerifyScript doesn't work with segwit yet...
 #from bitcoin.core.scripteval import VerifyScript
@@ -170,12 +171,19 @@ class UserScriptTemplate(ScriptTemplate):
     """
 
     miniscript_policy = "pk(user_key)"
-    miniscript_policy_definitions = {"user_key": "user public key"}
+    miniscript_policy_definitions = {"user_key_hash160": "hash160 of user public key"}
 
-    script_template = "<user_key> OP_CHECKSIG"
+    #script_template = "<user_key> OP_CHECKSIG"
+    #witness_template_map = {"user_key_sig": "user_key"}
+    #witness_templates = {
+    #    "user": "<user_key_sig>",
+    #}
+
+    # Bitcoin Core wallet uses P2WPKH by default.
+    script_template = "<user_key_hash160>"
     witness_template_map = {"user_key_sig": "user_key"}
     witness_templates = {
-        "user": "<user_key_sig>",
+        "user": "<user_key_sig> <user_key>",
     }
 
 class ColdStorageScriptTemplate(ScriptTemplate):
@@ -332,10 +340,14 @@ class PlannedUTXO(object):
         self.internal_id = uuid.uuid4()
 
         self.is_finalized = False
+        self._vout_override = None
 
     @property
     def vout(self):
-        return self.transaction.output_utxos.index(self)
+        if self._vout_override == None:
+            return self.transaction.output_utxos.index(self)
+        else:
+            return self._vout_override
 
     def crawl(self):
         """
@@ -450,7 +462,10 @@ class PlannedInput(object):
         for (idx, section) in enumerate(witness_tmp):
             if section[0] == "<" and section[-1] == ">":
                 section = section[1:-1]
-                if section not in script_template.witness_template_map.keys():
+                if section == "user_key":
+                    computed_witness.append(parameters["user_key"]["public_key"])
+                    continue
+                elif section not in script_template.witness_template_map.keys():
                     raise VaultException("Missing key mapping for {}".format(section))
 
                 key_param_name = script_template.witness_template_map[section]
@@ -464,8 +479,14 @@ class PlannedInput(object):
                 # dunno what to do with this, probably just pass it on really..
                 computed_witness.append(section)
 
-        # Append the p2wsh redeem script.
-        computed_witness.append(p2wsh_redeem_script)
+        if script_template == UserScriptTemplate:
+            # P2WPKH
+            # Witness already completed. No redeem_script to append.
+            pass
+        else:
+            # P2WSH
+            # Append the p2wsh redeem script.
+            computed_witness.append(p2wsh_redeem_script)
 
         computed_witness = CScript(computed_witness)
         return computed_witness
@@ -958,6 +979,8 @@ def sign_transaction_tree(initial_utxo, parameters):
             some_param = parameters[some_variable]
             if type(some_param) == dict:
                 some_public_key = b2x(some_param["public_key"])
+            elif script_template == UserScriptTemplate and type(some_param) == str and some_variable == "user_key_hash160":
+                some_public_key = some_param
             else:
                 # some_param is already the public key
                 some_public_key = b2x(some_param)
@@ -1037,6 +1060,8 @@ def sign_transaction_tree(initial_utxo, parameters):
         print("final script: {}".format(script))
         #print("p2wsh_redeem_script: ", b2x(planned_utxo.p2wsh_redeem_script))
         #print("p2wsh_redeem_script: ", CScript(planned_utxo.p2wsh_redeem_script))
+
+    print("======== Start")
 
     # Finalize each transaction by creating a set of bitcoin objects (including
     # a bitcoin transaction) representing the planned transaction.
@@ -1173,6 +1198,7 @@ def get_bitcoin_rpc_connection():
     """
     Establish an RPC connection.
     """
+    # by default uses ~/.bitcoin/bitcoin.conf so be careful.
     btcproxy = bitcoin.rpc.Proxy()
 
     # sanity check
@@ -1180,14 +1206,23 @@ def get_bitcoin_rpc_connection():
 
     return btcproxy
 
+def setup_regtest_blockchain(connection=None):
+    """
+    Ensure the regtest blockchain has at least some minimal amount of setup.
+    """
+
+    if not connection:
+        connection = get_bitcoin_rpc_connection()
+
+    blockheight = connection._call("getblockchaininfo")["blocks"]
+    if blockheight < 110:
+        connection.generate(110)
+
 if __name__ == "__main__":
 
     #amount = random.randrange(0, 100 * COIN)
-    amount = 7084449357
-
-    # TODO: come up with a way to define both the public key and the private
-    # key... update everywhere that "parameters" is used. Sometimes the public
-    # key is required, sometimes the private key is required.
+    #amount = 7084449357
+    amount = 2 * COIN
 
     some_private_keys = make_private_keys()
 
@@ -1210,6 +1245,9 @@ if __name__ == "__main__":
         public_key = private_key.pub
         parameters[some_name] = {"private_key": private_key, "public_key": public_key}
 
+    # TODO: might be without b2x?
+    parameters["user_key_hash160"] = b2x(Hash160(parameters["user_key"]["public_key"]))
+
     # consistency check against required parameters
     required_parameters = ScriptTemplate.get_required_parameters()
 
@@ -1222,12 +1260,42 @@ if __name__ == "__main__":
         print("Missing parameters!")
         sys.exit(1)
 
+    # connect to bitcoind (ideally, regtest)
+    connection = get_bitcoin_rpc_connection()
+
+    # setup the user private key (for P2WPKH)
+    connection._call("importprivkey", str(parameters["user_key"]["private_key"]), "user")
+
+    # Mine some coins into the "user_key" P2WPKH address
+    #user_address = "bcrt1qrnwea7zc93l5wh77y832wzg3cllmcquqeal7f5"
+    # parsed_address = P2WPKHBitcoinAddress(user_address)
+    user_address = P2WPKHBitcoinAddress.from_scriptPubKey(CScript([OP_0, Hash160(parameters["user_key"]["public_key"])]))
+    blocks = 110
+    if connection._call("getblockchaininfo")["blocks"] < blocks:
+        try:
+            connection._call("sendtoaddress", user_address, 50)
+        except Exception:
+            pass
+        connection._call("generatetoaddress", blocks, str(some_address))
+
+    # Now find an unspent UTXO.
+    unspent = connection._call("listunspent", 6, 9999, [str(user_address)], True, {"minimumAmount": amount / COIN})
+    if len(unspent) == 0:
+        raise Exception("can't find a good UTXO for amount {}".format(amount))
+
+    # pick the first UTXO
+    utxo_details = unspent[0]
+    txid = utxo_details["txid"]
+
+    # have to consume the whole UTXO
+    amount = int(utxo_details["amount"]) * COIN
+
     class FakeTransaction(object):
         name = "fake transaction (from user)"
-        txid = lx("38bdefa8a5d0b5fe98c91e141d43104226f86aa876791a171f6f55b75caeedb8")
+        txid = lx(utxo_details["txid"])
         is_finalized = True
         output_utxos = []
-        inputs = [] # coinbase? heh
+        inputs = []
         id = -1
 
         @classmethod
@@ -1246,6 +1314,7 @@ if __name__ == "__main__":
         script_template=UserScriptTemplate,
         amount=amount,
     )
+    segwit_utxo._vout_override = utxo_details["vout"]
     fake_tx.output_utxos = [segwit_utxo] # for establishing vout
 
     # ===============
