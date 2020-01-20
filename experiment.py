@@ -1169,6 +1169,17 @@ def make_private_keys():
 
     return private_keys
 
+def get_bitcoin_rpc_connection():
+    """
+    Establish an RPC connection.
+    """
+    btcproxy = bitcoin.rpc.Proxy()
+
+    # sanity check
+    assert btcproxy._call("getblockchaininfo")["chain"] == "regtest"
+
+    return btcproxy
+
 if __name__ == "__main__":
 
     #amount = random.randrange(0, 100 * COIN)
