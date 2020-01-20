@@ -54,7 +54,55 @@ pip3 install -r requirements.txt
 python3 setup.py install
 ```
 
-# Usage
+# What's in here?
+
+This repository contains an experimental prototype of Bitcoin vaults using
+pre-signed transactions.
+
+All of the interesting work is in [experiment.py](experiment.py) for now.
+
+It works by connecting to bitcoind using RPC, mining some BTC to a specific
+address, and then begins planning an entire tree of pre-signed transactions
+that implement the vault. After tree planning, the tree is signed.
+
+For now it is recommended to capture stdout to file, like:
+
+```
+python3 experiment.py > output.txt
+```
+
+Then scroll to the line that starts with "Start" and those will be the signed
+transactions ready for broadcast.
+
+----
+
+Internal details... let's see.. Well, everything begins in `__main__` at the
+end. The two magic functions are `setup_vault` and `sign_transaction_tree`.
+
+`PlannedInput`, `PlannedOutput`, and `PlannedTransaction` are custom classes
+that represent the transaction tree. The real bitcoin transactions are
+assembled in place hanging off of these objects. `child_outputs` is for the
+outputs on the current transaction, while `child_transactions` are a list of
+possible child transactions. Obviously, because double spending is forbidden,
+only one of those child transactions can make it into the blockchain.
+
+`ScriptTemplate` and its descendents are how UTXOs can describe themselves.
+Each UTXO in the planned transaction tree can use one of a limited number of
+scripts that were used to design the transaction tree. `ScriptTemplate` is used
+to derive the `scriptPubKey` value and the witness necessary to spend that
+UTXO. The witness is obviously applied to the input that spends the UTXO.
+
+`PlannedInput.parameterize_witness_template_by_signing` is responsible for
+parsing a witness template, signing, and producing a valid witness. This is
+based off of one of those `ScriptTemplate` classes that each UTXO picks: the
+input has to have a witness that satisfies that UTXO's script template and
+script.
+
+Run the `AbstractPlanningTests` tests with `python3 -m unittest experiment.py`
+I think? They don't test much, right now....
+
+
+# Usage (not working yet)
 
 This package installs the `vault` command, which is an interface for working
 with the vault library based on vault files stored in the current working
@@ -106,8 +154,23 @@ bitcoind configuration must include:
 ```
 regtest=1
 
-# Disable fallback fee estimation.
-fallbackfee=0
+# Data directory: where should this regtest blockchain live?
+#datadir=/tmp/bitcoin/regtest/
+
+txindex=1
+
+debug=1
+logtimestamps=1
+printtoconsole=1
+
+server=1
+listen=1
+maxconnections=500
+noconnec=1
+
+# Override fallback fee estimation.
+# (perhaps it can be disabled with =0?)
+fallbackfee=0.0001
 
 # To allow for creating zero-value CPFP hook outputs.
 acceptnonstdtxn=1
@@ -119,10 +182,16 @@ minrelaytxfee=0
 blockmintxfee=0
 ```
 
+Run with `bitcoind -regtest` if this is your `~/.bitcoin/bitcoin.conf` file,
+otherwise you will have to run with `-conf=/path/to/bitcoin.conf` each time.
+
+```
+bitcoin-cli -regtest getblockchaininfo
+```
+
 # Follow-up
 
-* check status of segwit example: <https://github.com/petertodd/python-bitcoinlib/pull/227>
-
+* Check status of segwit example: <https://github.com/petertodd/python-bitcoinlib/pull/227>
 
 
 
