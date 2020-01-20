@@ -471,7 +471,16 @@ class PlannedInput(object):
                 key_param_name = script_template.witness_template_map[section]
                 private_key = parameters[key_param_name]["private_key"]
 
-                sighash = SignatureHash(p2wsh_redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
+                if script_template != UserScriptTemplate:
+                    # This is a P2WSH transaction.
+                    redeem_script = p2wsh_redeem_script
+                elif script_template == UserScriptTemplate:
+                    # This is a P2WPKH transaction.
+                    user_address = P2WPKHBitcoinAddress.from_scriptPubKey(CScript([OP_0, Hash160(parameters["user_key"]["public_key"])]))
+                    redeem_script = user_address.to_redeemScript()
+                    # P2WPKH redeemScript: OP_DUP OP_HASH160 ....
+
+                sighash = SignatureHash(redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
                 signature = private_key.sign(sighash) + bytes([SIGHASH_ALL])
                 computed_witness.append(signature)
 
@@ -1135,7 +1144,7 @@ def sign_transaction_tree(initial_utxo, parameters):
             witnesses.append(witness)
 
         # Now take the list of CScript objects and do the needful.
-        ctxinwitnesses = [CTxInWitness(CScriptWitness([bytes(witness)])) for witness in witnesses]
+        ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
         witness = CTxWitness(ctxinwitnesses)
         planned_transaction.bitcoin_transaction.wit = witness
 
@@ -1146,14 +1155,9 @@ def sign_transaction_tree(initial_utxo, parameters):
             continue
 
         serialized_transaction = planned_transaction.serialize()
-        print("Serialized transaction: ", b2x(serialized_transaction))
         print("tx len: ", len(serialized_transaction))
         print("txid: ", b2lx(planned_transaction.bitcoin_transaction.GetTxid()))
-
-        # TODO: finish debugging burn transactions
-        #if planned_transaction.name == "Burn some UTXO":
-        #    import pdb
-        #    pdb.set_trace()
+        print("Serialized transaction: ", b2x(serialized_transaction))
 
     return
 
