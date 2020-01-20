@@ -116,4 +116,10 @@ acceptnonstdtxn=1
 minrelaytxfee=0
 ```
 
+# Follow-up
+
+* check status of segwit example: <https://github.com/petertodd/python-bitcoinlib/pull/227>
+
+
+
 
