@@ -99,4 +99,21 @@ stored. They are nearly as dangerous as a private key, and although the
 possibilities are constrained compared to a thief stealing a private key, the
 end result is the same (loss of funds).
 
+# bitcoin.conf
+
+bitcoind configuration must include:
+
+```
+regtest=1
+
+# Disable fallback fee estimation.
+fallbackfee=0
+
+# To allow for creating zero-value CPFP hook outputs.
+acceptnonstdtxn=1
+
+# To allow for zero-fee transactions.
+minrelaytxfee=0
+```
+
 
