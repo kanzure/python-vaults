@@ -1292,7 +1292,7 @@ if __name__ == "__main__":
     txid = utxo_details["txid"]
 
     # have to consume the whole UTXO
-    amount = int(utxo_details["amount"]) * COIN
+    amount = int(utxo_details["amount"] * COIN)
 
     class FakeTransaction(object):
         name = "fake transaction (from user)"
