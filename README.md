@@ -114,6 +114,9 @@ acceptnonstdtxn=1
 
 # To allow for zero-fee transactions.
 minrelaytxfee=0
+
+# To mine zero-fee transactions (CPFP not implemented yet)
+blockmintxfee=0
 ```
 
 # Follow-up
