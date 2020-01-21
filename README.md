@@ -79,6 +79,10 @@ transactions ready for broadcast.
 Internal details... let's see.. Well, everything begins in `__main__` at the
 end. The two magic functions are `setup_vault` and `sign_transaction_tree`.
 
+The script can only be run if bitcoind -regtest is running in the background.
+It currently looks for `~/bitcoin/bitcoin.conf` to figure out the bitcoin RPC
+parameters.
+
 `PlannedInput`, `PlannedOutput`, and `PlannedTransaction` are custom classes
 that represent the transaction tree. The real bitcoin transactions are
 assembled in place hanging off of these objects. `child_outputs` is for the
