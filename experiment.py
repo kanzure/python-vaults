@@ -1377,7 +1377,10 @@ def setup_regtest_blockchain(connection=None):
 
 class FakeTransaction(object):
     """
-    Nothing too "fake" about this... But it doesn't have to be a full representation of a planned transaction, since this is going to be created and signed by the user's wallet. As long as it conforms to the given shape. (Also there's _vout_override at play).
+    Nothing too "fake" about this... But it doesn't have to be a full
+    representation of a planned transaction, since this is going to be created
+    and signed by the user's wallet. As long as it conforms to the given shape.
+    (Also there's _vout_override at play).
     """
 
     def __init__(self, txid=None):
