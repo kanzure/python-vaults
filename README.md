@@ -79,16 +79,17 @@ transactions ready for broadcast.
 Internal details... let's see.. Well, everything begins in `__main__` at the
 end. The two magic functions are `setup_vault` and `sign_transaction_tree`.
 
-The script can only be run if bitcoind -regtest is running in the background.
+The script can only be run if `bitcoind -regtest` is running in the background.
 It currently looks for `~/bitcoin/bitcoin.conf` to figure out the bitcoin RPC
-parameters.
+parameters. (TODO: Spin up regtest nodes automatically, especially for tests.)
 
 `PlannedInput`, `PlannedOutput`, and `PlannedTransaction` are custom classes
 that represent the transaction tree. The real bitcoin transactions are
-assembled in place hanging off of these objects. `child_outputs` is for the
-outputs on the current transaction, while `child_transactions` are a list of
-possible child transactions. Obviously, because double spending is forbidden,
-only one of those child transactions can make it into the blockchain.
+assembled in place hanging off of these objects. `output_utxos` is for the
+outputs on the current transaction, while `child_transactions` on a
+`PlannedUTXO` are a list of possible child transactions. Obviously, because
+double spending is forbidden, only one of those child transactions can make it
+into the blockchain.
 
 `ScriptTemplate` and its descendents are how UTXOs can describe themselves.
 Each UTXO in the planned transaction tree can use one of a limited number of
@@ -111,14 +112,13 @@ the following:
 
 ```
 from experiment import *
-json_content = json.loads(
 fd = open("output-auto.txt", "r")
 json_content = fd.read()
 transactions_data = json.loads(json_content)
 initial_planned_transaction = from_dict(transactions_data)
 ```
 
-But it is probably simpler to do something like:
+But it is probably simpler to do a one-liner like:
 
 ```
 from experiment import *; initial_tx = from_dict(json.loads(open("output-auto.txt", "r").read()));
