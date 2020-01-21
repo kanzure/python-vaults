@@ -132,23 +132,7 @@ class ScriptTemplate(object):
     miniscript_policy_definitions = {}
     relative_timelocks = {}
 
-    #@classmethod
-    #def parameterize(cls, parameters):
-    #    """
-    #    Take a bag of parameters and populate the script template with those
-    #    parameters. Return the parameterized script.
-    #    """
-    #    # TODO: Use witness_template_map and witness_template to construct a
-    #    # valid witness for this input. Use the key from the parameters to make
-    #    # a valid signature, and inject it into the witness template where
-    #    # appropriate.
-    #    parameter_names = list(cls.miniscript_policy_definitions.keys())
-    #    parameterized_script = cls.script_template
-
-    #    for parameter_name in parameter_names:
-    #        parameterized_script = parameterized_script.replace(parameter_name, parameters[parameter_name])
-    #
-    #    return parameterized_script
+    # TODO: move parameterization into ScriptTemplate?
 
     @classmethod
     def get_required_parameters(cls):
