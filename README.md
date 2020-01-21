@@ -105,6 +105,31 @@ script.
 Run the `AbstractPlanningTests` tests with `python3 -m unittest experiment.py`
 I think? They don't test much, right now....
 
+Serialization works: `python3 experiment.py > output.txt` will also write to a
+file `output-auto.txt` that contains json data. To load the serialized data, do
+the following:
+
+```
+from experiment import *
+json_content = json.loads(
+fd = open("output-auto.txt", "r")
+json_content = fd.read()
+transactions_data = json.loads(json_content)
+initial_planned_transaction = from_dict(transactions_data)
+```
+
+But it is probably simpler to do something like:
+
+```
+from experiment import *; initial_tx = from_dict(json.loads(open("output-auto.txt", "r").read()));
+
+initial_tx.name
+initial_tx.output_utxos
+initial_tx.output_utxos[0].name
+initial_tx.output_utxos[0].child_transactions
+name = initial_tx.output_utxos[0].child_transactions[0].name
+assert name == "Vault locking transaction"
+```
 
 # Usage (not working yet)
 

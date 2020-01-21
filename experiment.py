@@ -8,6 +8,7 @@ import uuid
 import unittest
 import hashlib
 from copy import copy
+import json
 
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
@@ -379,11 +380,82 @@ class PlannedUTXO(object):
 
         return output
 
+    def to_dict(self):
+        data = {
+            "counter": self.id,
+            "internal_id": str(self.internal_id),
+            "name": self.name,
+            "script_template_name": self.script_template.__name__,
+            "amount": self.amount,
+            "timelock_multiplier": self.timelock_multiplier,
+            "transaction_internal_id": str(self.transaction.internal_id),
+            "child_transaction_internal_ids": [str(ctx.internal_id) for ctx in self.child_transactions],
+        }
+
+        if self._vout_override != None:
+            data["_vout_override"] = self._vout_override
+
+        return data
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_dict(cls, data):
+        planned_utxo = cls()
+        planned_utxo.internal_id = data["internal_id"]
+        planned_utxo.id = data["counter"]
+        planned_utxo.name = data["name"]
+
+        script_template_lookup = dict([(klass.__name__, klass) for klass in ScriptTemplate.__subclasses__()])
+        planned_utxo.script_template = script_template_lookup[data["script_template_name"]]
+
+        planned_utxo.amount = data["amount"]
+        planned_utxo.timelock_multiplier = data["timelock_multiplier"]
+
+        # TODO: second pass to add back object references
+        planned_utxo._transaction_internal_id = data["transaction_internal_id"]
+        planned_utxo._child_transaction_internal_ids = data["child_transaction_internal_ids"]
+
+        if "_vout_override" in data.keys():
+            planned_utxo._vout_override = data["_vout_override"]
+
+        return planned_utxo
+
+    @classmethod
+    def from_json(cls, payload):
+        data = json.loads(payload)
+        return cls.from_dict(data)
+
+    def connect_objects(self, inputs, outputs, transactions):
+        """
+        Upgrades _transaction_internal_id to self.transaction association.
+        """
+        internal_id_requirement = False
+        child_count = 0
+        for transaction in transactions:
+            if str(transaction.internal_id) == self._transaction_internal_id:
+                self.transaction = transaction
+                internal_id_requirement = True
+
+            if str(transaction.internal_id) in self._child_transaction_internal_ids:
+                self.child_transactions.append(transaction)
+                child_count += 1
+
+            if internal_id_requirement and child_count==len(self._child_transaction_internal_ids):
+                break
+
 class PlannedInput(object):
-    def __init__(self, utxo, witness_template_selection, transaction):
+
+    def __init__(self, utxo=None, witness_template_selection=None, transaction=None):
         self.utxo = utxo
         self.witness_template_selection = witness_template_selection
         self.transaction = transaction
+        self.internal_id = uuid.uuid4()
+        self.is_finalized = False
+
+        if not utxo:
+            return
 
         # sanity check
         if witness_template_selection not in utxo.script_template.witness_templates.keys():
@@ -415,8 +487,6 @@ class PlannedInput(object):
 
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
-
-        self.is_finalized = False
 
     def parameterize_witness_template_by_signing(self, parameters):
         """
@@ -484,21 +554,69 @@ class PlannedInput(object):
         computed_witness = CScript(computed_witness)
         return computed_witness
 
+    def to_dict(self):
+        data = {
+            "internal_id": str(self.internal_id),
+            "transaction_internal_id": str(self.transaction.internal_id),
+            "utxo_internal_id": str(self.utxo.internal_id),
+            "utxo_name": self.utxo.name,
+            "witness_template_selection": self.witness_template_selection,
+        }
+
+        return data
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_dict(cls, data):
+        planned_input = cls()
+        planned_input.internal_id = data["internal_id"]
+        planned_input.witness_template_selection = data["witness_template_selection"]
+
+        # TODO: second pass to add back object references
+        planned_input._transaction_internal_id = data["transaction_internal_id"]
+        planned_input._utxo_name = data["utxo_name"]
+        planned_input._utxo_internal_id = data["utxo_internal_id"]
+
+        return planned_input
+
+    @classmethod
+    def from_json(cls, payload):
+        data = json.loads(payload)
+        return cls.from_dict(data)
+
+    def connect_objects(self, inputs, outputs, transactions):
+        """
+        Upgrades _transaction_internal_id to self.transaction association.
+        """
+        for transaction in transactions:
+            if transaction.internal_id == self._transaction_internal_id:
+                self.transaction = transaction
+                break
+
+        for some_utxo in outputs:
+            if some_utxo.internal_id == self._utxo_internal_id:
+                self.utxo = some_utxo
+                break
+
 class PlannedTransaction(object):
     __counter__ = 0
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, enable_cpfp_hook=True):
         self.name = name
 
-        cpfp_hook_utxo = PlannedUTXO(
-            name="CPFP hook",
-            transaction=self,
-            script_template=CPFPHookScriptTemplate,
-            amount=0,
-        )
-
         self.inputs = []
-        self.output_utxos = [cpfp_hook_utxo]
+        self.output_utxos = []
+
+        if enable_cpfp_hook:
+            cpfp_hook_utxo = PlannedUTXO(
+                name="CPFP hook",
+                transaction=self,
+                script_template=CPFPHookScriptTemplate,
+                amount=0,
+            )
+            self.output_utxos.append(cpfp_hook_utxo)
 
         self.id = copy(self.__class__.__counter__)
         self.__class__.__counter__ += 1
@@ -577,6 +695,57 @@ class PlannedTransaction(object):
                 output += f"{prefix} Transaction {self.internal_id} ({self.name}) end\n\n"
 
         return output
+
+    def to_dict(self):
+        data = {
+            "counter": self.id,
+            "internal_id": str(self.internal_id),
+            "name": self.name,
+            "txid": b2lx(self.bitcoin_transaction.GetTxid()),
+            "inputs": dict([(idx, some_input.to_dict()) for (idx, some_input) in enumerate(self.inputs)]),
+            "outputs": dict([(idx, some_output.to_dict()) for (idx, some_output) in enumerate(self.output_utxos)]),
+            "bitcoin_transaction": b2x(self.bitcoin_transaction.serialize()),
+        }
+
+        return data
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_dict(cls, data):
+        planned_transaction = cls(enable_cpfp_hook=False)
+        planned_transaction.output_utxos = [] # remove CPFP hook transaction
+        planned_transaction.name = data["name"]
+        planned_transaction.internal_id = data["internal_id"]
+        planned_transaction.id = data["counter"]
+        planned_transaction.bitcoin_transaction = CMutableTransaction.deserialize(x(data["bitcoin_transaction"]))
+
+        for (idx, some_input) in data["inputs"].items():
+            planned_input = PlannedInput.from_dict(some_input)
+            planned_transaction.inputs.append(planned_input)
+
+        for (idx, some_output) in data["outputs"].items():
+            planned_output = PlannedUTXO.from_dict(some_output)
+            planned_transaction.output_utxos.append(planned_output)
+
+        return planned_transaction
+
+    @classmethod
+    def from_json(cls, payload):
+        data = json.loads(payload)
+        return cls.from_dict(data)
+
+    def connect_objects(self, inputs, outputs, transactions):
+        """
+        Upgrade the inputs and outputs and connect them to the existing
+        objects.
+        """
+        for some_input in self.inputs:
+            some_input.connect_objects(inputs, outputs, transactions)
+
+        for some_output in self.output_utxos:
+            some_output.connect_objects(inputs, outputs, transactions)
 
 class AbstractPlanningTests(unittest.TestCase):
     def test_planned_transaction(self):
@@ -1206,6 +1375,101 @@ def setup_regtest_blockchain(connection=None):
     if blockheight < 110:
         connection.generate(110)
 
+class FakeTransaction(object):
+    """
+    Nothing too "fake" about this... But it doesn't have to be a full representation of a planned transaction, since this is going to be created and signed by the user's wallet. As long as it conforms to the given shape. (Also there's _vout_override at play).
+    """
+
+    def __init__(self, txid=None):
+        self.name = "fake transaction (from user)"
+        self.txid = txid
+        self.is_finalized = True
+        self.output_utxos = []
+        self.inputs = []
+        self.id = -1
+        self.internal_id = -1
+
+    @classmethod
+    def check_inputs_outputs_are_finalized(cls):
+        return True
+
+    @classmethod
+    def serialize(self):
+        # TODO: could use getrawtransaction over RPC
+        return "(not implemented)"
+
+    def to_dict(self):
+        data = {
+            "counter": self.id,
+            "name": self.name,
+            "txid": b2lx(self.txid),
+            "outputs": dict([(idx, some_output.to_dict()) for (idx, some_output) in enumerate(self.output_utxos)]),
+        }
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        transaction = cls()
+        transaction.name = data["name"]
+        transaction.txid = data["txid"]
+        transaction.output_utxos = [PlannedUTXO.from_dict(output) for (idx, output) in data["outputs"].items()]
+        return transaction
+
+    def connect_objects(self, inputs, outputs, transactions):
+        for some_utxo in self.output_utxos:
+            some_utxo.connect_objects(inputs, outputs, transactions)
+
+def to_dict(segwit_utxo):
+    """
+    Dump all transactions to dictionary.
+    """
+
+    # TODO: You know... might make more sense to switch to sqlalchemy. Store
+    # everything in a sqlite database.
+
+    # The very first entry should be the planned transaction that will be spent
+    # by the user's wallet to commit funds into the vault.
+    #transaction_dicts = [segwit_utxo.transaction.to_dict()]
+    # ... Turns out that crawl includes the parent transaction too.
+    transaction_dicts = []
+
+    (utxos, transactions) = segwit_utxo.crawl()
+    for transaction in transactions:
+        transaction_data = transaction.to_dict()
+        transaction_dicts.append(transaction_data)
+
+    # low-number transactions first
+    transaction_dicts = sorted(transaction_dicts, key=lambda tx: tx["counter"])
+
+    return transaction_dicts
+
+def from_dict(transaction_dicts):
+    """
+    Load all transactions from a dictionary.
+    """
+
+    transactions = []
+    for (idx, some_transaction) in enumerate(transaction_dicts):
+        if idx == 0:
+            # Special case. This is the FakeTransaction object.
+            transaction = FakeTransaction.from_dict(some_transaction)
+        elif idx > 0:
+            transaction = PlannedTransaction.from_dict(some_transaction)
+
+        transactions.append(transaction)
+
+    (outputs, _) = transactions[0].output_utxos[0].crawl()
+
+    inputs = []
+    for some_transaction in transactions:
+        inputs.extend(some_transaction.inputs)
+    inputs = list(set(inputs)) # keep only uniques
+
+    for some_transaction in transactions:
+        some_transaction.connect_objects(inputs, outputs, transactions)
+
+    return transactions[0]
+
 if __name__ == "__main__":
 
     #amount = random.randrange(0, 100 * COIN)
@@ -1278,23 +1542,8 @@ if __name__ == "__main__":
     # have to consume the whole UTXO
     amount = int(utxo_details["amount"] * COIN)
 
-    class FakeTransaction(object):
-        name = "fake transaction (from user)"
-        txid = lx(utxo_details["txid"])
-        is_finalized = True
-        output_utxos = []
-        inputs = []
-        id = -1
-
-        @classmethod
-        def check_inputs_outputs_are_finalized(cls):
-            return True
-
-        @classmethod
-        def serialize(self):
-            return "(not implemented)"
-
-    fake_tx = FakeTransaction
+    fake_tx_txid = lx(utxo_details["txid"])
+    fake_tx = FakeTransaction(txid=fake_tx_txid)
 
     segwit_utxo = PlannedUTXO(
         name="segwit input coin",
@@ -1327,5 +1576,13 @@ if __name__ == "__main__":
     sign_transaction_tree(segwit_utxo, parameters)
 
     # TODO: Persist the pre-signed transactions to persistant storage system.
+
+    output_data = to_dict(segwit_utxo)
+    output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
+
+    filename = "output-auto.txt"
+    with open(filename, "w") as fd:
+        fd.write(output_json)
+    print(f"Wrote to {filename}!")
 
     # TODO: Delete the ephemeral keys.
