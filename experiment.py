@@ -10,6 +10,9 @@ import hashlib
 from copy import copy
 import json
 
+# pip3 install graphviz
+from graphviz import Digraph
+
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.exceptions import VaultException
@@ -1476,6 +1479,27 @@ def from_dict(transaction_dicts):
         some_transaction.connect_objects(inputs, outputs, transactions)
 
     return transactions[0]
+
+def generate_graphviz(some_utxo):
+    (utxos, transactions) = some_utxo.crawl()
+
+    diagram = Digraph("output", filename="output.gv")
+
+    diagram.attr("node", shape="square")
+    for transaction in transactions:
+        diagram.node(str(transaction.internal_id), transaction.name)
+
+    diagram.attr("node", shape="circle")
+    for utxo in utxos:
+        diagram.node(str(utxo.internal_id), utxo.name)
+
+        diagram.edge(str(utxo.transaction.internal_id), str(utxo.internal_id))
+
+        for child_transaction in utxo.child_transactions:
+            diagram.edge(str(utxo.internal_id), str(child_transaction.internal_id))
+
+    diagram.view()
+    return diagram
 
 if __name__ == "__main__":
 
