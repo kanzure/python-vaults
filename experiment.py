@@ -1480,7 +1480,7 @@ def from_dict(transaction_dicts):
 
     return transactions[0]
 
-def generate_graphviz(some_utxo):
+def generate_graphviz(some_utxo, parameters):
     (utxos, transactions) = some_utxo.crawl()
 
     diagram = Digraph("output", filename="output.gv")
@@ -1498,7 +1498,9 @@ def generate_graphviz(some_utxo):
         for child_transaction in utxo.child_transactions:
             diagram.edge(str(utxo.internal_id), str(child_transaction.internal_id))
 
-    diagram.view()
+    if parameters["enable_graphviz_popup"] == True:
+        diagram.view()
+
     return diagram
 
 if __name__ == "__main__":
@@ -1519,7 +1521,8 @@ if __name__ == "__main__":
     ]
 
     parameters = {
-        "num_shards": 10,
+        "num_shards": 5,
+        "enable_graphviz_popup": True,
         "amount": amount,
         "unspendable_key_1": CPubKey(x("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")),
     }
@@ -1618,3 +1621,6 @@ if __name__ == "__main__":
     print(f"Wrote to {filename}!")
 
     # TODO: Delete the ephemeral keys.
+
+
+    generate_graphviz(segwit_utxo, parameters)
