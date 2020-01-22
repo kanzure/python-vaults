@@ -406,6 +406,7 @@ class PlannedUTXO(object):
         planned_utxo.internal_id = data["internal_id"]
         planned_utxo.id = data["counter"]
         planned_utxo.name = data["name"]
+        planned_utxo.is_finalized = True
 
         script_template_lookup = dict([(klass.__name__, klass) for klass in ScriptTemplate.__subclasses__()])
         planned_utxo.script_template = script_template_lookup[data["script_template_name"]]
@@ -573,6 +574,7 @@ class PlannedInput(object):
         planned_input = cls()
         planned_input.internal_id = data["internal_id"]
         planned_input.witness_template_selection = data["witness_template_selection"]
+        planned_input.is_finalized = True
 
         # TODO: second pass to add back object references
         planned_input._transaction_internal_id = data["transaction_internal_id"]
@@ -720,6 +722,7 @@ class PlannedTransaction(object):
         planned_transaction.internal_id = data["internal_id"]
         planned_transaction.id = data["counter"]
         planned_transaction.bitcoin_transaction = CMutableTransaction.deserialize(x(data["bitcoin_transaction"]))
+        planned_transaction.is_finalized = True
 
         for (idx, some_input) in data["inputs"].items():
             planned_input = PlannedInput.from_dict(some_input)
@@ -1416,6 +1419,7 @@ class FakeTransaction(object):
         transaction.name = data["name"]
         transaction.txid = data["txid"]
         transaction.output_utxos = [PlannedUTXO.from_dict(output) for (idx, output) in data["outputs"].items()]
+        transaction.is_finalized = True
         return transaction
 
     def connect_objects(self, inputs, outputs, transactions):
