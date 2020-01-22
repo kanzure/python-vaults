@@ -3,9 +3,6 @@
 This project provides some tools and a prototype for bitcoin vaults based
 around the concept of sharding and pre-signed transactions.
 
-View a **visualization** of the resulting pre-signed transactions
-[here](docs/planned-transaction-tree.num_utxos=5.png).
-
 # WARNING
 
 This is not production-ready code. Do not use this on bitcoin mainnet or any other mainnet.
