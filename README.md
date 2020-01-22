@@ -3,6 +3,10 @@
 This project provides some tools and a prototype for bitcoin vaults based
 around the concept of sharding and pre-signed transactions.
 
+See a
+**[visualization](https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png)**
+of the planned transaction tree.
+
 # WARNING
 
 This is not production-ready code. Do not use this on bitcoin mainnet or any other mainnet.
