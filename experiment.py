@@ -1073,7 +1073,7 @@ def setup_vault(segwit_utxo, parameters):
     # Inside the make_one_shard_possible_spend function, this amount will be
     # decremented before it is used to create the next sharding/stipend-setup
     # transaction.
-    num_shards = 100
+    num_shards = parameters["num_shards"]
 
     amount_per_shard = int(vault_initial_utxo.amount / num_shards)
     first_shard_extra_amount = vault_initial_utxo.amount - (int(vault_initial_utxo.amount/num_shards)*num_shards)
@@ -1495,6 +1495,7 @@ if __name__ == "__main__":
     ]
 
     parameters = {
+        "num_shards": 10,
         "amount": amount,
         "unspendable_key_1": CPubKey(x("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")),
     }
