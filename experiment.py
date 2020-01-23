@@ -1499,6 +1499,13 @@ def from_dict(transaction_dicts):
 
     return transactions[0]
 
+def load(transaction_store_filename="output-auto.txt"):
+    transaction_store_fd = open(transaction_store_filename, "r")
+    content = transaction_store_fd.read()
+    data = json.loads(content)
+    initial_tx = from_dict(data)
+    return initial_tx
+
 def generate_graphviz(some_utxo, parameters):
     (utxos, transactions) = some_utxo.crawl()
 
