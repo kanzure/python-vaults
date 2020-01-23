@@ -448,6 +448,8 @@ class PlannedUTXO(object):
 
             if internal_id_requirement and child_count==len(self._child_transaction_internal_ids):
                 break
+        else:
+            raise Exception("Failed to break")
 
 class PlannedInput(object):
 
@@ -604,6 +606,8 @@ class PlannedInput(object):
             if some_utxo.internal_id == self._utxo_internal_id:
                 self.utxo = some_utxo
                 break
+        else:
+            raise Exception("can't find UTXO {}".format(self._utxo_internal_id))
 
 class PlannedTransaction(object):
     __counter__ = 0
@@ -631,18 +635,18 @@ class PlannedTransaction(object):
         self.is_finalized = False
 
     @property
-    def input_utxos():
+    def input_utxos(self):
         return [some_input.utxo for some_input in self.inputs]
 
     @property
-    def parent_transactions():
+    def parent_transactions(self):
         _parent_transactions = []
         for some_utxo in self.input_utxos:
             _parent_transactions.append(some_utxo.transaction)
         return _parent_transactions
 
     @property
-    def child_transactions():
+    def child_transactions(self):
         _child_transactions = []
         for some_utxo in self.output_utxos:
             _child_transactions.extend(some_utxo.child_transactions)
@@ -1407,6 +1411,13 @@ class FakeTransaction(object):
         # TODO: could use getrawtransaction over RPC
         return "(not implemented)"
 
+    @property
+    def child_transactions(self):
+        _child_transactions = []
+        for some_utxo in self.output_utxos:
+            _child_transactions.extend(some_utxo.child_transactions)
+        return _child_transactions
+
     def to_dict(self):
         data = {
             "counter": self.id,
@@ -1468,12 +1479,20 @@ def from_dict(transaction_dicts):
 
         transactions.append(transaction)
 
-    (outputs, _) = transactions[0].output_utxos[0].crawl()
+    assert transactions[0].output_utxos[0].name == "segwit input coin"
 
+    outputs = []
     inputs = []
     for some_transaction in transactions:
         inputs.extend(some_transaction.inputs)
-    inputs = list(set(inputs)) # keep only uniques
+        outputs.extend(some_transaction.output_utxos)
+
+    # keep only uniques
+    inputs = list(set(inputs))
+    outputs = list(set(outputs))
+
+    for some_utxo in outputs:
+        some_utxo.connect_objects(inputs, outputs, transactions)
 
     for some_transaction in transactions:
         some_transaction.connect_objects(inputs, outputs, transactions)
@@ -1502,6 +1521,64 @@ def generate_graphviz(some_utxo, parameters):
         diagram.view()
 
     return diagram
+
+def check_blockchain_has_transaction(txid, connection=None):
+    if connection == None:
+        connection = get_bitcoin_rpc_connection()
+
+    if type(txid) == bytes:
+        txid = b2lx(txid)
+
+    try:
+        rawtransaction = connection._call("getrawtransaction", txid, True)
+
+        if "confirmations" in rawtransaction.keys() and rawtransaction["confirmations"] > 0:
+            return True
+        else:
+            return False
+    except bitcoin.rpc.InvalidAddressOrKeyError:
+        return False
+
+def get_next_possible_transactions_by_walking_tree(current_transaction, connection=None):
+    if connection == None:
+        connection = get_bitcoin_rpc_connection()
+
+    # This is an intentionally simple implementation: it will not work when
+    # there are multiple possible non-interfering transactions hanging off of
+    # this transaction. For example, two separate transactions might spend two
+    # separate UTXOs produced by the current transaction. The current
+    # implementation does not account for this. Instead, it assumes that there
+    # is only one possible choice.
+
+    possible_transactions = []
+    for some_transaction in current_transaction.child_transactions:
+        if not check_blockchain_has_transaction(some_transaction.txid):
+            # If none of them are confirmed, then they are all possible
+            # options.
+            possible_transactions.append(some_transaction)
+        else:
+            # One of them was confirmed, so reset the possible transaction list and find the next possible transactions.
+            possible_transactions = get_next_possible_transactions_by_walking_tree(some_transaction, connection=connection)
+            break
+
+    return list(set(possible_transactions))
+
+def get_current_confirmed_transaction(current_transaction, connection=None):
+    if connection == None:
+        connection = get_bitcoin_rpc_connection()
+
+    if not check_blockchain_has_transaction(current_transaction.txid):
+        return current_transaction
+
+    possible_transactions = get_next_possible_transactions_by_walking_tree(current_transaction, connection=connection)
+    #print("possible_transactions: ", [b2lx(possible_tx.txid) for possible_tx in possible_transactions])
+    assert all([len(possible_tx.parent_transactions) == 1 for possible_tx in possible_transactions])
+    parents = [possible_tx.parent_transactions[0] for possible_tx in possible_transactions]
+    assert len(set(parents)) == 1
+    parent = parents[0]
+    current_transaction = parent
+
+    return {"current": current_transaction, "next": possible_transactions}
 
 if __name__ == "__main__":
 
