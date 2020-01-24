@@ -1587,6 +1587,50 @@ def get_current_confirmed_transaction(current_transaction, connection=None):
 
     return {"current": current_transaction, "next": possible_transactions}
 
+def render_planned_output(planned_output, depth=0):
+    prefix = "\t" * depth
+
+    output_text  = prefix + "Output:\n"
+    output_text += prefix + "\tname: {}\n".format(planned_output.name)
+    output_text += prefix + "\tinternal id: {}\n".format(planned_output.internal_id)
+
+    return output_text
+
+def render_planned_transaction(planned_transaction, depth=0):
+    prefix = "\t" * depth
+
+    output_text  = prefix + "Transaction:\n"
+    output_text += prefix + "\tname: {}\n".format(planned_transaction.name)
+    output_text += prefix + "\tinternal id: {}\n".format(planned_transaction.internal_id)
+    output_text += prefix + "\ttxid: {}\n".format(b2lx(planned_transaction.bitcoin_transaction.GetTxid()))
+    output_text += prefix + "\tnum inputs: {}\n".format(len(planned_transaction.inputs))
+    output_text += prefix + "\tnum outputs: {}\n".format(len(planned_transaction.output_utxos))
+
+    output_text += "\n"
+    output_text += prefix + "\tOutputs:\n"
+
+    for output in planned_transaction.output_utxos:
+        output_text += render_planned_output(output, depth=depth+2)
+
+    return output_text
+
+def get_info(transaction_store_filename="output-auto.txt", connection=None):
+    initial_tx = load(transaction_store_filename=transaction_store_filename)
+
+    latest_info = get_current_confirmed_transaction(initial_tx)
+    current_tx = latest_info["current"]
+
+    output_text = "\n\nLatest transaction:\n"
+    output_text += render_planned_transaction(current_tx, depth=1)
+
+    output_text += "\n\nPossible transactions:\n\n"
+
+    for some_tx in latest_info["next"]:
+        output_text += render_planned_transaction(some_tx, depth=1)
+        output_text += "\n"
+
+    return output_text
+
 if __name__ == "__main__":
 
     #amount = random.randrange(0, 100 * COIN)
