@@ -913,7 +913,10 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
         if shard_id == 0 and first_shard_extra_amount != None:
             amount += first_shard_extra_amount
 
-        sharded_utxo_name = f"shard fragment UTXO {shard_id}/{num_shards}"
+        sharded_utxo_name = "shard fragment UTXO {shard_id}/{num_shards}".format(
+            shard_id = shard_id + 1,
+            num_shards=num_shards,
+        )
 
         # Note: can't re-vault from this point. Must pass through the cold
         # wallet or the hot wallet before it can get back into a vault.
