@@ -1695,7 +1695,7 @@ if __name__ == "__main__":
             connection._call("sendtoaddress", user_address, 50)
         except Exception:
             pass
-        connection._call("generatetoaddress", blocks, str(some_address))
+        connection._call("generatetoaddress", blocks, str(user_address))
 
     # Now find an unspent UTXO.
     unspent = connection._call("listunspent", 6, 9999, [str(user_address)], True, {"minimumAmount": amount / COIN})
