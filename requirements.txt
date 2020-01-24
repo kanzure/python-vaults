@@ -7,3 +7,4 @@
 
 # for command line argument parsing stuff
 click==7.0
+graphviz
