@@ -1567,7 +1567,8 @@ def get_next_possible_transactions_by_walking_tree(current_transaction, connecti
             # options.
             possible_transactions.append(some_transaction)
         else:
-            # One of them was confirmed, so reset the possible transaction list and find the next possible transactions.
+            # One of them was confirmed, so reset the possible transaction list
+            # and find the next possible transactions.
             possible_transactions = get_next_possible_transactions_by_walking_tree(some_transaction, connection=connection)
             break
 
