@@ -300,8 +300,8 @@ class CPFPHookScriptTemplate(ScriptTemplate):
     # https://github.com/petertodd/python-bitcoinlib/issues/225
     script_template = "OP_1"
 
-    # TODO: What is a good witness for this script? Can it be empty? I would
-    # know this if I actually knew anything about bitcoin scripting.....
+    # For OP_TRUE scriptpubkeys, witness stack can be empty, according to Bob.
+    # But we might just upgrade this to use a hot wallet key CHECKSIG anyway.
     witness_template_map = {}
     witness_templates = {} # (intentionally empty)
 
