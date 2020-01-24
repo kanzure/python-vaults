@@ -1299,7 +1299,7 @@ def sign_transaction_tree(initial_utxo, parameters):
         # initialized blank.
         #planned_transaction.bitcoin_transaction.witnesses = []
 
-        if len(bitcoin_inputs) == 0 and planned_transaction.name != "fake transaction (from user)":
+        if len(bitcoin_inputs) == 0 and planned_transaction.name != "initial transaction (from user)":
             raise VaultException("Can't have a transaction with zero inputs")
 
         # Now that the inputs are finalized, it should be possible to sign each
@@ -1316,7 +1316,7 @@ def sign_transaction_tree(initial_utxo, parameters):
 
         planned_transaction.is_finalized = True
 
-        if planned_transaction.name == "fake transaction (from user)":
+        if planned_transaction.name == "initial transaction (from user)":
             # serialization function fails, so just skip
             continue
 
@@ -1388,16 +1388,15 @@ def setup_regtest_blockchain(connection=None):
     if blockheight < 110:
         connection.generate(110)
 
-class FakeTransaction(object):
+class InitialTransaction(object):
     """
-    Nothing too "fake" about this... But it doesn't have to be a full
-    representation of a planned transaction, since this is going to be created
-    and signed by the user's wallet. As long as it conforms to the given shape.
-    (Also there's _vout_override at play).
+    This doesn't have to be a full representation of a planned transaction,
+    since this is going to be created and signed by the user's wallet. As long
+    as it conforms to the given shape.  (Also there's _vout_override at play).
     """
 
     def __init__(self, txid=None):
-        self.name = "fake transaction (from user)"
+        self.name = "initial transaction (from user)"
         self.txid = txid
         self.is_finalized = True
         self.output_utxos = []
@@ -1475,8 +1474,8 @@ def from_dict(transaction_dicts):
     transactions = []
     for (idx, some_transaction) in enumerate(transaction_dicts):
         if idx == 0:
-            # Special case. This is the FakeTransaction object.
-            transaction = FakeTransaction.from_dict(some_transaction)
+            # Special case. This is the InitialTransaction object.
+            transaction = InitialTransaction.from_dict(some_transaction)
         elif idx > 0:
             transaction = PlannedTransaction.from_dict(some_transaction)
 
@@ -1709,17 +1708,17 @@ if __name__ == "__main__":
     # have to consume the whole UTXO
     amount = int(utxo_details["amount"] * COIN)
 
-    fake_tx_txid = lx(utxo_details["txid"])
-    fake_tx = FakeTransaction(txid=fake_tx_txid)
+    initial_tx_txid = lx(utxo_details["txid"])
+    initial_tx = InitialTransaction(txid=initial_tx_txid)
 
     segwit_utxo = PlannedUTXO(
         name="segwit input coin",
-        transaction=fake_tx,
+        transaction=initial_tx,
         script_template=UserScriptTemplate,
         amount=amount,
     )
     segwit_utxo._vout_override = utxo_details["vout"]
-    fake_tx.output_utxos = [segwit_utxo] # for establishing vout
+    initial_tx.output_utxos = [segwit_utxo] # for establishing vout
 
     # ===============
     # Here's where the magic happens.
