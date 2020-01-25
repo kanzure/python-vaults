@@ -9,3 +9,6 @@ venv/
 build/
 dist/
 python_vaults.egg-info/
+
+# for testing
+tmp/
