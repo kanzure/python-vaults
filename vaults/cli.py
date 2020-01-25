@@ -5,7 +5,7 @@ Command line interface for the Vault library.
 import click
 
 from vaults.exceptions import VaultNotImplementedError
-from vaults.experiment import main, get_info
+from vaults.experiment import main, get_info, broadcast_next_transaction
 
 @click.group()
 def cli():
@@ -25,6 +25,15 @@ def info():
     """
     output = get_info()
     print(output)
+
+@cli.command()
+@click.argument("internal_id")
+def broadcast(internal_id):
+    """
+    Broadcast a specific transaction. Only if the transaction is one of the
+    next possible transactions.
+    """
+    broadcast_next_transaction(internal_id)
 
 @cli.command()
 def clone():

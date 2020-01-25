@@ -1597,6 +1597,34 @@ def get_current_confirmed_transaction(current_transaction, connection=None):
 
     return {"current": current_transaction, "next": possible_transactions}
 
+def broadcast_next_transaction(internal_id):
+    """
+    Broadcast a transaction, but only if it is one of the valid next
+    transactions.
+    """
+    transaction_store_filename="output-auto.txt"
+    initial_tx = load(transaction_store_filename=transaction_store_filename)
+    recentdata = get_current_confirmed_transaction(initial_tx)
+
+    internal_id = str(internal_id)
+    internal_ids = [str(blah.internal_id) for blah in recentdata["next"]]
+
+    if internal_id not in internal_ids:
+        print("Error: internal_id {} is an invalid next step".format(internal_id))
+        sys.exit(1)
+
+    internal_map = dict([(str(blah.internal_id), blah) for blah in recentdata["next"]])
+    requested_tx = internal_map[str(internal_id)]
+    bitcoin_transaction = requested_tx.bitcoin_transaction
+
+    connection = get_bitcoin_rpc_connection()
+    result = connection.sendrawtransaction(bitcoin_transaction)
+    if type(result) == bytes:
+        result = b2lx(result)
+    print(result)
+
+    return result
+
 def render_planned_output(planned_output, depth=0):
     prefix = "\t" * depth
 
