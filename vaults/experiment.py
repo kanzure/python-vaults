@@ -4,6 +4,7 @@ Run the unit tests with:
 
 """
 
+import os
 import uuid
 import unittest
 import hashlib
@@ -1502,7 +1503,7 @@ def from_dict(transaction_dicts):
     return transactions[0]
 
 def load(transaction_store_filename="output-auto.txt"):
-    transaction_store_fd = open(transaction_store_filename, "r")
+    transaction_store_fd = open(os.path.join(os.getcwd(), transaction_store_filename), "r")
     content = transaction_store_fd.read()
     data = json.loads(content)
     initial_tx = from_dict(data)
@@ -1747,7 +1748,7 @@ if __name__ == "__main__":
     output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
 
     filename = "output-auto.txt"
-    with open(filename, "w") as fd:
+    with open(os.path.join(os.getcwd(), filename), "w") as fd:
         fd.write(output_json)
     print(f"Wrote to {filename}!")
 
