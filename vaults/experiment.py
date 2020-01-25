@@ -1635,7 +1635,7 @@ def get_info(transaction_store_filename="output-auto.txt", connection=None):
 
     return output_text
 
-if __name__ == "__main__":
+def main():
 
     #amount = random.randrange(0, 100 * COIN)
     #amount = 7084449357
@@ -1754,5 +1754,7 @@ if __name__ == "__main__":
 
     # TODO: Delete the ephemeral keys.
 
-
     generate_graphviz(segwit_utxo, parameters)
+
+if __name__ == "__main__":
+    main()
