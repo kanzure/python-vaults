@@ -10,6 +10,7 @@ import unittest
 import hashlib
 from copy import copy
 import json
+from pathlib import Path
 
 # pip3 install graphviz
 from graphviz import Digraph
@@ -1635,7 +1636,20 @@ def get_info(transaction_store_filename="output-auto.txt", connection=None):
 
     return output_text
 
+def check_vaultfile_existence(die=True):
+    existence = os.path.exists(os.path.join(os.getcwd(), "vaultfile"))
+    if existence and die:
+        print("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
+        sys.exit(1)
+    else:
+        return existence
+
+def make_vaultfile():
+    Path(os.path.join(os.getcwd(), "vaultfile")).touch()
+
 def main():
+
+    check_vaultfile_existence()
 
     #amount = random.randrange(0, 100 * COIN)
     #amount = 7084449357
@@ -1757,6 +1771,9 @@ def main():
 
     if parameters["enable_graphviz"] == True:
         generate_graphviz(segwit_utxo, parameters)
+
+    # A vault has been established. Write the vaultfile.
+    make_vaultfile()
 
 if __name__ == "__main__":
     main()
