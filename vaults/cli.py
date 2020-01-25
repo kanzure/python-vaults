@@ -5,6 +5,7 @@ Command line interface for the Vault library.
 import click
 
 from vaults.exceptions import VaultNotImplementedError
+from vaults.experiment import main, get_info
 
 @click.group()
 def cli():
@@ -15,14 +16,15 @@ def init():
     """
     Create a new vault in the current working directory.
     """
-    raise VaultNotImplementedError
+    main()
 
 @cli.command()
 def info():
     """
     Display vault state information, including last sync time.
     """
-    raise VaultNotImplementedError
+    output = get_info()
+    print(output)
 
 @cli.command()
 def clone():
