@@ -18,6 +18,7 @@ from graphviz import Digraph
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.exceptions import VaultException
+from vaults.loggingconfig import logger
 
 from bitcoin.wallet import CBitcoinSecret
 
@@ -672,12 +673,12 @@ class PlannedTransaction(object):
 
         for some_input in self.inputs:
             if not some_input.is_finalized:
-                print("input not finalized: ", some_input.name)
+                logger.warn("input not finalized: {}".format(some_input.name))
                 return False
 
         for some_output in self.output_utxos:
             if not some_output.is_finalized:
-                print("output not finalized: ", some_output.name, some_output.internal_id)
+                logger.warn("output not finalized: {} {}".format(some_output.name, some_output.internal_id))
                 return False
 
         return True
@@ -1234,22 +1235,22 @@ def sign_transaction_tree(initial_utxo, parameters):
         planned_utxo.bitcoin_output = CTxOut(amount, scriptpubkey)
         planned_utxo.is_finalized = True
 
-        print("UTXO name: ", planned_utxo.name)
-        print("final script: {}".format(script))
-        #print("p2wsh_redeem_script: ", b2x(planned_utxo.p2wsh_redeem_script))
-        #print("p2wsh_redeem_script: ", CScript(planned_utxo.p2wsh_redeem_script))
+        logger.info("UTXO name: {}".format(planned_utxo.name))
+        logger.info("final script: {}".format(script))
+        #logger.info("p2wsh_redeem_script: ".format(b2x(planned_utxo.p2wsh_redeem_script)))
+        #logger.info("p2wsh_redeem_script: ".format(CScript(planned_utxo.p2wsh_redeem_script)))
 
-    print("======== Start")
+    logger.info("======== Start")
 
     # Finalize each transaction by creating a set of bitcoin objects (including
     # a bitcoin transaction) representing the planned transaction.
     for (counter, planned_transaction) in enumerate(planned_transactions):
-        print("--------")
-        print("current transaction name: ", planned_transaction.name)
-        print("counter: ", counter)
+        logger.info("--------")
+        logger.info("current transaction name: {}".format(planned_transaction.name))
+        logger.info(f"counter: {counter}")
 
         for planned_input in planned_transaction.inputs:
-            print("parent transaction name: ", planned_input.utxo.transaction.name)
+            logger.info("parent transaction name: {}".format(planned_input.utxo.transaction.name))
 
             # Sanity test: all parent transactions should already be finalized
             assert planned_input.utxo.transaction.is_finalized == True
@@ -1324,9 +1325,9 @@ def sign_transaction_tree(initial_utxo, parameters):
             continue
 
         serialized_transaction = planned_transaction.serialize()
-        print("tx len: ", len(serialized_transaction))
-        print("txid: ", b2lx(planned_transaction.bitcoin_transaction.GetTxid()))
-        print("Serialized transaction: ", b2x(serialized_transaction))
+        logger.info("tx len: {}".format(len(serialized_transaction)))
+        logger.info("txid: {}".format(b2lx(planned_transaction.bitcoin_transaction.GetTxid())))
+        logger.info("Serialized transaction: {}".format(b2x(serialized_transaction)))
 
     return
 
@@ -1589,7 +1590,7 @@ def get_current_confirmed_transaction(current_transaction, connection=None):
         return current_transaction
 
     possible_transactions = get_next_possible_transactions_by_walking_tree(current_transaction, connection=connection)
-    #print("possible_transactions: ", [b2lx(possible_tx.txid) for possible_tx in possible_transactions])
+    #logger.info("possible_transactions: {}".format([b2lx(possible_tx.txid) for possible_tx in possible_transactions]))
     assert all([len(possible_tx.parent_transactions) == 1 for possible_tx in possible_transactions])
     parents = [possible_tx.parent_transactions[0] for possible_tx in possible_transactions]
     assert len(set(parents)) == 1
@@ -1611,7 +1612,7 @@ def broadcast_next_transaction(internal_id):
     internal_ids = [str(blah.internal_id) for blah in recentdata["next"]]
 
     if internal_id not in internal_ids:
-        print("Error: internal_id {} is an invalid next step".format(internal_id))
+        logger.error("Error: internal_id {} is an invalid next step".format(internal_id))
         sys.exit(1)
 
     internal_map = dict([(str(blah.internal_id), blah) for blah in recentdata["next"]])
@@ -1623,7 +1624,7 @@ def broadcast_next_transaction(internal_id):
 
     if type(result) == bytes:
         result = b2lx(result)
-    print("Broadcasted, txid: {}".format(result))
+    logger.info("Broadcasted, txid: {}".format(result))
 
     return result
 
@@ -1676,7 +1677,7 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
 def check_vaultfile_existence(die=True):
     existence = os.path.exists(os.path.join(os.getcwd(), "vaultfile"))
     if existence and die:
-        print("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
+        logger.error("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
         sys.exit(1)
     else:
         return existence
@@ -1725,10 +1726,10 @@ def main():
     missing_parameters = False
     for required_parameter in required_parameters:
         if required_parameter not in parameters.keys():
-            print(f"Missing parameter: {required_parameter}")
+            logger.error(f"Missing parameter: {required_parameter}")
             missing_parameters = True
     if missing_parameters:
-        print("Missing parameters!")
+        logger.error("Missing parameters!")
         sys.exit(1)
 
     # connect to bitcoind (ideally, regtest)
@@ -1783,17 +1784,17 @@ def main():
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    print("Rendering to text...")
+    logger.info("Rendering to text...")
     output = segwit_utxo.to_text()
     filename = TEXT_RENDERING_FILENAME
     fd = open(os.path.join(os.getcwd(), filename), "w")
     fd.write(output)
     fd.close()
-    print(f"Wrote to {filename}")
+    logger.info(f"Wrote to {filename}")
 
     # stats
-    print("*** Stats and numbers")
-    print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
+    logger.info("*** Stats and numbers")
+    logger.info(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
     sign_transaction_tree(segwit_utxo, parameters)
 
@@ -1803,7 +1804,7 @@ def main():
     filename = TRANSACTION_STORE_FILENAME
     with open(os.path.join(os.getcwd(), filename), "w") as fd:
         fd.write(output_json)
-    print(f"Wrote to {filename}")
+    logger.info(f"Wrote to {filename}")
 
     # TODO: Delete the ephemeral keys.
 
