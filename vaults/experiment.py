@@ -1654,7 +1654,8 @@ def main():
 
     parameters = {
         "num_shards": 5,
-        "enable_graphviz_popup": True,
+        "enable_graphviz": True,
+        "enable_graphviz_popup": False,
         "amount": amount,
         "unspendable_key_1": CPubKey(x("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")),
     }
@@ -1754,7 +1755,8 @@ def main():
 
     # TODO: Delete the ephemeral keys.
 
-    generate_graphviz(segwit_utxo, parameters)
+    if parameters["enable_graphviz"] == True:
+        generate_graphviz(segwit_utxo, parameters)
 
 if __name__ == "__main__":
     main()
