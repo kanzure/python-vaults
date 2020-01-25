@@ -1434,7 +1434,7 @@ class InitialTransaction(object):
     def from_dict(cls, data):
         transaction = cls()
         transaction.name = data["name"]
-        transaction.txid = data["txid"]
+        transaction.txid = lx(data["txid"])
         transaction.output_utxos = [PlannedUTXO.from_dict(output) for (idx, output) in data["outputs"].items()]
         transaction.is_finalized = True
         return transaction
@@ -1606,7 +1606,7 @@ def render_planned_transaction(planned_transaction, depth=0):
     output_text  = prefix + "Transaction:\n"
     output_text += prefix + "\tname: {}\n".format(planned_transaction.name)
     output_text += prefix + "\tinternal id: {}\n".format(planned_transaction.internal_id)
-    output_text += prefix + "\ttxid: {}\n".format(b2lx(planned_transaction.bitcoin_transaction.GetTxid()))
+    output_text += prefix + "\ttxid: {}\n".format(b2lx(planned_transaction.txid))
     output_text += prefix + "\tnum inputs: {}\n".format(len(planned_transaction.inputs))
     output_text += prefix + "\tnum outputs: {}\n".format(len(planned_transaction.output_utxos))
 
