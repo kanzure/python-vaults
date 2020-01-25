@@ -43,6 +43,7 @@ from test_framework.util import connect_nodes
 
 TRANSACTION_STORE_FILENAME ="transaction-store.json"
 TEXT_RENDERING_FILENAME = "text-rendering.txt"
+VAULTFILE_FILENAME = "vaultfile"
 
 #class VaultsTest(BitcoinTestFramework):
 class VaultsBlah:
@@ -1675,7 +1676,7 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
     return output_text
 
 def check_vaultfile_existence(die=True):
-    existence = os.path.exists(os.path.join(os.getcwd(), "vaultfile"))
+    existence = os.path.exists(os.path.join(os.getcwd(), VAULTFILE_FILENAME))
     if existence and die:
         logger.error("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
         sys.exit(1)
@@ -1683,7 +1684,7 @@ def check_vaultfile_existence(die=True):
         return existence
 
 def make_vaultfile():
-    Path(os.path.join(os.getcwd(), "vaultfile")).touch()
+    Path(os.path.join(os.getcwd(), VAULTFILE_FILENAME)).touch()
 
 def main():
 
