@@ -40,6 +40,7 @@ sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
 
+TRANSACTION_STORE_FILENAME = "output-auto.txt"
 
 
 #class VaultsTest(BitcoinTestFramework):
@@ -1508,7 +1509,7 @@ def from_dict(transaction_dicts):
 
     return transactions[0]
 
-def load(transaction_store_filename="output-auto.txt"):
+def load(transaction_store_filename=TRANSACTION_STORE_FILENAME):
     transaction_store_fd = open(os.path.join(os.getcwd(), transaction_store_filename), "r")
     content = transaction_store_fd.read()
     data = json.loads(content)
@@ -1602,7 +1603,7 @@ def broadcast_next_transaction(internal_id):
     Broadcast a transaction, but only if it is one of the valid next
     transactions.
     """
-    transaction_store_filename="output-auto.txt"
+    transaction_store_filename = TRANSACTION_STORE_FILENAME
     initial_tx = load(transaction_store_filename=transaction_store_filename)
     recentdata = get_current_confirmed_transaction(initial_tx)
 
@@ -1653,7 +1654,7 @@ def render_planned_transaction(planned_transaction, depth=0):
 
     return output_text
 
-def get_info(transaction_store_filename="output-auto.txt", connection=None):
+def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=None):
     initial_tx = load(transaction_store_filename=transaction_store_filename)
 
     latest_info = get_current_confirmed_transaction(initial_tx)
@@ -1798,7 +1799,7 @@ def main():
     output_data = to_dict(segwit_utxo)
     output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
 
-    filename = "output-auto.txt"
+    filename = TRANSACTION_STORE_FILENAME
     with open(os.path.join(os.getcwd(), filename), "w") as fd:
         fd.write(output_json)
     print(f"Wrote to {filename}")
