@@ -1731,18 +1731,18 @@ def main():
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    if False:
-        output = segwit_utxo.to_text()
-        print(output)
+    print("Rendering to text...")
+    output = segwit_utxo.to_text()
+    fd = open(os.path.join(os.getcwd(), "text-rendering.txt"), "r")
+    fd.write(output)
+    fd.close()
+    print("Wrote to text-rendering.txt")
 
     # stats
     print("*** Stats and numbers")
     print(f"{PlannedUTXO.__counter__} UTXOs, {PlannedTransaction.__counter__} transactions")
 
-    #sign_transaction_tree(vault_initial_utxo, parameters)
     sign_transaction_tree(segwit_utxo, parameters)
-
-    # TODO: Persist the pre-signed transactions to persistant storage system.
 
     output_data = to_dict(segwit_utxo)
     output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
@@ -1750,7 +1750,7 @@ def main():
     filename = "output-auto.txt"
     with open(os.path.join(os.getcwd(), filename), "w") as fd:
         fd.write(output_json)
-    print(f"Wrote to {filename}!")
+    print(f"Wrote to {filename}")
 
     # TODO: Delete the ephemeral keys.
 
