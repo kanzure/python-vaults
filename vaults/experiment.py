@@ -1619,9 +1619,10 @@ def broadcast_next_transaction(internal_id):
 
     connection = get_bitcoin_rpc_connection()
     result = connection.sendrawtransaction(bitcoin_transaction)
+
     if type(result) == bytes:
         result = b2lx(result)
-    print(result)
+    print("Broadcasted, txid: {}".format(result))
 
     return result
 
@@ -1666,6 +1667,8 @@ def get_info(transaction_store_filename="output-auto.txt", connection=None):
     for some_tx in latest_info["next"]:
         output_text += render_planned_transaction(some_tx, depth=1)
         output_text += "\n"
+
+    output_text += "\nTo broadcast the next transaction, run:\n\tvault broadcast <internal_id>\n"
 
     return output_text
 
