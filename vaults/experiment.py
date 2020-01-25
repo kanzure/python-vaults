@@ -1734,7 +1734,7 @@ def main():
     # transactions.
     print("Rendering to text...")
     output = segwit_utxo.to_text()
-    fd = open(os.path.join(os.getcwd(), "text-rendering.txt"), "r")
+    fd = open(os.path.join(os.getcwd(), "text-rendering.txt"), "w")
     fd.write(output)
     fd.close()
     print("Wrote to text-rendering.txt")
