@@ -1395,6 +1395,11 @@ class InitialTransaction(object):
     This doesn't have to be a full representation of a planned transaction,
     since this is going to be created and signed by the user's wallet. As long
     as it conforms to the given shape.  (Also there's _vout_override at play).
+
+    The only important thing about this transaction is the txid and the vout
+    number for the output. It is otherwise not important. It's not a real
+    bitcoin transaction. It was setup and provided by the bitcoin node. The
+    vault only assumes that the output is a P2WPKH output.
     """
 
     def __init__(self, txid=None):
