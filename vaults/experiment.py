@@ -40,8 +40,8 @@ sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
 
-TRANSACTION_STORE_FILENAME = "output-auto.txt"
-
+TRANSACTION_STORE_FILENAME ="transaction-store.json"
+TEXT_RENDERING_FILENAME = "text-rendering.txt"
 
 #class VaultsTest(BitcoinTestFramework):
 class VaultsBlah:
@@ -1785,10 +1785,11 @@ def main():
     # transactions.
     print("Rendering to text...")
     output = segwit_utxo.to_text()
-    fd = open(os.path.join(os.getcwd(), "text-rendering.txt"), "w")
+    filename = TEXT_RENDERING_FILENAME
+    fd = open(os.path.join(os.getcwd(), filename), "w")
     fd.write(output)
     fd.close()
-    print("Wrote to text-rendering.txt")
+    print(f"Wrote to {filename}")
 
     # stats
     print("*** Stats and numbers")
