@@ -1689,6 +1689,46 @@ def make_vaultfile():
     with open(filepath, "w") as fd:
         fd.write(json.dumps({"version": VAULT_FILE_FORMAT_VERSION}))
 
+def safety_check(initial_tx=None):
+    """
+    Check that the planned transaction tree conforms to some specific rules.
+    """
+
+    if initial_tx == None:
+        initial_tx = load()
+
+    initial_utxo = initial_tx.output_utxos[0]
+
+    (planned_utxos, planned_transactions) = initial_utxo.crawl()
+
+    # Every transaction should have at least one output, including the burner
+    # transactions (unless they are burning to miner fee...).
+    counter = 0
+    for some_transaction in planned_transactions:
+        counter += 1
+        if len(some_transaction.output_utxos) == 0:
+            raise VaultException("Transaction {} has no outputs".format(str(some_transaction.internal_id)))
+
+        # The sum of the input amounts should equal the sum of the output
+        # amounts.
+        input_amounts = sum([some_input.utxo.amount for some_input in some_transaction.inputs])
+        output_amounts = sum([some_output.amount for some_output in some_transaction.output_utxos])
+        if input_amounts != output_amounts and some_transaction.id != -1:
+            raise VaultException("Transaction {} takes {} and spends {}, not equal".format(str(some_transaction.internal_id), input_amounts, output_amounts))
+
+        for some_output in some_transaction.output_utxos:
+            if some_output.name in ["CPFP hook", "burned UTXO"]:
+                continue
+            elif len(some_output.child_transactions) == 0:
+                raise VaultException("UTXO {} has no child transactions".format(str(some_output.internal_id)))
+
+        # TODO: There should be other rule checks as well, possibly including
+        # things like "does this transaction have the correct scripts and
+        # correct outputs" and "does this UTXO have any scripts at all".
+
+    if counter < 1 or counter < len(planned_transactions):
+        raise VaultException("Length of the list of planned transactions is too low.")
+
 def main():
 
     check_vaultfile_existence()
@@ -1782,6 +1822,9 @@ def main():
     # Here's where the magic happens.
     vault_initial_utxo = setup_vault(segwit_utxo, parameters)
     # ===============
+
+    # Check that the tree is conforming to applicable rules.
+    safety_check(segwit_utxo.transaction)
 
     # To test that the sharded UTXOs have the right amounts, do the following:
     # assert (second_utxo_amount * 99) + first_utxo_amount == amount
