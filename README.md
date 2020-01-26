@@ -63,20 +63,27 @@ python3 setup.py install
 This repository contains an experimental prototype of Bitcoin vaults using
 pre-signed transactions.
 
-All of the interesting work is in [experiment.py](experiment.py) for now.
+All of the interesting work is in [vaults/experiment.py](vaults/experiment.py)
+for now.
 
 It works by connecting to bitcoind using RPC, mining some BTC to a specific
 address, and then begins planning an entire tree of pre-signed transactions
 that implement the vault. After tree planning, the tree is signed.
 
-For now it is recommended to capture stdout to file, like:
+To run the vault program do something like:
 
 ```
-python3 experiment.py > output.txt
+mkdir -p /tmp/vaults/001/
+cd /tmp/vaults/001/
+
+vault init
 ```
 
-Then scroll to the line that starts with "Start" and those will be the signed
-transactions ready for broadcast.
+This will produce a few files. The interesting one is `log.txt` and
+`transaction-store.json` which has the list of transactions.
+
+In `log.txt` or `text-rendering.txt` scroll to the line that starts with
+"Start" and those will be the signed transactions ready for broadcast.
 
 ----
 
@@ -115,11 +122,8 @@ file `output-auto.txt` that contains json data. To load the serialized data, do
 the following:
 
 ```
-from experiment import *
-fd = open("output-auto.txt", "r")
-json_content = fd.read()
-transactions_data = json.loads(json_content)
-initial_planned_transaction = from_dict(transactions_data)
+from vaults.experiment import *
+initial_planned_transaction = load()
 ```
 
 But it is probably simpler to do a one-liner like:
@@ -142,8 +146,10 @@ with the vault library based on vault files stored in the current working
 directory. The vault subcommands are as follows:
 
 ```
-vault init (or vault clone)
+vault init
 vault info
+vault broadcast
+
 vault lock
 vault sync
 vault unlock single
@@ -158,6 +164,9 @@ vault burn
 parameters.
 
 **vault info** gives information about the current status of the vault.
+
+**vault broadcast** transmits a pre-signed bitcoin transaction to the bitcoin
+network.
 
 **vault lock** takes a user-given UTXO and locks the UTXO and its amount into a
 new vault with the parameters defined by the current working directory.
