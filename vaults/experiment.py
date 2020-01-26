@@ -1688,6 +1688,7 @@ def make_vaultfile():
     filepath = os.path.join(os.getcwd(), VAULTFILE_FILENAME)
     with open(filepath, "w") as fd:
         fd.write(json.dumps({"version": VAULT_FILE_FORMAT_VERSION}))
+        fd.write("\n")
 
 def safety_check(initial_tx=None):
     """
