@@ -10,7 +10,6 @@ import unittest
 import hashlib
 from copy import copy
 import json
-from pathlib import Path
 
 # pip3 install graphviz
 from graphviz import Digraph
@@ -44,6 +43,8 @@ from test_framework.util import connect_nodes
 TRANSACTION_STORE_FILENAME ="transaction-store.json"
 TEXT_RENDERING_FILENAME = "text-rendering.txt"
 VAULTFILE_FILENAME = "vaultfile"
+
+VAULT_FILE_FORMAT_VERSION = "0.0.1"
 
 #class VaultsTest(BitcoinTestFramework):
 class VaultsBlah:
@@ -1684,7 +1685,9 @@ def check_vaultfile_existence(die=True):
         return existence
 
 def make_vaultfile():
-    Path(os.path.join(os.getcwd(), VAULTFILE_FILENAME)).touch()
+    filepath = os.path.join(os.getcwd(), VAULTFILE_FILENAME)
+    with open(filepath, "w") as fd:
+        fd.write(json.dumps({"version": VAULT_FILE_FORMAT_VERSION}))
 
 def main():
 
