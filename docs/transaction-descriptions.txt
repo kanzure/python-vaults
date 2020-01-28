@@ -1,0 +1,178 @@
+2020-01-27
+
+Transaction index and descriptions
+
+General notes:
+
+    - "output counts" is usually wrong because it doesn't include the CPFP hook
+      output. In general, assume that the CPFP hook output is on every
+      transaction.
+
+    - The "Sharded UTXO sweep transaction" is not included in the transaction
+      list because generating these sweep transactions takes far too long. They
+      should be left out of the design. These were specified in phase 2 but
+      they are simply not practical.
+
+
+transaction list:
+    - Initial transaction
+    - Funding commitment transaction
+    - push-to-cold-storage
+    - Burn some UTXO
+    - Vault stipend start transaction
+    - Vault transaction: spend one shard, re-vault the remaining shards
+
+
+transaction:
+    name: Initial transaction
+    from phase 2: true
+
+    purpose:
+        Provide a txid and vout from which the commitment transaction can be
+        funded. Also contains information about how to successfully sign for
+        that transaction. This initial transaction- in the current
+        implementation- is not a valid transaction, instead it is a placeholder
+        that provides those two (or three if you count how-to-sign info as a
+        value) values.
+
+transaction:
+    name: Funding commitment transaction
+    alias: Vault locking transaction
+    from phase 2: true
+
+    parent (input-providing) transactions:
+        - Initial transaction
+
+    possible child transactions:
+        or:
+            - push-to-cold-storage
+            - Vault stipend start transaction
+            - Vault transaction: spend one shard, re-vault the remaining shards
+
+    outputs count: 1
+    outputs:
+        output 1 of 1:
+            name: vault initial UTXO
+            script template: BasicPresignedScriptTemplate
+
+    purpose:
+        Spend the UTXO provided by the transaction called "Initial transaction"
+        into a new output that enforces the pre-signed vault program.
+
+transaction:
+    name: push-to-cold-storage
+    aliases:
+        - push-to-cold-storage-from-sharded
+        - Push (sharded?) UTXO to cold storage wallet
+    from phase 2: true
+
+    possible (input-providing) transactions:
+        or:
+            - Funding commitment transaction
+            - Vault stipend start transaction
+            - Vault transaction: spend one shard, re-vault the remaining shards
+
+    possible child transactions:
+        or:
+            - (user choice)
+            - Burn some UTXO
+
+    outputs count: 1
+    outputs:
+        output 1 of 1:
+            name: cold storage UTXO
+            script template: ColdStorageScriptTemplate
+
+    purpose:
+        This is a pre-signed push-to-cold-storage transaction. This transaction
+        might be hanging off of a number of different parent transactions.
+
+transaction:
+    name: Burn some UTXO
+    from phase 2: true
+
+    possible (input-providing) transactions:
+        - push-to-cold-storage
+
+    possible child transactions:
+        None.
+
+    outputs count: 1
+    outputs:
+        output 1 of 1:
+            name: burned UTXO
+            script template: BurnUnspendableScriptTemplate
+
+transaction:
+    name: Vault stipend start transaction
+    from phase 2: true
+
+    possible (input-providing) transactions:
+        - Funding commitment transaction
+        - Vault transaction: spend one shard, re-vault the remaining shards
+
+    possible child transactions:
+        or:
+            - (user choice)
+            - push-to-cold-storage
+
+    outputs count: n
+    outputs:
+        output 1 of n:
+            name: shard fragment UTXO k/n
+            script template: ShardScriptTemplate
+
+    purpose:
+        This transaction splits the UTXO up into n shards, meaning n separate
+        UTXOs are hanging off of this transaction in the output list. Each UTXO
+        has 1/n amount. Each UTXO has a monotonically increasing relative
+        timelock allowing time between when the UTXO is available to be spent
+        and the time at which the next UTXO becomes available. The idea is to
+        sweep the UTXO at the hot wallet ("(user choice)") before the next UTXO
+        becomes available. Otherwise, a thief might be able to steal two UTXOs
+        (two shards) at once.
+
+    comments:
+        - This enforces a transaction spend policy where funds are used at
+          regular intervals. This is good for when spending habits are known
+          ahead of time. But it is not good for infrequent irregular spending
+          habits.
+
+transaction:
+    name: Vault transaction: spend one shard, re-vault the remaining shards
+    from phase 2: false
+
+    possible (input-providing) transactions:
+        - Funding commitment transaction
+        - Vault transaction: spend one shard, re-vault the remaining shards
+
+    possible child transactions:
+        - (user choice)
+        - push-to-cold-storage
+        - push-to-cold-storage
+
+    outputs count: 2
+    outputs:
+        output 1 of 2:
+            name: shard fragment UTXO
+            script template: ShardScriptTemplate
+
+        output 2 of 2:
+            name: vault UTXO
+            script template: BasicPresignedScriptTemplate
+
+    purpose:
+        This transaction allows the user to choose a spending policy where they
+        only intend to spend one shard, and re-vault the remaining amount.
+
+    comments:
+        - "push-to-cold-storage" is listed twice in "possible child
+          transactions" because one is for the re-vault UTXO and the other is
+          for the shard UTXO.
+
+        - "(user choice)" is listed in "possible child transactions" because
+          the user can use the hot wallet to spend the shard fragment UTXO.
+
+
+
+
