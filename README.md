@@ -150,6 +150,7 @@ vault init
 vault info
 vault broadcast
 
+# The following don't work yet.
 vault lock
 vault sync
 vault unlock single
@@ -176,7 +177,8 @@ first layer hot wallet. The remaining amount is put back into the vault in a
 new vault UTXO.
 
 **vault sync** synchronizes the vault's internal database with the bitcoin
-blockchain by communicating with a bitcoind node over RPC.
+blockchain by communicating with a bitcoind node over RPC. (*This may be
+unnecessary now that bitcoind is responsible for syncing.*)
 
 **vault unlock many** starts the pre-determined stipend. This creates many
 sharded UTXOs.
