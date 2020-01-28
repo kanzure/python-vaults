@@ -833,7 +833,11 @@ def make_burn_transaction(incoming_utxo):
     return burn_transaction
 
 def make_push_to_cold_storage_transaction(incoming_utxo):
-    push_transaction = PlannedTransaction(name="Push (sharded?) UTXO to cold storage wallet")
+    # name was (phase 2): "push-to-cold-storage-from-sharded" But this is
+    # inaccurate because only some of them are from a sharded UTXO. Others will
+    # be the re-vault transaction.
+    # name was: "Push (sharded?) UTXO to cold storage wallet"
+    push_transaction = PlannedTransaction(name="push-to-cold-storage")
     planned_input = PlannedInput(
         utxo=incoming_utxo,
         witness_template_selection="presigned",
@@ -863,7 +867,14 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     return push_transaction
 
 def make_sweep_to_cold_storage_transaction(incoming_utxos):
-    push_transaction = PlannedTransaction(name="Sweep UTXOs to cold storage wallet")
+
+    # This function shouldn't be used because it makes the transaction tree
+    # planner too slow.
+    raise VaultException("Bad code, too slow. Not recommended.")
+
+    # name was: "Sweep UTXOs to cold storage wallet"
+    # phase 2 name was: Sharded UTXO sweep transaction
+    push_transaction = PlannedTransaction(name="Sharded UTXO sweep transaction")
 
     for incoming_utxo in incoming_utxos:
         # Inputs
@@ -984,6 +995,8 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
     # This path is another route of possible transactions, as a
     # possible-sibling to the vault stipend initiation transaction.
 
+    # phase 2 name: There was no equivalent name for this transaction discussed
+    # in phase 2. This transaction was added in phase 3.
     vault_spend_one_shard_transaction = PlannedTransaction(name="Vault transaction: spend one shard, re-vault the remaining shards")
     incoming_utxo.child_transactions.append(vault_spend_one_shard_transaction)
 
@@ -1000,6 +1013,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
     if first_shard_extra_amount != None:
         amount += first_shard_extra_amount
 
+    # phase 2 name: k% sharded UTXO
     exiting_utxo = PlannedUTXO(
         name="shard fragment UTXO",
         transaction=vault_spend_one_shard_transaction,
@@ -1022,6 +1036,8 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
         remaining_amount = (num_shards - 1) * per_shard_amount
 
         # Second UTXO attached to vault_spend_one_shard_transaction.
+        # phase 2 name: funding/commitment UTXO, kind of... But this wasn't
+        # really in the original phase 2 proposal.
         revault_utxo = PlannedUTXO(
             name="vault UTXO",
             transaction=vault_spend_one_shard_transaction,
@@ -1063,7 +1079,9 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
 #
 # Then move the segwit coins into that top-level P2WSH scriptpubkey.
 def setup_vault(segwit_utxo, parameters):
-    vault_locking_transaction = PlannedTransaction(name="Vault locking transaction")
+    # name was: Vault locking transaction
+    # phase 2 name: Funding commitment transaction
+    vault_locking_transaction = PlannedTransaction(name="Funding commitment transaction")
     segwit_utxo.child_transactions.append(vault_locking_transaction)
 
     planned_input = PlannedInput(
