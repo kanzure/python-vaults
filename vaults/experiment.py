@@ -808,7 +808,10 @@ class AbstractPlanningTests(unittest.TestCase):
         self.assertEqual(planned_transaction.output_utxos[0].name, "CPFP hook")
 
 
-def make_burn_transaction(incoming_utxo):
+def make_burn_transaction(incoming_utxo, parameters=None):
+    if not parameters["enable_burn_transactions"] == True:
+        return None
+
     burn_transaction = PlannedTransaction(name="Burn some UTXO")
     incoming_input = PlannedInput(
         utxo=incoming_utxo,
@@ -832,7 +835,7 @@ def make_burn_transaction(incoming_utxo):
     incoming_utxo.child_transactions.append(burn_transaction)
     return burn_transaction
 
-def make_push_to_cold_storage_transaction(incoming_utxo):
+def make_push_to_cold_storage_transaction(incoming_utxo, parameters=None):
     # name was (phase 2): "push-to-cold-storage-from-sharded" But this is
     # inaccurate because only some of them are from a sharded UTXO. Others will
     # be the re-vault transaction.
@@ -861,12 +864,12 @@ def make_push_to_cold_storage_transaction(incoming_utxo):
     # the theft of a single UTXO.
 
     # Make a possible transaction: burn/donate the cold storage UTXO.
-    burn_transaction = make_burn_transaction(cold_storage_utxo)
+    burn_transaction = make_burn_transaction(cold_storage_utxo, parameters=parameters)
 
     incoming_utxo.child_transactions.append(push_transaction)
     return push_transaction
 
-def make_sweep_to_cold_storage_transaction(incoming_utxos):
+def make_sweep_to_cold_storage_transaction(incoming_utxos, parameters=None):
 
     # This function shouldn't be used because it makes the transaction tree
     # planner too slow.
@@ -894,7 +897,7 @@ def make_sweep_to_cold_storage_transaction(incoming_utxos):
             amount=amount,
         )
         push_transaction.output_utxos.append(cold_storage_utxo)
-        burn_transaction = make_burn_transaction(cold_storage_utxo)
+        burn_transaction = make_burn_transaction(cold_storage_utxo, parameters=parameters)
 
     return push_transaction
 
@@ -904,7 +907,7 @@ def make_telescoping_subsets(some_set):
         item_sets.append(some_set[x:len(some_set)])
     return item_sets
 
-def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None, make_sweeps=False):
+def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None, make_sweeps=False, parameters=None):
     """
     Make a new sharding transaction.
     """
@@ -947,7 +950,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
         shard_utxos.append(sharded_utxo)
         sharding_transaction.output_utxos.append(sharded_utxo)
 
-        make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo)
+        make_push_to_cold_storage_transaction(incoming_utxo=sharded_utxo, parameters=parameters)
 
     # Make a variety of push-to-cold-storage (sweep) transactions that
     # each take 2 or more UTXOs. Note that the UTXOs get spent in order, so
@@ -965,7 +968,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
         subsets = make_telescoping_subsets(shard_utxos)
         #sweep_transactions = []
         for some_subset in subsets:
-            sweep_transaction = make_sweep_to_cold_storage_transaction(some_subset)
+            sweep_transaction = make_sweep_to_cold_storage_transaction(some_subset, parameters=parameters)
             #sweep_transactions.append(sweep_transaction)
 
             for utxo in some_subset:
@@ -978,7 +981,7 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
 # So if the user knows they only want a small amount, they use the one-time
 # spend. If they know they want more, then they can use the stipend (or migrate
 # out of the vault by first broadcasting the stipend setup transaction).
-def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, original_num_shards=None, first_shard_extra_amount=None):
+def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, original_num_shards=None, first_shard_extra_amount=None, parameters=None):
     """
     Make a possible transaction for the vault UTXO that has two possibilities
     hanging off of it: one to spend a single sharded UTXO (either to the cold
@@ -1024,7 +1027,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
 
     # For the exit UTXO, it should also be posisble to send that UTXO to cold
     # storage instead of letting the multisig hot wallet control it.
-    make_push_to_cold_storage_transaction(exiting_utxo)
+    make_push_to_cold_storage_transaction(exiting_utxo, parameters=parameters)
     # The hot wallet spend transaction is not represented here because t's not
     # a pre-signed transaction. It can be created at a later time, by the hot
     # wallet keys.
@@ -1047,7 +1050,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
         vault_spend_one_shard_transaction.output_utxos.append(revault_utxo)
 
         # The vault UTXO can also be spent directly to cold storage.
-        make_push_to_cold_storage_transaction(revault_utxo)
+        make_push_to_cold_storage_transaction(revault_utxo, parameters=parameters)
 
         # The re-vault UTXO can be sharded into "100" pieces (but not really 100..
         # it should be 100 minus the depth).
@@ -1057,6 +1060,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
             incoming_utxo=revault_utxo,
             original_num_shards=original_num_shards,
             first_shard_extra_amount=None,
+            parameters=parameters,
         )
 
         # The re-vault UTXO can also be spent using the one-shard possible spend
@@ -1067,6 +1071,7 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
             num_shards=num_shards - 1,
             original_num_shards=original_num_shards,
             first_shard_extra_amount=None,
+            parameters=parameters,
         )
 
 # Now that we have segwit outputs, proceed with the protocol.
@@ -1101,7 +1106,7 @@ def setup_vault(segwit_utxo, parameters):
     vault_locking_transaction.output_utxos.append(vault_initial_utxo)
 
     # Optional transaction: Push the whole amount to cold storage.
-    make_push_to_cold_storage_transaction(incoming_utxo=vault_initial_utxo)
+    make_push_to_cold_storage_transaction(incoming_utxo=vault_initial_utxo, parameters=parameters)
 
     # The number of shards that we made at this level of the transaction tree.
     # Inside the make_one_shard_possible_spend function, this amount will be
@@ -1123,6 +1128,7 @@ def setup_vault(segwit_utxo, parameters):
         first_shard_extra_amount=first_shard_extra_amount,
         incoming_utxo=vault_initial_utxo,
         original_num_shards=num_shards,
+        parameters=parameters,
     )
 
     # Another optional transaction
@@ -1134,6 +1140,7 @@ def setup_vault(segwit_utxo, parameters):
         num_shards=num_shards,
         first_shard_extra_amount=first_shard_extra_amount,
         original_num_shards=num_shards,
+        parameters=parameters,
     )
 
     return vault_initial_utxo
@@ -1769,6 +1776,7 @@ def main():
 
     parameters = {
         "num_shards": 5,
+        "enable_burn_transactions": True,
         "enable_graphviz": True,
         "enable_graphviz_popup": False,
         "amount": amount,
