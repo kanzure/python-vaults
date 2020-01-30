@@ -150,6 +150,7 @@ transaction:
         - (user choice)
         - push-to-cold-storage
         - push-to-cold-storage
+        - Vault transaction: spend one shard, re-vault the remaining shards
 
     outputs count: 2
     outputs:
@@ -173,6 +174,8 @@ transaction:
         - "(user choice)" is listed in "possible child transactions" because
           the user can use the hot wallet to spend the shard fragment UTXO.
 
-
+        - "Vault transaction: spend one shard, re-vault the remaining shards"
+          is listed in the "possible child transactions" because the vault UTXO
+          can be broken up into one shard and a re-vault UTXO again.
 
 
