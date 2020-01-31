@@ -1943,8 +1943,7 @@ def bake_ctv_transaction(some_transaction):
 
     bitcoin_inputs = []
     for some_input in some_transaction.inputs:
-        # TODO: implement ctv_txid
-        txid = some_input.utxo.transaction.ctv_txid
+        txid = some_input.utxo.transaction.ctv_bitcoin_transction.GetTxid()
         vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
 
         relative_timelock = None
