@@ -10,6 +10,7 @@ import unittest
 import hashlib
 from copy import copy
 import json
+import struct
 
 # pip3 install graphviz
 from graphviz import Digraph
@@ -39,6 +40,7 @@ import sys
 sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import connect_nodes
+from test_framework.messages import ser_string
 
 TRANSACTION_STORE_FILENAME ="transaction-store.json"
 TEXT_RENDERING_FILENAME = "text-rendering.txt"
@@ -636,6 +638,8 @@ class PlannedTransaction(object):
         self.id = copy(self.__class__.__counter__)
         self.__class__.__counter__ += 1
         self.internal_id = uuid.uuid4()
+
+        self.ctv_baked = False
 
         self.bitcoin_transaction = None
         self.is_finalized = False
@@ -1755,6 +1759,29 @@ def safety_check(initial_tx=None):
     if counter < 1 or counter < len(planned_transactions):
         raise VaultException("Length of the list of planned transactions is too low.")
 
+# pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
+def compute_standard_template_hash(child_transaction, nIn):
+    if child_transaction.ctv_baked == False:
+        raise Exception("Error: child transaction is not baked.")
+
+    bitcoin_transaction = child_transaction.ctv_bitcoin_transaction
+
+    nVersion = 2
+    nLockTime = 0
+
+    r = b""
+    r += struct.pack("<i", nVersion)
+    r += struct.pack("<I", nLockTime)
+    if any(inp.scriptSig for inp in bitcoin_transaction.vin):
+        r += sha256(b"".join(ser_string(inp.scriptSig) for inp in bitcoin_transaction.vin))
+    r += struct.pack("<I", len(bitcoin_transaction.vin))
+    r += sha256(b"".join(struct.pack("<I", inp.nSequence) for inp in bitcoin_transaction.vin))
+    r += struct.pack("<I", len(bitcoin_transaction.vout))
+    r += sha256(b"".join(out.serialize() for out in bitcoin_transaction.vout))
+    r += struct.pack("<I", nIn)
+
+    return sha256(r)
+
 def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
     """
     Make a script for the OP_CHECKTEMPLATEVERIFY section.
@@ -1784,7 +1811,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
 
     for child_transaction in child_transactions:
         bake_ctv_transaction(child_transaction)
-        standard_template_hash = compute_standard_template_hash(child_transaction)
+        standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
         some_script.append(standard_template_hash)
 
     some_script.append(len(child_transactions))
