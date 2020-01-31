@@ -1938,8 +1938,8 @@ def bake_ctv_transaction(some_transaction):
     for utxo in some_transaction.output_utxos:
         bake_output(utxo)
 
-    # TODO: Construct python-bitcoinlib bitcoin transactions and attach them to
-    # the PlannedTransaction objects, once all the UTXOs are ready.
+    # Construct python-bitcoinlib bitcoin transactions and attach them to the
+    # PlannedTransaction objects, once all the UTXOs are ready.
 
     bitcoin_inputs = []
     for some_input in some_transaction.inputs:
