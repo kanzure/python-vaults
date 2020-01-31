@@ -24,7 +24,7 @@ from bitcoin.wallet import CBitcoinSecret
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
-from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP
+from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP, OP_2DROP
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 import bitcoin.rpc
@@ -1762,7 +1762,7 @@ def safety_check(initial_tx=None):
 
 # pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
 def compute_standard_template_hash(child_transaction, nIn):
-    if child_transaction.ctv_baked == False:
+    if child_transaction.ctv_baked == False and child_transaction.ctv_bitcoin_transaction == None:
         raise Exception("Error: child transaction is not baked.")
 
     bitcoin_transaction = child_transaction.ctv_bitcoin_transaction
@@ -1811,7 +1811,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
     some_script = []
 
     for child_transaction in child_transactions:
-        bake_ctv_transaction(child_transaction, parameters=parameters)
+        bake_ctv_transaction(child_transaction, skip_inputs=True, parameters=parameters)
         standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
         some_script.append(standard_template_hash)
 
@@ -1930,7 +1930,7 @@ def bake_output(some_planned_utxo, parameters=None):
         specific_input.ctv_witness = CScript(appropriate_witness)
         specific_input.ctv_p2wsh_redeem_script = script
 
-def bake_ctv_transaction(some_transaction, parameters=None):
+def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
         return some_transaction.ctv_bitcoin_transaction
@@ -1945,34 +1945,40 @@ def bake_ctv_transaction(some_transaction, parameters=None):
     logger.info("Baking a transaction with name {}".format(some_transaction.name))
 
     bitcoin_inputs = []
-    for some_input in some_transaction.inputs:
-        if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name in ["Burn some UTXO", ]:
-            txid = some_input.utxo.transaction.txid
-        else:
-            logger.info("The parent transaction name is: {}".format(some_input.utxo.transaction.name))
-            logger.info("Name of the UTXO being spent: {}".format(some_input.utxo.name))
-            logger.info("Current transaction name: {}".format(some_input.transaction.name))
+    if not skip_inputs:
+        for some_input in some_transaction.inputs:
 
-            # This shouldn't happen... We should be able to bake transactions
-            # in a certain order and be done with this.
-            #if not hasattr(some_input.utxo.transaction, "ctv_bitcoin_transaction"):
-            #    bake_ctv_transaction(some_input.utxo.transaction, parameters=parameters)
-            # TODO: this creates an infinite loop....
+            # When computing the standard template hash for a child transaction,
+            # the child transaction needs to be only "partially" baked. It doesn't
+            # need to have the inputs yet.
 
-            txid = some_input.utxo.transaction.ctv_bitcoin_transaction.GetTxid()
+            if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name in ["Burn some UTXO", ]:
+                txid = some_input.utxo.transaction.txid
+            else:
+                logger.info("The parent transaction name is: {}".format(some_input.utxo.transaction.name))
+                logger.info("Name of the UTXO being spent: {}".format(some_input.utxo.name))
+                logger.info("Current transaction name: {}".format(some_input.transaction.name))
 
-        vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
+                # This shouldn't happen... We should be able to bake transactions
+                # in a certain order and be done with this.
+                #if not hasattr(some_input.utxo.transaction, "ctv_bitcoin_transaction"):
+                #    bake_ctv_transaction(some_input.utxo.transaction, parameters=parameters)
+                # TODO: this creates an infinite loop....
 
-        relative_timelock = None
-        if some_input.utxo.script_template.__class__ in [ColdStorageScriptTemplate, ShardScriptTemplate]:
-            relative_timelock = 144
+                txid = some_input.utxo.transaction.ctv_bitcoin_transaction.GetTxid()
 
-        if relative_timelock:
-            bitcoin_input = CTxIn(COutPoint(txid, vout), nSequence=relative_timelock)
-        else:
-            bitcoin_input = CTxIn(COutPoint(txid, vout))
+            vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
 
-        bitcoin_inputs.append(bitcoin_input)
+            relative_timelock = None
+            if some_input.utxo.script_template.__class__ in [ColdStorageScriptTemplate, ShardScriptTemplate]:
+                relative_timelock = 144
+
+            if relative_timelock:
+                bitcoin_input = CTxIn(COutPoint(txid, vout), nSequence=relative_timelock)
+            else:
+                bitcoin_input = CTxIn(COutPoint(txid, vout))
+
+            bitcoin_inputs.append(bitcoin_input)
 
     bitcoin_outputs = []
     for some_output in some_transaction.output_utxos:
@@ -1990,26 +1996,28 @@ def bake_ctv_transaction(some_transaction, parameters=None):
 
     bitcoin_transaction = CMutableTransaction(bitcoin_inputs, bitcoin_outputs, nLockTime=0, nVersion=2, witness=None)
 
-    witnesses = []
-    for some_input in some_transaction.inputs:
-        logger.info("Transaction name: {}".format(some_transaction.name))
-        logger.info("Spending UTXO with name: {}".format(some_input.utxo.name))
-        logger.info("Parent transaction name: {}".format(some_input.utxo.transaction.name))
+    if not skip_inputs:
+        witnesses = []
+        for some_input in some_transaction.inputs:
+            logger.info("Transaction name: {}".format(some_transaction.name))
+            logger.info("Spending UTXO with name: {}".format(some_input.utxo.name))
+            logger.info("Parent transaction name: {}".format(some_input.utxo.transaction.name))
 
-        if some_transaction.name == "Burn some UTXO":
-            witness = some_input.witness
-        else:
-            witness = some_input.ctv_witness
+            if some_transaction.name in ["Burn some UTXO", "Funding commitment transaction"]:
+                witness = some_input.witness
+            else:
+                witness = some_input.ctv_witness
 
-        witnesses.append(witness)
+            witnesses.append(witness)
 
-    ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
-    witness = CTxWitness(ctxinwitnesses)
-    bitcoin_transaction.wit = witness
+        ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
+        witness = CTxWitness(ctxinwitnesses)
+        bitcoin_transaction.wit = witness
 
     some_transaction.ctv_bitcoin_transaction = bitcoin_transaction
 
-    some_transaction.ctv_baked = True
+    if not skip_inputs:
+        some_transaction.ctv_baked = True
 
     return bitcoin_transaction
 
