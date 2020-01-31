@@ -1755,6 +1755,166 @@ def safety_check(initial_tx=None):
     if counter < 1 or counter < len(planned_transactions):
         raise VaultException("Length of the list of planned transactions is too low.")
 
+def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
+    """
+    Make a script for the OP_CHECKTEMPLATEVERIFY section.
+    """
+
+    """
+    scriptPubKey: OP_0 sha256(redeemScript)
+    redeemScript: <template0> <template1> <template n-1> (n) OP_ROLL OP_ROLL OP_CTV (and then all the OP_DROPs)
+    witness: x
+    full script when executing:  x <template0> <template1> <template n-1> (n) OP_ROLL OP_ROLL OP_CTV (and then all the OP_DROPs)
+    which template gets selected? template x
+    """
+
+    # <t1> <tn> <n> OP_ROLL OP_ROLL OP_CTV (some_clever_function(n))* OP_2DROP (another_clever_function(n))*OP_DROP
+    # some_clever_function
+    # another_clever_function
+    # number of 2drops: if n is odd, then do enough 2 drops to leave 1 item on
+    # number of 2drops: If N is even, do enough 2 drops to leave 2 items on, then do 1 drop
+
+    # actually it is just N not N+1
+    # 0 OP_ROLL is just a NOP
+    # 1 is the one one back,
+
+    child_transactions = sorted(child_transactions, key=lambda x: str(x.internal_id))
+
+    some_script = []
+
+    for child_transaction in child_transactions:
+        standard_template_hash = child_transaction.compute_standard_template_hash()
+        some_script.append(standard_template_hash)
+
+    some_script.append(len(child_transactions))
+    some_script.extend([OP_ROLL, OP_ROLL, OP_NOP4])
+
+    # Now append some OP_DROPs....
+    # need to satisfy cleanstack for segwit (only one element left on the stack)
+    num_2drops = 0
+    num_1drops = 0
+
+    if len(child_transactions) % 2 == 0:
+        num_2drops = (len(child_transactions) / 2) - 1
+        num_1drops = 1
+    elif len(child_transactions) % 2 == 1:
+        num_2drops = len(child_transactions) - 1
+        num_1drops = 0
+
+    if num_2drops > 0:
+        some_script.extend([OP_2DROP] * num_2drops)
+
+    if num_1drops == 1:
+        some_script.append(OP_DROP)
+    elif num_1drops > 1:
+        raise Exception("this shouldn't happen.. more than one 1drop required?")
+
+    witness_fragments = {}
+    for child_transaction in child_transactions:
+        witness_fragments[child_transaction.internal_id] = [child_transactions.index(child_transaction)]
+
+    return (some_script, witness_fragments)
+
+def bake_output(some_planned_utxo):
+    utxo = some_planned_utxo
+
+    # Note that the CTV fragment of the script isn't the only part. There might
+    # be some other branches, like for hot wallet spending or something.
+
+    # Which ones require multiple branches?
+    #   ColdStorageScriptTemplate (branch: cold wallet key spend)
+    #   ShardScriptTemplate (branch: hot wallet key spend)
+    # which don't?
+    #   BasicPresignedScriptTemplate
+
+    # For the script templates that have branching:
+    #   scriptPubKey: OP_0 <H(redeemScript)>
+    #   redeemScript: OP_IF {ctv_fragment} OP_ELSE <pubkey> OP_CHECKSIGVERIFY <timelock> OP_CSV OP_ENDIF
+    #   witness: 5 true <redeemScript>
+
+    script_template_class = utxo.script_template.__class__
+
+    has_extra_branch = None
+    if script_template_class in [ColdStorageScriptTemplate, ShardScriptTemplate]:
+        has_extra_branch = True
+    else:
+        has_extra_branch = False
+
+    (ctv_script_fragment, witness_fragments) = construct_ctv_script_and_witness_fragments(utxo.child_transactions)
+
+    # By convention, the key spends are in the first part of the OP_IF block.
+    if has_extra_branch:
+        for witness_fragment in witness_fragments:
+            witness_fragment.append(OP_0) # OP_FALSE
+
+    # Note that we're not going to construct any witness_fragments for the key
+    # spend scenario. It is up to the user to create a valid script on their
+    # own for that situation. But it's pretty simple, it's just:
+    #   OP_1 <sig1> <sig2> etc..
+
+    # Make the appropriate script template. Parameterize the script template.
+    script = None
+    if script_template_class == ColdStorageScriptTemplate:
+        script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+    elif script_template_class == ShardScriptTemplate:
+        script = [OP_IF, hotkey1, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+    elif script_template_class == BasicPresignedScriptTemplate:
+        script = ctv_script_fragment
+    else:
+        # TODO: For these kinds (CPFP, burn, ...), just implement a basic
+        # witness on those transactions. The witness is just the number of the
+        # transaction in the list (it's based on ordering).
+
+        utxo.ctv_bypass = True
+
+        return
+
+    # Store this data on the UTXO object. It gets used later.
+    utxo.ctv_script = CScript(script)
+    utxo.ctv_witness_fragments = witness_fragments
+    utxo.ctv_p2wsh_redeem_script = utxo.ctv_script
+    utxo.ctv_scriptpubkey = CScript([OP_0, sha256(bytes(utxo.ctv_p2wsh_redeem_script))])
+
+    # TODO: Copy over the witnesses to the PlannedInput objects. Find it by
+    # child_transaction.inputs[n].utxo == utxo etc...
+
+    # Copy over the witnesses to the PlannedInput objects.
+    for child_transaction in utxo.child_transactions:
+        appropriate_witness = witness_fragments[str(child_transaction.internal_id)]
+
+        # Push the bytes for the redeemScript into the witness.
+        appropriate_witness.append(utxo.ctv_p2wsh_redeem_script)
+
+        specific_input = None
+        for some_input in child_transaction.inputs:
+            if some_input.utxo == utxo:
+                specific_input = some_input
+                break
+        else:
+            raise Exception("Couldn't find a relevant input. Why is this considered a child transaction...?")
+
+        specific_input.ctv_witness = CScript(appropriate_witness)
+        specific_input.ctv_p2wsh_redeem_script = script
+
+def bake_transaction(some_transaction):
+    # Bake each UTXO.
+    for utxo in some_transaction.output_utxos:
+        bake_output(utxo)
+
+    # TODO: Construct python-bitcoinlib bitcoin transactions and attach them to
+    # the PlannedTransaction objects, once all the UTXOs are ready.
+
+    # TODO: For certain UTXOs, just use the previous UTXO script templates,
+    # instead of the CTV version. (utxo.ctv_bypass == True)
+
+def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx):
+    """
+    Mutate the planned transaction tree in place and convert it to a planned
+    transaction tree that uses OP_CHECKTEMPLATEVERIFY.
+    """
+
+    raise NotImplementedError
+
 def main():
 
     check_vaultfile_existence()
@@ -1884,6 +2044,9 @@ def main():
 
     if parameters["enable_graphviz"] == True:
         generate_graphviz(segwit_utxo, parameters)
+
+    make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx)
+    raise NotImplementedError # TODO: save the CTV tree!
 
     # A vault has been established. Write the vaultfile.
     make_vaultfile()
