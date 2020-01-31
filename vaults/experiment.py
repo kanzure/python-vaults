@@ -1853,6 +1853,11 @@ def bake_output(some_planned_utxo):
     #   OP_1 <sig1> <sig2> etc..
 
     # Make the appropriate script template. Parameterize the script template.
+
+    coldkey1 = parameters["cold_key1"]["public_key"]
+    coldkey2 = parameters["cold_key2"]["public_key"]
+    hotkey1 = parameters["hot_wallet_key"]["public_key"]
+
     script = None
     if script_template_class == ColdStorageScriptTemplate:
         script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
