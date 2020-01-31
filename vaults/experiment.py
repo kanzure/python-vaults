@@ -1843,7 +1843,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
 
     return (some_script, witness_fragments)
 
-def bake_output(some_planned_utxo):
+def bake_output(some_planned_utxo, parameters=parameters):
     utxo = some_planned_utxo
 
     # Note that the CTV fragment of the script isn't the only part. There might
@@ -1929,14 +1929,14 @@ def bake_output(some_planned_utxo):
         specific_input.ctv_witness = CScript(appropriate_witness)
         specific_input.ctv_p2wsh_redeem_script = script
 
-def bake_ctv_transaction(some_transaction):
+def bake_ctv_transaction(some_transaction, parameters=parameters):
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
         return some_transaction.ctv_bitcoin_transaction
 
     # Bake each UTXO.
     for utxo in some_transaction.output_utxos:
-        bake_output(utxo)
+        bake_output(utxo, parameters=parameters)
 
     # Construct python-bitcoinlib bitcoin transactions and attach them to the
     # PlannedTransaction objects, once all the UTXOs are ready.
@@ -1988,13 +1988,14 @@ def bake_ctv_transaction(some_transaction):
 
     return bitcoin_transaction
 
-def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx):
+def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx, parameters=None):
     """
     Mutate the planned transaction tree in place and convert it to a planned
     transaction tree that uses OP_CHECKTEMPLATEVERIFY.
     """
-
-    raise NotImplementedError
+    assert len(initial_tx.output_utxos[0].child_transactions) == 1
+    vault_commitment_transaction = initial_tx.output_utxos[0].child_transactions[0]
+    return bake_ctv_transaction(vault_commitment_transaction, parameters=parameters)
 
 def main():
 
@@ -2126,7 +2127,7 @@ def main():
     if parameters["enable_graphviz"] == True:
         generate_graphviz(segwit_utxo, parameters)
 
-    make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx)
+    make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx, parameters=parameters)
     raise NotImplementedError # TODO: save the CTV tree!
 
     # A vault has been established. Write the vaultfile.
