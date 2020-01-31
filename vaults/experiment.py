@@ -566,6 +566,7 @@ class PlannedInput(object):
             computed_witness.append(p2wsh_redeem_script)
 
         computed_witness = CScript(computed_witness)
+        self.witness = computed_witness
         return computed_witness
 
     def to_dict(self):
@@ -1941,9 +1942,25 @@ def bake_ctv_transaction(some_transaction, parameters=None):
     # Construct python-bitcoinlib bitcoin transactions and attach them to the
     # PlannedTransaction objects, once all the UTXOs are ready.
 
+    logger.info("Baking a transaction with name {}".format(some_transaction.name))
+
     bitcoin_inputs = []
     for some_input in some_transaction.inputs:
-        txid = some_input.utxo.transaction.ctv_bitcoin_transaction.GetTxid()
+        if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name in ["Burn some UTXO", ]:
+            txid = some_input.utxo.transaction.txid
+        else:
+            logger.info("The parent transaction name is: {}".format(some_input.utxo.transaction.name))
+            logger.info("Name of the UTXO being spent: {}".format(some_input.utxo.name))
+            logger.info("Current transaction name: {}".format(some_input.transaction.name))
+
+            # This shouldn't happen... We should be able to bake transactions
+            # in a certain order and be done with this.
+            #if not hasattr(some_input.utxo.transaction, "ctv_bitcoin_transaction"):
+            #    bake_ctv_transaction(some_input.utxo.transaction, parameters=parameters)
+            # TODO: this creates an infinite loop....
+
+            txid = some_input.utxo.transaction.ctv_bitcoin_transaction.GetTxid()
+
         vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
 
         relative_timelock = None
@@ -1975,7 +1992,15 @@ def bake_ctv_transaction(some_transaction, parameters=None):
 
     witnesses = []
     for some_input in some_transaction.inputs:
-        witness = some_input.ctv_witness
+        logger.info("Transaction name: {}".format(some_transaction.name))
+        logger.info("Spending UTXO with name: {}".format(some_input.utxo.name))
+        logger.info("Parent transaction name: {}".format(some_input.utxo.transaction.name))
+
+        if some_transaction.name == "Burn some UTXO":
+            witness = some_input.witness
+        else:
+            witness = some_input.ctv_witness
+
         witnesses.append(witness)
 
     ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
@@ -1995,6 +2020,17 @@ def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx
     """
     assert len(initial_tx.output_utxos[0].child_transactions) == 1
     vault_commitment_transaction = initial_tx.output_utxos[0].child_transactions[0]
+
+    initial_utxo = initial_tx.output_utxos[0]
+    (planned_utxos, planned_transactions) = initial_utxo.crawl()
+
+    #planned_transactions = reversed(sorted(planned_transactions, key=lambda tx: tx.id))
+    planned_transactions = sorted(planned_transactions, key=lambda tx: tx.id)
+
+    for planned_transaction in planned_transactions:
+        bake_ctv_transaction(planned_transaction, parameters=parameters)
+
+    # The top level transaction should be fine now.
     return bake_ctv_transaction(vault_commitment_transaction, parameters=parameters)
 
 def main():
