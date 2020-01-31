@@ -24,7 +24,7 @@ from bitcoin.wallet import CBitcoinSecret
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
-from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP, OP_2DROP
+from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP, OP_2DROP, OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKSIGVERIFY, OP_NOP3
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 import bitcoin.rpc
@@ -1815,7 +1815,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
         standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
         some_script.append(standard_template_hash)
 
-    some_script.append(len(child_transactions))
+    some_script.append(bitcoin.core._bignum.bn2vch(len(child_transactions)))
     some_script.extend([OP_ROLL, OP_ROLL, OP_NOP4])
 
     # Now append some OP_DROPs....
@@ -1840,7 +1840,14 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
 
     witness_fragments = {}
     for child_transaction in child_transactions:
-        witness_fragments[child_transaction.internal_id] = [child_transactions.index(child_transaction)]
+        some_index = child_transactions.index(child_transaction)
+        if some_index == 0:
+            wit_frag = int(some_index).to_bytes(1, byteorder="big")
+        elif some_index > 0:
+            wit_frag = bitcoin.core._bignum.bn2vch(some_index)
+        witness_fragments[str(child_transaction.internal_id)] = [wit_frag]
+        #witness_fragments[str(child_transaction.internal_id)] = [some_index]
+        #witness_fragments[str(child_transaction.internal_id)] = [] #[child_transactions.index(child_transaction)]
 
     return (some_script, witness_fragments)
 
@@ -1861,7 +1868,7 @@ def bake_output(some_planned_utxo, parameters=None):
     #   redeemScript: OP_IF {ctv_fragment} OP_ELSE <pubkey> OP_CHECKSIGVERIFY <timelock> OP_CSV OP_ENDIF
     #   witness: 5 true <redeemScript>
 
-    script_template_class = utxo.script_template.__class__
+    script_template_class = utxo.script_template
 
     has_extra_branch = None
     if script_template_class in [ColdStorageScriptTemplate, ShardScriptTemplate]:
@@ -1873,7 +1880,7 @@ def bake_output(some_planned_utxo, parameters=None):
 
     # By convention, the key spends are in the first part of the OP_IF block.
     if has_extra_branch:
-        for witness_fragment in witness_fragments:
+        for (some_key, witness_fragment) in witness_fragments.items():
             witness_fragment.append(OP_0) # OP_FALSE
 
     # Note that we're not going to construct any witness_fragments for the key
@@ -1892,9 +1899,9 @@ def bake_output(some_planned_utxo, parameters=None):
 
     script = None
     if script_template_class == ColdStorageScriptTemplate:
-        script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+        script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_NOP3, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
     elif script_template_class == ShardScriptTemplate:
-        script = [OP_IF, hotkey1, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+        script = [OP_IF, hotkey1, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_NOP3, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
     elif script_template_class == BasicPresignedScriptTemplate:
         script = ctv_script_fragment
     else:
@@ -1903,6 +1910,9 @@ def bake_output(some_planned_utxo, parameters=None):
         # transaction in the list (it's based on ordering).
 
         utxo.ctv_bypass = True
+
+        if utxo.name == "vault initial UTXO":
+            raise Exception("Should have been processed earlier...")
 
         return
 
@@ -2008,11 +2018,14 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
             else:
                 witness = some_input.ctv_witness
 
+            #logger.info("Appending witness: {}".format(list(witness)))
             witnesses.append(witness)
 
         ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
         witness = CTxWitness(ctxinwitnesses)
         bitcoin_transaction.wit = witness
+    else:
+        bitcoin_transaction.wit = CTxWitness()
 
     some_transaction.ctv_bitcoin_transaction = bitcoin_transaction
 
@@ -2034,6 +2047,8 @@ def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx
 
     #planned_transactions = reversed(sorted(planned_transactions, key=lambda tx: tx.id))
     planned_transactions = sorted(planned_transactions, key=lambda tx: tx.id)
+
+    #bake_output(initial_utxo, parameters=parameters)
 
     for planned_transaction in planned_transactions:
         bake_ctv_transaction(planned_transaction, parameters=parameters)
