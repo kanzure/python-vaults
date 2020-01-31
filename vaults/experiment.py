@@ -24,7 +24,7 @@ from bitcoin.wallet import CBitcoinSecret
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
-from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160
+from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 import bitcoin.rpc
@@ -1782,7 +1782,7 @@ def compute_standard_template_hash(child_transaction, nIn):
 
     return sha256(r)
 
-def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
+def construct_ctv_script_fragment_and_witness_fragments(child_transactions, parameters=None):
     """
     Make a script for the OP_CHECKTEMPLATEVERIFY section.
     """
@@ -1810,7 +1810,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
     some_script = []
 
     for child_transaction in child_transactions:
-        bake_ctv_transaction(child_transaction)
+        bake_ctv_transaction(child_transaction, parameters=parameters)
         standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
         some_script.append(standard_template_hash)
 
@@ -1843,7 +1843,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
 
     return (some_script, witness_fragments)
 
-def bake_output(some_planned_utxo, parameters=parameters):
+def bake_output(some_planned_utxo, parameters=None):
     utxo = some_planned_utxo
 
     # Note that the CTV fragment of the script isn't the only part. There might
@@ -1868,7 +1868,7 @@ def bake_output(some_planned_utxo, parameters=parameters):
     else:
         has_extra_branch = False
 
-    (ctv_script_fragment, witness_fragments) = construct_ctv_script_and_witness_fragments(utxo.child_transactions)
+    (ctv_script_fragment, witness_fragments) = construct_ctv_script_fragment_and_witness_fragments(utxo.child_transactions, parameters=parameters)
 
     # By convention, the key spends are in the first part of the OP_IF block.
     if has_extra_branch:
@@ -1929,7 +1929,7 @@ def bake_output(some_planned_utxo, parameters=parameters):
         specific_input.ctv_witness = CScript(appropriate_witness)
         specific_input.ctv_p2wsh_redeem_script = script
 
-def bake_ctv_transaction(some_transaction, parameters=parameters):
+def bake_ctv_transaction(some_transaction, parameters=None):
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
         return some_transaction.ctv_bitcoin_transaction
@@ -1943,7 +1943,7 @@ def bake_ctv_transaction(some_transaction, parameters=parameters):
 
     bitcoin_inputs = []
     for some_input in some_transaction.inputs:
-        txid = some_input.utxo.transaction.ctv_bitcoin_transction.GetTxid()
+        txid = some_input.utxo.transaction.ctv_bitcoin_transaction.GetTxid()
         vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
 
         relative_timelock = None
@@ -2128,10 +2128,11 @@ def main():
         generate_graphviz(segwit_utxo, parameters)
 
     make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx, parameters=parameters)
-    raise NotImplementedError # TODO: save the CTV tree!
 
     # A vault has been established. Write the vaultfile.
     make_vaultfile()
+
+    raise NotImplementedError # TODO: save the CTV tree!
 
 if __name__ == "__main__":
     main()
