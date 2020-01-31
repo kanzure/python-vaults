@@ -727,6 +727,11 @@ class PlannedTransaction(object):
             "bitcoin_transaction": b2x(self.bitcoin_transaction.serialize()),
         }
 
+        if hasattr(self, "ctv_bitcoin_transaction"):
+            logger.info("Transaction name: {}".format(self.name))
+            data["ctv_bitcoin_transaction"] = b2x(self.ctv_bitcoin_transaction.serialize())
+            data["ctv_bitcoin_transaction_txid"] = b2lx(self.ctv_bitcoin_transaction.GetTxid())
+
         return data
 
     def to_json(self):
@@ -1549,6 +1554,14 @@ def load(transaction_store_filename=TRANSACTION_STORE_FILENAME):
     initial_tx = from_dict(data)
     return initial_tx
 
+def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):
+    output_data = to_dict(some_utxo)
+    output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
+
+    with open(os.path.join(os.getcwd(), filename), "w") as fd:
+        fd.write(output_json)
+    logger.info(f"Wrote to {filename}")
+
 def generate_graphviz(some_utxo, parameters):
     (utxos, transactions) = some_utxo.crawl()
 
@@ -1815,7 +1828,10 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
         standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
         some_script.append(standard_template_hash)
 
-    some_script.append(bitcoin.core._bignum.bn2vch(len(child_transactions)))
+    if len(child_transactions) == 0:
+        some_script.append(b"\x00")
+    else:
+        some_script.append(bitcoin.core._bignum.bn2vch(len(child_transactions)))
     some_script.extend([OP_ROLL, OP_ROLL, OP_NOP4])
 
     # Now append some OP_DROPs....
@@ -1881,7 +1897,9 @@ def bake_output(some_planned_utxo, parameters=None):
     # By convention, the key spends are in the first part of the OP_IF block.
     if has_extra_branch:
         for (some_key, witness_fragment) in witness_fragments.items():
-            witness_fragment.append(OP_0) # OP_FALSE
+            #witness_fragment.append(OP_0) # OP_FALSE
+            # TODO: Why can't we just use OP_0 ?
+            witness_fragment.append(b"\x00")
 
     # Note that we're not going to construct any witness_fragments for the key
     # spend scenario. It is up to the user to create a valid script on their
@@ -2173,13 +2191,7 @@ def main():
 
     sign_transaction_tree(segwit_utxo, parameters)
 
-    output_data = to_dict(segwit_utxo)
-    output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
-
-    filename = TRANSACTION_STORE_FILENAME
-    with open(os.path.join(os.getcwd(), filename), "w") as fd:
-        fd.write(output_json)
-    logger.info(f"Wrote to {filename}")
+    save(segwit_utxo)
 
     # TODO: Delete the ephemeral keys.
 
@@ -2187,11 +2199,10 @@ def main():
         generate_graphviz(segwit_utxo, parameters)
 
     make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx, parameters=parameters)
+    save(segwit_utxo, filename="transaction-store.ctv.json")
 
     # A vault has been established. Write the vaultfile.
     make_vaultfile()
-
-    raise NotImplementedError # TODO: save the CTV tree!
 
 if __name__ == "__main__":
     main()
