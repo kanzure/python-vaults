@@ -1783,7 +1783,8 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions):
     some_script = []
 
     for child_transaction in child_transactions:
-        standard_template_hash = child_transaction.compute_standard_template_hash()
+        bake_ctv_transaction(child_transaction)
+        standard_template_hash = compute_standard_template_hash(child_transaction)
         some_script.append(standard_template_hash)
 
     some_script.append(len(child_transactions))
@@ -1858,11 +1859,14 @@ def bake_output(some_planned_utxo):
     coldkey2 = parameters["cold_key2"]["public_key"]
     hotkey1 = parameters["hot_wallet_key"]["public_key"]
 
+    # TODO: use a variable for the OP_CSV value. Use the
+    # ScriptTemplate.relative_timelocks.
+
     script = None
     if script_template_class == ColdStorageScriptTemplate:
-        script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+        script = [OP_IF, coldkey1, OP_CHECKSIGVERIFY, coldkey2, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
     elif script_template_class == ShardScriptTemplate:
-        script = [OP_IF, hotkey1, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
+        script = [OP_IF, hotkey1, OP_CHECKSIGVERIFY, bitcoin.core._bignum.bn2vch(144*2), OP_CHECKSEQUENCEVERIFY, OP_ELSE] + ctv_script_fragment + [OP_ENDIF]
     elif script_template_class == BasicPresignedScriptTemplate:
         script = ctv_script_fragment
     else:
@@ -1879,9 +1883,6 @@ def bake_output(some_planned_utxo):
     utxo.ctv_witness_fragments = witness_fragments
     utxo.ctv_p2wsh_redeem_script = utxo.ctv_script
     utxo.ctv_scriptpubkey = CScript([OP_0, sha256(bytes(utxo.ctv_p2wsh_redeem_script))])
-
-    # TODO: Copy over the witnesses to the PlannedInput objects. Find it by
-    # child_transaction.inputs[n].utxo == utxo etc...
 
     # Copy over the witnesses to the PlannedInput objects.
     for child_transaction in utxo.child_transactions:
@@ -1901,7 +1902,11 @@ def bake_output(some_planned_utxo):
         specific_input.ctv_witness = CScript(appropriate_witness)
         specific_input.ctv_p2wsh_redeem_script = script
 
-def bake_transaction(some_transaction):
+def bake_ctv_transaction(some_transaction):
+
+    if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
+        return some_transaction.ctv_bitcoin_transaction
+
     # Bake each UTXO.
     for utxo in some_transaction.output_utxos:
         bake_output(utxo)
@@ -1909,8 +1914,53 @@ def bake_transaction(some_transaction):
     # TODO: Construct python-bitcoinlib bitcoin transactions and attach them to
     # the PlannedTransaction objects, once all the UTXOs are ready.
 
-    # TODO: For certain UTXOs, just use the previous UTXO script templates,
-    # instead of the CTV version. (utxo.ctv_bypass == True)
+    bitcoin_inputs = []
+    for some_input in some_transaction.inputs:
+        # TODO: implement ctv_txid
+        txid = some_input.utxo.transaction.ctv_txid
+        vout = some_input.utxo.transaction.output_utxos.index(some_input.utxo)
+
+        relative_timelock = None
+        if some_input.utxo.script_template.__class__ in [ColdStorageScriptTemplate, ShardScriptTemplate]:
+            relative_timelock = 144
+
+        if relative_timelock:
+            bitcoin_input = CTxIn(COutPoint(txid, vout), nSequence=relative_timelock)
+        else:
+            bitcoin_input = CTxIn(COutPoint(txid, vout))
+
+        bitcoin_inputs.append(bitcoin_input)
+
+    bitcoin_outputs = []
+    for some_output in some_transaction.output_utxos:
+        amount = some_output.amount
+
+        # For certain UTXOs, just use the previous UTXO script templates,
+        # instead of the CTV version. (utxo.ctv_bypass == True)
+        if hasattr(some_output, "ctv_bypass"):
+            scriptpubkey = some_output.scriptpubkey
+        else:
+            scriptpubkey = some_output.ctv_scriptpubkey
+
+        bitcoin_output = CTxOut(amount, scriptpubkey)
+        bitcoin_outputs.append(bitcoin_output)
+
+    bitcoin_transaction = CMutableTransaction(bitcoin_inputs, bitcoin_outputs, nLockTime=0, nVersion=2, witness=None)
+
+    witnesses = []
+    for some_input in some_transaction.inputs:
+        witness = some_input.ctv_witness
+        witnesses.append(witness)
+
+    ctxinwitnesses = [CTxInWitness(CScriptWitness(list(witness))) for witness in witnesses]
+    witness = CTxWitness(ctxinwitnesses)
+    bitcoin_transaction.wit = witness
+
+    some_transaction.ctv_bitcoin_transaction = bitcoin_transaction
+
+    some_transaction.ctv_baked = True
+
+    return bitcoin_transaction
 
 def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx):
     """
