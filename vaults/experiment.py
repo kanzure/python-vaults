@@ -2195,9 +2195,14 @@ def main():
 
     # TODO: Delete the ephemeral keys.
 
+    # (graph generation can wait until after key deletion)
     if parameters["enable_graphviz"] == True:
         generate_graphviz(segwit_utxo, parameters)
 
+    # Create another planned transaction tree this time using
+    # OP_CHECKTEMPLATEVERIFY from bip119. This can be performed after key
+    # deletion because OP_CTV standard template hashes are not based on keys
+    # and signatures.
     make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx, parameters=parameters)
     save(segwit_utxo, filename="transaction-store.ctv.json")
 
