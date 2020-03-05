@@ -2107,7 +2107,6 @@ def main():
         public_key = private_key.pub
         parameters[some_name] = {"private_key": private_key, "public_key": public_key}
 
-    # TODO: might be without b2x?
     parameters["user_key_hash160"] = b2x(Hash160(parameters["user_key"]["public_key"]))
 
     # consistency check against required parameters
