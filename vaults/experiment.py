@@ -1959,6 +1959,28 @@ def bake_output(some_planned_utxo, parameters=None):
         specific_input.ctv_p2wsh_redeem_script = script
 
 def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
+    """
+    Create a CTV transaction for the planned transaction tree.
+
+    This is done in two passes: bake_output (looped) and bake_ctv_transaction
+    (also looped). The bake_ctv_transaction function is called on an ordered
+    list of all transactions, starting with the "first" transaction of all the
+    planned transactions. For each transaction, all of the transaction outputs
+    get "baked": they are assigned a txid based on the hash of the parent
+    transaction (the txid) which commits to a certain standard template hash.
+    However, that standard template hash can only be determined by rendering
+    the rest of the pre-planned transaction tree.
+
+    Note that bake_output calls bake_ctv_transaction somewhere in another
+    subsequent function.
+
+    Hence the two passes are about (1) crawling the whole tree and generating
+    standard template hashes (starting with the deepest elements in the tree
+    and working backwards), and then (2) crawling the whole tree and assigning
+    txids to the inputs. This is possible because OP_CHECKTEMPLATEVERIFY does
+    not include the hash of the inputs in the standard template hash, otherwise
+    there would be a recursive hash commitment dependency loop error.
+    """
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
         return some_transaction.ctv_bitcoin_transaction
