@@ -233,9 +233,11 @@ otherwise you will have to run with `-conf=/path/to/bitcoin.conf` each time.
 bitcoin-cli -regtest getblockchaininfo
 ```
 
-# Follow-up
+# Other pre-signed vault implementations
 
-* Check status of segwit example: <https://github.com/petertodd/python-bitcoinlib/pull/227>
-
+* [python-vaults](https://github.com/kanzure/python-vaults) (you are here)
+* <https://github.com/fmr-llc/Vault-mbed>
+* <https://github.com/JSwambo/bitcoin-vault>
+* kloaec's implementation?
 
 
