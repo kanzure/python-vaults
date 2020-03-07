@@ -1,0 +1,2590 @@
+[
+    {
+        "counter": -1,
+        "name": "initial transaction (from user)",
+        "txid": "cf600e3cfc2cdc01be7563334b33f304ab6466b976e17f66c15228bd81f80007",
+        "outputs": {
+            "0": {
+                "counter": 0,
+                "internal_id": "fe61b27a-0f9f-45ef-b04d-ffa6ce920672",
+                "name": "segwit input coin",
+                "script_template_name": "UserScriptTemplate",
+                "amount": 625000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "-1",
+                "child_transaction_internal_ids": [
+                    "7a39480d-e17f-42aa-907c-3058f97693f4"
+                ],
+                "_vout_override": 0
+            }
+        }
+    },
+    {
+        "counter": 0,
+        "internal_id": "7a39480d-e17f-42aa-907c-3058f97693f4",
+        "name": "Funding commitment transaction",
+        "txid": "4f49232a7c789d83a2d07cd2d656481a84b739a52287825b0e91bf6f1fc5288e",
+        "inputs": {
+            "0": {
+                "internal_id": "7770ce69-5d71-4f89-892d-736a7e6905da",
+                "transaction_internal_id": "7a39480d-e17f-42aa-907c-3058f97693f4",
+                "utxo_internal_id": "fe61b27a-0f9f-45ef-b04d-ffa6ce920672",
+                "utxo_name": "segwit input coin",
+                "witness_template_selection": "user"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 1,
+                "internal_id": "71c44a3d-2b12-4876-9c54-eed6f410bc53",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a39480d-e17f-42aa-907c-3058f97693f4",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 2,
+                "internal_id": "062880b5-6f39-46cf-a4fd-d6b3678b557a",
+                "name": "vault initial UTXO",
+                "script_template_name": "BasicPresignedScriptTemplate",
+                "amount": 625000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a39480d-e17f-42aa-907c-3058f97693f4",
+                "child_transaction_internal_ids": [
+                    "1b3d1541-6a45-4010-aae5-a720cec52b4b",
+                    "d923473d-394a-438a-9d1c-0b53849a51b6",
+                    "a5774ff6-4798-4fed-be27-221b10937a75"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001010700f881bd2852c1667fe176b96664ab04f3334b336375be01dc2cfc3c0e60cf0000000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040be40250000000022002095f39ea16fd7eb396dcb682d1ac462741198f14223cce27c341cc11db34e93f90247304402200d146a793037c45758c2313f6c3654de6f6b774e488b8230e6024df88e4cdaeb022012999925a9af3847e531a77a4f00d7512f8d106ccc0c05a9b69efc9f9cf017cc0121022c89c6c3ce34b0876e0b7211c416a0b36bbbc7e24a95e8dba39ea9570fd2637500000000"
+    },
+    {
+        "counter": 1,
+        "internal_id": "1b3d1541-6a45-4010-aae5-a720cec52b4b",
+        "name": "push-to-cold-storage",
+        "txid": "0dbad14b7d61980ac8ad57df7d3128353171b7f48c318bab78dd2cdbd392b8e2",
+        "inputs": {
+            "0": {
+                "internal_id": "60c803ca-b617-4de1-b790-124a8493bc38",
+                "transaction_internal_id": "1b3d1541-6a45-4010-aae5-a720cec52b4b",
+                "utxo_internal_id": "062880b5-6f39-46cf-a4fd-d6b3678b557a",
+                "utxo_name": "vault initial UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 3,
+                "internal_id": "990cbbc9-6c4a-4179-853c-bd4ec11e6e78",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "1b3d1541-6a45-4010-aae5-a720cec52b4b",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 4,
+                "internal_id": "b31080fe-5174-419b-ad54-f86baf8d9982",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 625000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "1b3d1541-6a45-4010-aae5-a720cec52b4b",
+                "child_transaction_internal_ids": [
+                    "9b78b3bc-4000-47bf-866f-8a732c1c0738"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001018e28c51f6fbf910e5b828722a539b7841a4856d6d27cd0a2839d787c2a23494f0100000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040be402500000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c034730440220588862aafdb5897c78b8590aa434cfa1ee795c3b65513f6d9c349e6653220dc402200a07f42f12a53885db1add72babc37363e3ed018241bbfc8c1b604ebeee171d901483045022100855608af60528b46fccbad2cab46e40d12d16d134dc851ac8e957ba7fe6aac9402201240c54e616d4aa5b0f07b1877e36457f0e5ac8385eaffe15cdcabe0eb5bb74d014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 2,
+        "internal_id": "9b78b3bc-4000-47bf-866f-8a732c1c0738",
+        "name": "Burn some UTXO",
+        "txid": "49689cd715f38d76f28f294ad270ef58c64cdcbd41ee4b57e3bf6b3912e71422",
+        "inputs": {
+            "0": {
+                "internal_id": "6a01fccc-bd32-4a6b-a7a4-8b3dd440f6c6",
+                "transaction_internal_id": "9b78b3bc-4000-47bf-866f-8a732c1c0738",
+                "utxo_internal_id": "b31080fe-5174-419b-ad54-f86baf8d9982",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 5,
+                "internal_id": "11a47519-8602-476d-8b35-f7b1b99a48a1",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9b78b3bc-4000-47bf-866f-8a732c1c0738",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 6,
+                "internal_id": "d35f55de-038b-44f9-aac6-71195138f303",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 625000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9b78b3bc-4000-47bf-866f-8a732c1c0738",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101e2b892d3db2cdd78ab8b318cf4b771313528317ddf57adc80a98617d4bd1ba0d0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040be4025000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100d38ad7e4b27abdc1a02fbd75720f16240e008df566473aead899377668609e54022053eca5f4cfc09b6cc45b5f2e575170b10ba36edee80002fd01ad161d75040e0401483045022100c653caa4a636fbc480016da74041b09b89c0f1a1f018c62c3409d7d0e92e1e82022038bdd6aca8ba6da33f23420f81cd769dd2782dba204abb0a084c8a151d84e12e019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 3,
+        "internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+        "name": "Vault stipend start transaction.",
+        "txid": "ed164bcdbb57b596a6fe25748caca28bd735581939d98de0b3cc22a13f206b6a",
+        "inputs": {
+            "0": {
+                "internal_id": "c968601f-cd43-4a70-a660-7bef719bd328",
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "utxo_internal_id": "062880b5-6f39-46cf-a4fd-d6b3678b557a",
+                "utxo_name": "vault initial UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 7,
+                "internal_id": "7dec2f21-dbab-490d-8bd8-6651f87e3d48",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 8,
+                "internal_id": "418bba9e-9b22-4ec9-bf48-55582b8cbfb0",
+                "name": "shard fragment UTXO 1/5",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 0,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": [
+                    "9c2a0641-2821-4214-8530-b022d11b15be"
+                ]
+            },
+            "2": {
+                "counter": 13,
+                "internal_id": "0dc07317-a497-42b9-af77-a6d13ba87cd9",
+                "name": "shard fragment UTXO 2/5",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": [
+                    "ca796de7-bb97-4a2c-b175-bb5bb847dfcf"
+                ]
+            },
+            "3": {
+                "counter": 18,
+                "internal_id": "ef03e3d3-c0ae-481e-9161-19a04e69ffc0",
+                "name": "shard fragment UTXO 3/5",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 2,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": [
+                    "9a5597ba-984a-4a43-9f4b-b1103d94a6bd"
+                ]
+            },
+            "4": {
+                "counter": 23,
+                "internal_id": "7ce0f10c-7621-49dd-8752-72493260bc4c",
+                "name": "shard fragment UTXO 4/5",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 3,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": [
+                    "2217cba1-c8ca-4091-8398-137280fd41c8"
+                ]
+            },
+            "5": {
+                "counter": 28,
+                "internal_id": "0dd76e4b-18fb-42fa-942d-989a22503835",
+                "name": "shard fragment UTXO 5/5",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 4,
+                "transaction_internal_id": "d923473d-394a-438a-9d1c-0b53849a51b6",
+                "child_transaction_internal_ids": [
+                    "3224fca3-2565-40ba-9c1f-9e1d6c6f7c9d"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001018e28c51f6fbf910e5b828722a539b7841a4856d6d27cd0a2839d787c2a23494f0100000000900000000600000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020ffc5b0b49dcd766a64c2035ed8c5557d058c67641239c62a72783f4df7baaedb4059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e204059730700000000220020d76f5670e256e6826cccf280db8aa51a9b4d57113c1ef6dc2a2727ad328076b2405973070000000022002019a58bfcfe033abf5fcc4ab074f48e80deed1613d92129c824bc7fb978c2913140597307000000002200201602961075337656efaa027988ac1fd7f17784c62ec2dc7529c1fddf7b3e0adc03483045022100de16439eaa6b60b8ca70cb5198bd487add19d9002b3ec18e4a96f7ad4512f92a0220432038191674a9d4e04e83e7cfffb5f2aabe085c1fa552b7647dade1d197eb2d01483045022100eb4e6fa658022bb31559e88930b270d6dcaf7e0494e08274f328c130d4a2f07a022052d5f62f60ce4393c5d419a9f366e9a79643a15a5299c44b0bd821068cb8d8d5014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 4,
+        "internal_id": "9c2a0641-2821-4214-8530-b022d11b15be",
+        "name": "push-to-cold-storage",
+        "txid": "36d48b529326cb951e9091d52d2cb5a26bf4bcfaaf45958c07f4b1e99787e31e",
+        "inputs": {
+            "0": {
+                "internal_id": "2d1f8c75-c06a-4617-9c5b-a988d3fb1684",
+                "transaction_internal_id": "9c2a0641-2821-4214-8530-b022d11b15be",
+                "utxo_internal_id": "418bba9e-9b22-4ec9-bf48-55582b8cbfb0",
+                "utxo_name": "shard fragment UTXO 1/5",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 9,
+                "internal_id": "06c18997-24c5-4fee-b7e2-fd72cbebf0db",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9c2a0641-2821-4214-8530-b022d11b15be",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 10,
+                "internal_id": "a2b313eb-89f2-48f7-b6f9-230ff0b7d489",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9c2a0641-2821-4214-8530-b022d11b15be",
+                "child_transaction_internal_ids": [
+                    "3db4d3c2-9348-4af8-9a81-b01b25030900"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001016a6b203fa122ccb3e08dd939195835d78ba2ac8c7425fea696b557bbcd4b16ed0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0348304502210084be61b2828e0eae310217638d9d0bfd42c7c8a2f93cb82f9416cac4f6278ccf02207f50d47e975f7cdf5631dd940ff0ad2a93dbd2d6c8383b6815d59a6f4fd7a6ac0148304502210090c638d33e4dd0763bbe4c11befb26aac7f24d158a830519cdcc22135c4058f902207b4cdedde98c57f8b3ee05871f88fa7dddc301f33c7b3b420ca134b2bb3373a3016d21030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67b26800000000"
+    },
+    {
+        "counter": 5,
+        "internal_id": "3db4d3c2-9348-4af8-9a81-b01b25030900",
+        "name": "Burn some UTXO",
+        "txid": "a3f25b81163f313c47b1617e19aec215cf92b58aef4afa24c528bf0b1bdc87c3",
+        "inputs": {
+            "0": {
+                "internal_id": "57fc554e-6afb-4f04-8f50-b81f2deb9c1e",
+                "transaction_internal_id": "3db4d3c2-9348-4af8-9a81-b01b25030900",
+                "utxo_internal_id": "a2b313eb-89f2-48f7-b6f9-230ff0b7d489",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 11,
+                "internal_id": "6d659029-9bc0-481f-a0ab-5d51aa1203b1",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3db4d3c2-9348-4af8-9a81-b01b25030900",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 12,
+                "internal_id": "fe8a5d3b-50f3-4ae7-85f3-205d33dec228",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3db4d3c2-9348-4af8-9a81-b01b25030900",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001011ee38797e9b1f4078c9545affabcf46ba2b52c2dd591901e95cb2693528bd4360100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203473044022042b63f9cc68ebdc314cf128ef696660d32bd759f838fe744533dc0475c6351060220455358c8e8e4c1a08352a2edc88bbe7736c61fa2763a68c71bbe1efe400477010148304502210085385d6752073c0f9d5c7836a220a51f759a35e02370e66ce8f27069b04a23bf0220734e112f2668f87f69b0b52ce3559416236e2533612c729a0c3a4ec3a54cb572019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 6,
+        "internal_id": "ca796de7-bb97-4a2c-b175-bb5bb847dfcf",
+        "name": "push-to-cold-storage",
+        "txid": "cfbfe95f4b0bf1f75cf508be5eb839238a2181369077090606eef250b267e44c",
+        "inputs": {
+            "0": {
+                "internal_id": "325f576d-fc8b-4f4e-a033-7a0d3ad2d4ae",
+                "transaction_internal_id": "ca796de7-bb97-4a2c-b175-bb5bb847dfcf",
+                "utxo_internal_id": "0dc07317-a497-42b9-af77-a6d13ba87cd9",
+                "utxo_name": "shard fragment UTXO 2/5",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 14,
+                "internal_id": "9a723104-b320-4275-9075-945df2f3b656",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ca796de7-bb97-4a2c-b175-bb5bb847dfcf",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 15,
+                "internal_id": "5d72fafb-fedb-4321-b5a1-309be24142a3",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ca796de7-bb97-4a2c-b175-bb5bb847dfcf",
+                "child_transaction_internal_ids": [
+                    "ecd29a01-fe5b-4c1c-bad2-b5ce18f12c7f"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001016a6b203fa122ccb3e08dd939195835d78ba2ac8c7425fea696b557bbcd4b16ed0200000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03473044022051e346249fd6ecc92d0849b49f2bd2a4332a10c1669e09de6b959670bcaa5d5a022066b64833da7b9733d88f8b20b884c7a1d859e7a55ee089db531bb2f80dca36c0014830450221008e66b9ff8ac502633430d34558cc3d864fc593935f882cd77d9bdcb86feff8970220210f809e21ca6018bceb05ef7d63d9bcad0bd8463c890ab929e7dbc212269ea9017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 7,
+        "internal_id": "ecd29a01-fe5b-4c1c-bad2-b5ce18f12c7f",
+        "name": "Burn some UTXO",
+        "txid": "7dc3f2752cd5f0a8e7dc8c526712f4e05ab224cf55bb33b87bf6824591acd158",
+        "inputs": {
+            "0": {
+                "internal_id": "c205c007-f58e-499d-a35e-d8953e423e9b",
+                "transaction_internal_id": "ecd29a01-fe5b-4c1c-bad2-b5ce18f12c7f",
+                "utxo_internal_id": "5d72fafb-fedb-4321-b5a1-309be24142a3",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 16,
+                "internal_id": "c83ce2dc-57bf-4b81-8807-71a26345411e",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ecd29a01-fe5b-4c1c-bad2-b5ce18f12c7f",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 17,
+                "internal_id": "c2f84ef9-0ed4-4cf6-aa85-f84c407d9710",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ecd29a01-fe5b-4c1c-bad2-b5ce18f12c7f",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001014ce467b250f2ee06060977903681218a2339b85ebe08f55cf7f10b4b5fe9bfcf0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100aa4f1172278886026bf4d641c957caccbf90fb93ad5159bd08f145dd046bccc202202783fae1db82b54d442d39b7b9b55c13d682e90371936ae34d3f26b257c332d001483045022100f273188f546f54e8a1cf2156c55e6d2ef81d255e5e0af6ffe1aca6a4bd25ac58022075d852c3ddec06cbd6f97b924148f9643bc3b48d76da05f6c78d7a043b3c9556019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 8,
+        "internal_id": "9a5597ba-984a-4a43-9f4b-b1103d94a6bd",
+        "name": "push-to-cold-storage",
+        "txid": "eb411df9b1dda3673a9606dd193cc6496c0eb55b32fddf8ebaae306d4b944f83",
+        "inputs": {
+            "0": {
+                "internal_id": "daa61364-7998-4a0a-af73-2baddf244c17",
+                "transaction_internal_id": "9a5597ba-984a-4a43-9f4b-b1103d94a6bd",
+                "utxo_internal_id": "ef03e3d3-c0ae-481e-9161-19a04e69ffc0",
+                "utxo_name": "shard fragment UTXO 3/5",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 19,
+                "internal_id": "63313aa1-3fda-474c-953f-d3b2370493ab",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9a5597ba-984a-4a43-9f4b-b1103d94a6bd",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 20,
+                "internal_id": "ee333cb7-fdfe-44f9-a02c-b4cd321c2c4a",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9a5597ba-984a-4a43-9f4b-b1103d94a6bd",
+                "child_transaction_internal_ids": [
+                    "af9b6d7c-53b9-4636-b7c4-280c0ceade8d"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001016a6b203fa122ccb3e08dd939195835d78ba2ac8c7425fea696b557bbcd4b16ed0300000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100c3404d9f46ea52226bf6e7ca9b972d4a0b8bd422aab384a9057d951aeb80040c02205eeb100c378f565596a308ea487b15d4ff9bd1b0b588c700cd50d3fb44a2f0950147304402201737e2151a77f4c026e99b5dfa45768817c9061f2d39b05c50c2122092817d2c02205f760d1f9966767ce02ef828a6d5f9613394a1b7a19b915cd344c67e109597dc017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67022001b26800000000"
+    },
+    {
+        "counter": 9,
+        "internal_id": "af9b6d7c-53b9-4636-b7c4-280c0ceade8d",
+        "name": "Burn some UTXO",
+        "txid": "ba7ba84fe8b3379be016bfafb9595327cea5ab5d0ca7e9832e7cba0f35d584de",
+        "inputs": {
+            "0": {
+                "internal_id": "3aca415a-249f-481b-bf88-bf6ee1b8f25a",
+                "transaction_internal_id": "af9b6d7c-53b9-4636-b7c4-280c0ceade8d",
+                "utxo_internal_id": "ee333cb7-fdfe-44f9-a02c-b4cd321c2c4a",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 21,
+                "internal_id": "2f593114-5545-4f3e-a11b-0a5bf93cf100",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "af9b6d7c-53b9-4636-b7c4-280c0ceade8d",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 22,
+                "internal_id": "9e0ce2d5-cf0a-4195-ae35-509a7792f27a",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "af9b6d7c-53b9-4636-b7c4-280c0ceade8d",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101834f944b6d30aeba8edffd325bb50e6c49c63c19dd06963a67a3ddb1f91d41eb0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100b08a3c9475bbaf6416b68baa20adda1a6c32cda61814d5c778d8b03a76bed64c02206010a7aceff1bb6c8b4e096705319851f679f60a7d34b775c7612d465d9b999501473044022058ac97bb6525b959c4e2328fba283b46061e9478ca024a04ec436ecf9b13083802203ceb54a7d431d9266b446b6a3bbf05365f1a0d66d7c9f010c19d6db18d1c18f9019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 10,
+        "internal_id": "2217cba1-c8ca-4091-8398-137280fd41c8",
+        "name": "push-to-cold-storage",
+        "txid": "f6fdaa966855bca730dee8f5467ddba8cb9308c49bc36e51118192a922394d32",
+        "inputs": {
+            "0": {
+                "internal_id": "29b71376-02d8-4481-82fd-714a2119b75a",
+                "transaction_internal_id": "2217cba1-c8ca-4091-8398-137280fd41c8",
+                "utxo_internal_id": "7ce0f10c-7621-49dd-8752-72493260bc4c",
+                "utxo_name": "shard fragment UTXO 4/5",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 24,
+                "internal_id": "5273ca66-2622-423b-ae39-59eb5f112789",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "2217cba1-c8ca-4091-8398-137280fd41c8",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 25,
+                "internal_id": "34304c8a-ef1c-4458-a50f-89c8b58358c1",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "2217cba1-c8ca-4091-8398-137280fd41c8",
+                "child_transaction_internal_ids": [
+                    "884a5ff8-9e04-4d8c-8af0-8049fc38e4fe"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001016a6b203fa122ccb3e08dd939195835d78ba2ac8c7425fea696b557bbcd4b16ed0400000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0347304402206b92608d346cacfc99a63bd7ea4fc4a67bf33bf25674f7f08de423477a9a62fe022063fb8e6bcbfebad7ee2ff41d7cae303b57751df114f9513820354c8c6f4b125b014730440220471251e85d5c631eedd72de461f446c5b7efad0b2c4f6cb3bfddd55461219f460220664067abda1a99ce174fbb8b8552731b73cb72b5fffb405d8aa99d7c9bcc2d04017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad6702b001b26800000000"
+    },
+    {
+        "counter": 11,
+        "internal_id": "884a5ff8-9e04-4d8c-8af0-8049fc38e4fe",
+        "name": "Burn some UTXO",
+        "txid": "a00f02a61bcb3f97c4c07427b9df2b69c730603beb5e7f00175d94afb6e39fcc",
+        "inputs": {
+            "0": {
+                "internal_id": "5a7629c1-df1b-4c1c-90df-a88cfe2cd2e8",
+                "transaction_internal_id": "884a5ff8-9e04-4d8c-8af0-8049fc38e4fe",
+                "utxo_internal_id": "34304c8a-ef1c-4458-a50f-89c8b58358c1",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 26,
+                "internal_id": "47e68db3-f24d-4a71-9276-7b5dbb9e1bef",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "884a5ff8-9e04-4d8c-8af0-8049fc38e4fe",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 27,
+                "internal_id": "7e1785c6-9725-41ae-8f81-adc23562d1cd",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "884a5ff8-9e04-4d8c-8af0-8049fc38e4fe",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101324d3922a9928111516ec39bc40893cba8db7d46f5e8de30a7bc556896aafdf60100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262034730440220778347354d5a13504eacd7a38eadeec3454a381bba71832048ffa8bbd930331d022062bad106b4ebde40645fbc5f75ae505738df4d3ed418cfd64d0986aea39c5da20147304402204e602aea602545b0d162c33958cc3637350709ed44899e25ed394ea77085e71f02203059bda07794d2bc229e2aab27c641d7efb8107b1d8c59096e08f19bee037582019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 12,
+        "internal_id": "3224fca3-2565-40ba-9c1f-9e1d6c6f7c9d",
+        "name": "push-to-cold-storage",
+        "txid": "9eba6909957cb2de019bf194e0727295f17b2b5d1910b5b36b36f0d2ee836bf1",
+        "inputs": {
+            "0": {
+                "internal_id": "d8438d94-45dd-448d-af02-6455f7c049ff",
+                "transaction_internal_id": "3224fca3-2565-40ba-9c1f-9e1d6c6f7c9d",
+                "utxo_internal_id": "0dd76e4b-18fb-42fa-942d-989a22503835",
+                "utxo_name": "shard fragment UTXO 5/5",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 29,
+                "internal_id": "c9e4bb1b-92ab-4272-be70-2bceeb57d68c",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3224fca3-2565-40ba-9c1f-9e1d6c6f7c9d",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 30,
+                "internal_id": "56325cff-a044-46cf-8975-985e68909447",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3224fca3-2565-40ba-9c1f-9e1d6c6f7c9d",
+                "child_transaction_internal_ids": [
+                    "7a883376-4d0a-4359-8038-5434675f6d46"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001016a6b203fa122ccb3e08dd939195835d78ba2ac8c7425fea696b557bbcd4b16ed0500000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0348304502210080177596256fe98f325c0354db72bb1f7bacf335ee00d6d6c504c6cb6c67effa02200c528593f4c5c59313ffbaba37a730c4be1de28c001fb4accaf0f4c55a6d8f3b0148304502210082025ef2f9c43285cc881594da6dc355794118d7ed502680b2b4145d05d1723302202e630b143ebbe17bebbf485e34460a802f664f526d44406eb12018f1ce055590017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67024002b26800000000"
+    },
+    {
+        "counter": 13,
+        "internal_id": "7a883376-4d0a-4359-8038-5434675f6d46",
+        "name": "Burn some UTXO",
+        "txid": "5b893dd3e27e1e031e7c5408e83453aff776d2732afe23d0b02a1c7b6c3873cf",
+        "inputs": {
+            "0": {
+                "internal_id": "fd3a9852-7c0e-46ee-b801-48b9f72659f5",
+                "transaction_internal_id": "7a883376-4d0a-4359-8038-5434675f6d46",
+                "utxo_internal_id": "56325cff-a044-46cf-8975-985e68909447",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 31,
+                "internal_id": "d6452dcd-dda6-42c9-8684-5f39aeb0756f",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a883376-4d0a-4359-8038-5434675f6d46",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 32,
+                "internal_id": "2420f371-8120-4165-97f0-43e7ed440561",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a883376-4d0a-4359-8038-5434675f6d46",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101f16b83eed2f0366bb3b510195d2b7bf1957272e094f19b01deb27c950969ba9e0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203473044022074cc970fa62a4237a59218f17873a2f8c13f7ff86501287174086565290b0d11022003dc021f53d78e22ae5d7f83395676911d4e78df3e068fedd57725210bfb179a01483045022100da73ba95176438e3360b857f5dff9116ad9345cc894d85cdee624361a3c814db022050824774aa2567a91dbc043326dcc498d6fef098fc909fe36eae8823ccf6fc60019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 14,
+        "internal_id": "a5774ff6-4798-4fed-be27-221b10937a75",
+        "name": "Vault transaction: spend one shard, re-vault the remaining shards",
+        "txid": "e8b9e3aed0228a75e943194049756bdbbb785bdaae43acd6d1e052f01a88ee26",
+        "inputs": {
+            "0": {
+                "internal_id": "226e4c6c-9247-4032-9e47-d278a4696bb5",
+                "transaction_internal_id": "a5774ff6-4798-4fed-be27-221b10937a75",
+                "utxo_internal_id": "062880b5-6f39-46cf-a4fd-d6b3678b557a",
+                "utxo_name": "vault initial UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 33,
+                "internal_id": "78ca13e7-40ba-45de-91fe-67c26458549c",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a5774ff6-4798-4fed-be27-221b10937a75",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 34,
+                "internal_id": "8d37ed12-0e9e-465c-be5a-fd9078f6cd82",
+                "name": "shard fragment UTXO",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a5774ff6-4798-4fed-be27-221b10937a75",
+                "child_transaction_internal_ids": [
+                    "8f956784-76a2-4823-85c8-d09a9f5f179b"
+                ]
+            },
+            "2": {
+                "counter": 39,
+                "internal_id": "5dc0db27-4917-44e6-9f4a-ab84679bb965",
+                "name": "vault UTXO",
+                "script_template_name": "BasicPresignedScriptTemplate",
+                "amount": 500000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a5774ff6-4798-4fed-be27-221b10937a75",
+                "child_transaction_internal_ids": [
+                    "a2c34cf2-f8e9-454a-bbe4-8108d7a29ae7",
+                    "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                    "e326571b-c0bc-472b-a9a4-d9a5382c54b3"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001018e28c51f6fbf910e5b828722a539b7841a4856d6d27cd0a2839d787c2a23494f0100000000900000000300000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e200065cd1d0000000022002095f39ea16fd7eb396dcb682d1ac462741198f14223cce27c341cc11db34e93f903483045022100b41616463eccae565e4951e8073aac77b5bc871a75476f9b97c03c157fa9340902200ed9ded99955846696adb0abbf130b2ab26ac34c731efe8ba052f3947e94b8a5014830450221008da65ac0b13aa857b43ead9af476a46dbf850265fc2492925b1c8aa30e9b060702204eba1ece56f83a8de528e7419a311351f0d6dd701c6cba1b4347775231f83e38014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 15,
+        "internal_id": "8f956784-76a2-4823-85c8-d09a9f5f179b",
+        "name": "push-to-cold-storage",
+        "txid": "e8389ef94c42615d424e2ec102b8b07d22406edb6a523dfafbce3ae50f130ba0",
+        "inputs": {
+            "0": {
+                "internal_id": "70a5ac51-fda6-4fe4-b908-7617e498d5a8",
+                "transaction_internal_id": "8f956784-76a2-4823-85c8-d09a9f5f179b",
+                "utxo_internal_id": "8d37ed12-0e9e-465c-be5a-fd9078f6cd82",
+                "utxo_name": "shard fragment UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 35,
+                "internal_id": "ceccaf86-34b1-48f1-9f8c-0b8628887ecf",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "8f956784-76a2-4823-85c8-d09a9f5f179b",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 36,
+                "internal_id": "eb919295-b536-4223-931f-1f0b95ae0190",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "8f956784-76a2-4823-85c8-d09a9f5f179b",
+                "child_transaction_internal_ids": [
+                    "c0762366-28ad-41ec-8ecb-a42287f545a0"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010126ee881af052e0d1d6ac43aeda5b78bbdb6b7549401943e9758a22d0aee3b9e80100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100e27b118b077dcd973c9222dae5ba91af73561ebbc550c664cd983cf33a5df50002200a08fcf6ba65c7fb5f3bda137508f5a75209920dabe866f6d1ea5c8788f32c3a01483045022100ed3102e1bcc465963780f8ea725a5dd4e6bb3736410a53221ad03314e4f7b4a4022010aca523cd1395eb4f61e077bfe0484bca0818fcfc774728fde25c8783759166017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 16,
+        "internal_id": "c0762366-28ad-41ec-8ecb-a42287f545a0",
+        "name": "Burn some UTXO",
+        "txid": "9ed2656b86cbb8b912f292e39a73ec981358d052fd478dae1eb19d2a58042db9",
+        "inputs": {
+            "0": {
+                "internal_id": "ca4f7ad1-0c5f-4d36-8f80-eba3c6e2bc6e",
+                "transaction_internal_id": "c0762366-28ad-41ec-8ecb-a42287f545a0",
+                "utxo_internal_id": "eb919295-b536-4223-931f-1f0b95ae0190",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 37,
+                "internal_id": "872b610e-8263-4f0c-91ad-2a94a3bb4b35",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "c0762366-28ad-41ec-8ecb-a42287f545a0",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 38,
+                "internal_id": "78850740-d2a6-4e22-91ea-0c5591c0daed",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "c0762366-28ad-41ec-8ecb-a42287f545a0",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101a00b130fe53acefbfa3d526adb6e40227db0b802c12e4e425d61424cf99e38e80100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262034730440220767718a948b1f5604fe57f7bfdeb6fd3f0cb3b1057507e57729da575ae92084e022077f847b06e41a9cd389b8b236f67ac28f65181ceb61f13f238f9f2931d22d3b801473044022048232c3a65c83c717eb53370d9b79b101f4f729e4ee9c4eff11079bf9f80e24002206eeec58c73e274147bb0f148ac0eeeb2e1635bd71936af3e025d4ce3151a0b46019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 17,
+        "internal_id": "a2c34cf2-f8e9-454a-bbe4-8108d7a29ae7",
+        "name": "push-to-cold-storage",
+        "txid": "927f78e595e5ae66448a73d87ef9ffc928a86de6c4848e33f9433822c16e985a",
+        "inputs": {
+            "0": {
+                "internal_id": "5b627ea9-76c2-4a9b-8479-3d08d97f73e0",
+                "transaction_internal_id": "a2c34cf2-f8e9-454a-bbe4-8108d7a29ae7",
+                "utxo_internal_id": "5dc0db27-4917-44e6-9f4a-ab84679bb965",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 40,
+                "internal_id": "372b492f-ff1f-4793-ae02-442803165ee4",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a2c34cf2-f8e9-454a-bbe4-8108d7a29ae7",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 41,
+                "internal_id": "97a670cb-b799-4175-9ad5-af9557767552",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 500000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a2c34cf2-f8e9-454a-bbe4-8108d7a29ae7",
+                "child_transaction_internal_ids": [
+                    "ec6fe856-abf9-46e4-9e4c-57171443ddd2"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010126ee881af052e0d1d6ac43aeda5b78bbdb6b7549401943e9758a22d0aee3b9e80200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332600065cd1d00000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0347304402205bbbe5b5df35c7c70389c7e93dc1c31bbfd1dd2a1b29ea10587aecbfa1d5bbc90220671fdb82b0c6b1d3c864a9e099ed0923850cfe1a8357c136bf34978c820cb28a01473044022056a3b6902dab10cd4d41d7689a5e38206726a24761637b9947c692bb2261639d02201fdb59246c7dd09dfeaad30b0a553964599ae7626d49698b7d8b3afa638e76d8014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 18,
+        "internal_id": "ec6fe856-abf9-46e4-9e4c-57171443ddd2",
+        "name": "Burn some UTXO",
+        "txid": "778870b55edb57b1cc6b31031ba434a36dee488ec69e6da1cfa01321177d8194",
+        "inputs": {
+            "0": {
+                "internal_id": "9fc8cea7-f5c8-4241-a164-5c5b462b86d6",
+                "transaction_internal_id": "ec6fe856-abf9-46e4-9e4c-57171443ddd2",
+                "utxo_internal_id": "97a670cb-b799-4175-9ad5-af9557767552",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 42,
+                "internal_id": "f67837d9-5c3b-4d2e-82d4-f486d457b8e5",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ec6fe856-abf9-46e4-9e4c-57171443ddd2",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 43,
+                "internal_id": "15c93689-dca6-4f84-9cb7-50ed1abee26b",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 500000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ec6fe856-abf9-46e4-9e4c-57171443ddd2",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001015a986ec1223843f9338e84c4e66da828c9fff97ed8738a4466aee595e5787f920100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332600065cd1d000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100da45522fa35d114a481aac68e1f825d6149829f6142cae44b1c40964bfa55fd8022053ac51a4761c2f27b641ea340f9a2cb2ef5438e8a0c5a65c0be23f56a72ffaee014830450221009acfa63c20ebb62b7ed807860cf8a917f77e11a44f2593e9d5905273aa82c06102207d02c5f930476e46b6e5fa0c1d0913d2d6d65805f274a778279375e396673090019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 19,
+        "internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+        "name": "Vault (partial) stipend start transaction.",
+        "txid": "f2561e4049fcabcf105ca13f5f15d00ac123cf8255316d3bb6978d4815f88354",
+        "inputs": {
+            "0": {
+                "internal_id": "b536e11f-0dab-4153-a026-dc80ec0f2cf9",
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "utxo_internal_id": "5dc0db27-4917-44e6-9f4a-ab84679bb965",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 44,
+                "internal_id": "7dc5876a-e4c3-46c6-a39e-81b159230f68",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 45,
+                "internal_id": "c1389400-1366-4ec4-aaec-6c4f12731d19",
+                "name": "shard fragment UTXO 1/4",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 0,
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "child_transaction_internal_ids": [
+                    "885b8cea-c4af-4d64-81d4-2f414581ae1d"
+                ]
+            },
+            "2": {
+                "counter": 50,
+                "internal_id": "db4f80fb-9f08-4117-8e95-db6471085f87",
+                "name": "shard fragment UTXO 2/4",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "child_transaction_internal_ids": [
+                    "bf3742ac-834f-4797-8b2e-b152a73c174f"
+                ]
+            },
+            "3": {
+                "counter": 55,
+                "internal_id": "7de4c8f3-730e-4b8e-9ce4-711265bebf78",
+                "name": "shard fragment UTXO 3/4",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 2,
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "child_transaction_internal_ids": [
+                    "9fa0645c-8ee8-4a28-88d4-9cb969cb35ff"
+                ]
+            },
+            "4": {
+                "counter": 60,
+                "internal_id": "2d7e240c-f2a3-4572-859d-839706397796",
+                "name": "shard fragment UTXO 4/4",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 3,
+                "transaction_internal_id": "4e4b5dd1-7683-420f-b3b4-6d75e84fb87c",
+                "child_transaction_internal_ids": [
+                    "16d90771-8240-4394-9ec3-803721ddceb3"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010126ee881af052e0d1d6ac43aeda5b78bbdb6b7549401943e9758a22d0aee3b9e80200000000900000000500000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020ffc5b0b49dcd766a64c2035ed8c5557d058c67641239c62a72783f4df7baaedb4059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e204059730700000000220020d76f5670e256e6826cccf280db8aa51a9b4d57113c1ef6dc2a2727ad328076b2405973070000000022002019a58bfcfe033abf5fcc4ab074f48e80deed1613d92129c824bc7fb978c291310348304502210095cfeb4a26fa3e1cf2e260f522812ba4eefad1a9432a99993add6683f9248c6f02203ebb9d74f716b4502282adbe932982ae3d89480ba83947f36086267e5d98b5e4014630430220585fb2c479c6a357307183fbf85568a2d5e074eff5d17818ff588d0c033bc823021f06c51ee98ced791e28c03e48f6d4700670acd1cc62b1be65ea929b3d0acfa2014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 20,
+        "internal_id": "885b8cea-c4af-4d64-81d4-2f414581ae1d",
+        "name": "push-to-cold-storage",
+        "txid": "28028a34b5d480867f24843cccceff4af60ff187b08a26f01dd6d3006c1d4688",
+        "inputs": {
+            "0": {
+                "internal_id": "2882b562-e244-4cee-8ad9-3724660754e5",
+                "transaction_internal_id": "885b8cea-c4af-4d64-81d4-2f414581ae1d",
+                "utxo_internal_id": "c1389400-1366-4ec4-aaec-6c4f12731d19",
+                "utxo_name": "shard fragment UTXO 1/4",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 46,
+                "internal_id": "76376626-edcc-4572-b439-edb885f940d8",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "885b8cea-c4af-4d64-81d4-2f414581ae1d",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 47,
+                "internal_id": "a098b684-1d06-4c4c-b366-4c446ff6b186",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "885b8cea-c4af-4d64-81d4-2f414581ae1d",
+                "child_transaction_internal_ids": [
+                    "a6aab0de-eceb-437f-9df4-18fe1bdb71fa"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001015483f815488d97b63b6d315582cf23c10ad0155f3fa15c10cfabfc49401e56f20100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0347304402203d903127819829109f8eaeaf5e37db460fbd39b811626f3a4a65f0939856b90b02202a5a591f2d07377e46488919d11f8456f0c86aebb033d4b1fe05f28e43dedd7301483045022100ecbace13c3723cece51f96238870d9312144769c364c2d7eaf31c9e61b7b8284022016f2b9a65e85cc3f4ad207be26aa338373a2d0eaf26d8f5a730e944c64070a5c016d21030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67b26800000000"
+    },
+    {
+        "counter": 21,
+        "internal_id": "a6aab0de-eceb-437f-9df4-18fe1bdb71fa",
+        "name": "Burn some UTXO",
+        "txid": "620d24d98daae23b29d2d69a0e6f03fbb104053831b879a0ab7c423f44b996be",
+        "inputs": {
+            "0": {
+                "internal_id": "8acdf04a-8671-4bd3-8f96-470cc4a1afc6",
+                "transaction_internal_id": "a6aab0de-eceb-437f-9df4-18fe1bdb71fa",
+                "utxo_internal_id": "a098b684-1d06-4c4c-b366-4c446ff6b186",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 48,
+                "internal_id": "ca956b8d-9b9f-4666-84c8-361fe29bc5b2",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a6aab0de-eceb-437f-9df4-18fe1bdb71fa",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 49,
+                "internal_id": "0c859c4d-cbe2-472d-ae67-7057637dbeca",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a6aab0de-eceb-437f-9df4-18fe1bdb71fa",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "0200000000010188461d6c00d3d61df0268ab087f10ff64affcecc3c84247f8680d4b5348a02280100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100aedbf13a14bd468e7950b78d2a9b0b0f90ef9605b0263312a266ab1292b93a9902200ac54763bff340c17985478c9d01b5119e4888cde5b82b52a3457eb85e691028014730440220581293a31efb84131acbe738a685559070fa1ee333b599a553f14570b44936c2022020fb0bc1f25dd5da11e0af8e769f83566f27e18c431a61d2fbdfd490cd00023d019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 22,
+        "internal_id": "bf3742ac-834f-4797-8b2e-b152a73c174f",
+        "name": "push-to-cold-storage",
+        "txid": "88fedf4db2e5d63373d657d6c6dcc4be494525c75087db820cf9d8c33dd74059",
+        "inputs": {
+            "0": {
+                "internal_id": "c8d1d586-5869-4d94-8449-c837bed1a78b",
+                "transaction_internal_id": "bf3742ac-834f-4797-8b2e-b152a73c174f",
+                "utxo_internal_id": "db4f80fb-9f08-4117-8e95-db6471085f87",
+                "utxo_name": "shard fragment UTXO 2/4",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 51,
+                "internal_id": "72bfe831-3a5a-430d-93d5-d85e4897f0c9",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "bf3742ac-834f-4797-8b2e-b152a73c174f",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 52,
+                "internal_id": "f4417108-3524-417c-9133-d6f82ab9dfc7",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "bf3742ac-834f-4797-8b2e-b152a73c174f",
+                "child_transaction_internal_ids": [
+                    "7a2abfa2-15a3-4bc3-b591-460d3e042bd3"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001015483f815488d97b63b6d315582cf23c10ad0155f3fa15c10cfabfc49401e56f20200000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03473044022071b39fec946188da759fa1e61d5040b2b1937f88f2409e5cbac495c9feeab8cd022076bd22b5f31dc0155d3a8eca4091ea6b559b2ef53c191dc31b803a9916b4a5120148304502210080b318e9352ca6dee62e631ba5ee37797ea527a9e9004181744fca538a14d5400220116636aeeb0a93731c1b0234559aac1f7bb957e2f1e6904394b7a214d1bc6eee017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 23,
+        "internal_id": "7a2abfa2-15a3-4bc3-b591-460d3e042bd3",
+        "name": "Burn some UTXO",
+        "txid": "5b1d4b9caff5823eec69bd6e867a4426e99a033968060aaf57085fb9c6745318",
+        "inputs": {
+            "0": {
+                "internal_id": "aee3a26d-2c10-45b0-a02a-dbc67240cafe",
+                "transaction_internal_id": "7a2abfa2-15a3-4bc3-b591-460d3e042bd3",
+                "utxo_internal_id": "f4417108-3524-417c-9133-d6f82ab9dfc7",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 53,
+                "internal_id": "d9c08610-2a27-4813-83dd-0e3fbaf41b5d",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a2abfa2-15a3-4bc3-b591-460d3e042bd3",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 54,
+                "internal_id": "6e7dc609-ffd5-482e-8a73-60a2e062e40e",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7a2abfa2-15a3-4bc3-b591-460d3e042bd3",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001015940d73dc3d8f90c82db8750c7254549bec4dcc6d657d67333d6e5b24ddffe880100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100c135c316c1f3436193ea8bae959ca23a7bd539d1967a51cd35de009e050c85b902205928dfb20258190d38cc9540d4f931e7e7bc1c5568160dffdb35badf4613400301483045022100dba0ea7aeab9e279b3d5b95de28355d6dbc780713a36c66c0ac855d98710c06a022020b8f76a7674323150a1d2cc83bccb115e0b78728166f286c0929764cec7f7a7019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 24,
+        "internal_id": "9fa0645c-8ee8-4a28-88d4-9cb969cb35ff",
+        "name": "push-to-cold-storage",
+        "txid": "6375d05ecb4d42c9707b24b1b35938e41d138c81e778367ceb05d998aef0d69f",
+        "inputs": {
+            "0": {
+                "internal_id": "e272e46c-19f1-4489-a384-6ccb7e99ee27",
+                "transaction_internal_id": "9fa0645c-8ee8-4a28-88d4-9cb969cb35ff",
+                "utxo_internal_id": "7de4c8f3-730e-4b8e-9ce4-711265bebf78",
+                "utxo_name": "shard fragment UTXO 3/4",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 56,
+                "internal_id": "6a39516d-c9e4-4cb3-8c3c-a08140a2dbc6",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9fa0645c-8ee8-4a28-88d4-9cb969cb35ff",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 57,
+                "internal_id": "61767611-d3ad-4cb4-98c7-60b742027d7f",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9fa0645c-8ee8-4a28-88d4-9cb969cb35ff",
+                "child_transaction_internal_ids": [
+                    "cc68b935-fc4c-4d3c-b036-5feca27ce067"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001015483f815488d97b63b6d315582cf23c10ad0155f3fa15c10cfabfc49401e56f20300000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0347304402206453f4a2f3f25bb88a5b5b42bb334bc4c1fb708d88173173c95ff3e7334f1f5e02203001dd012e18aec54ca21f318bf854fdd94184ca3211ba28b1a5567a1ee9c9e701483045022100aac178d0e2d5ae267f00f39b7d9d3aa1de5b3177635699d2be3dc3018c1b9cc7022029a0c2e7136093599d83f4dae4f2250cf9be70cd5d32c9d241c39d0a53b6a105017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67022001b26800000000"
+    },
+    {
+        "counter": 25,
+        "internal_id": "cc68b935-fc4c-4d3c-b036-5feca27ce067",
+        "name": "Burn some UTXO",
+        "txid": "ffa03955066f3739a3b1d439aa207969071e49ed1f8063b0d0843dfad488c12a",
+        "inputs": {
+            "0": {
+                "internal_id": "29ad5e6c-44d2-4aca-bf49-c61a56c35b19",
+                "transaction_internal_id": "cc68b935-fc4c-4d3c-b036-5feca27ce067",
+                "utxo_internal_id": "61767611-d3ad-4cb4-98c7-60b742027d7f",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 58,
+                "internal_id": "e3d1fcd1-193b-42b5-ab71-f6b26c9ce8a0",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "cc68b935-fc4c-4d3c-b036-5feca27ce067",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 59,
+                "internal_id": "1d333f80-4ded-4ea5-851e-d0d27e977582",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "cc68b935-fc4c-4d3c-b036-5feca27ce067",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001019fd6f0ae98d905eb7c3678e7818c131de43859b3b1247b70c9424dcb5ed075630100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100834a91de245eaa0ba28eb34db38ec365606d91a3bb2cee2f5f55a98d06b7c28702200d1f4f6a2aa42b093fc08aa8727f6e6d33efe1b9377681abc7e3518960b3218d0147304402204bc1da08d0ef9b12f4c200a8792eb875a388432ea5665bf94a9c0501a93497cc02203ff72d7863e2f796fcdd14c981544f9510b3654d6c6ab0631099745af0ebd4c6019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 26,
+        "internal_id": "16d90771-8240-4394-9ec3-803721ddceb3",
+        "name": "push-to-cold-storage",
+        "txid": "bfce055970e3270d0a20380710ba26cfaf784132d2a4e1120744cb84c01c62ff",
+        "inputs": {
+            "0": {
+                "internal_id": "66a02f81-8269-4216-8c08-38e00b498669",
+                "transaction_internal_id": "16d90771-8240-4394-9ec3-803721ddceb3",
+                "utxo_internal_id": "2d7e240c-f2a3-4572-859d-839706397796",
+                "utxo_name": "shard fragment UTXO 4/4",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 61,
+                "internal_id": "f5ac2354-3d79-4cea-bacd-4126ef2bd37d",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "16d90771-8240-4394-9ec3-803721ddceb3",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 62,
+                "internal_id": "baf4a994-bcbf-41b0-9b1b-d8d0dd7f03dd",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "16d90771-8240-4394-9ec3-803721ddceb3",
+                "child_transaction_internal_ids": [
+                    "6842fa71-2509-4f93-a6d5-737da56a0e5f"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001015483f815488d97b63b6d315582cf23c10ad0155f3fa15c10cfabfc49401e56f20400000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100e4a6a0714f07d063613a1326642d4fc1182300627ca9dd037767e147cee2c1f20220542bca7f81f987a873bd9720c2a76b3002f011d53eb15c70a4debc54b09d32e9014730440220268c17f6d1f4743a22f64dae09e0e8ab5b4a9b62879565078e17ff43b032b9e3022013999bfd2c7bdb379fbada5a0e14beae83ac78c62e2f3bf63747d1c5004f2934017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad6702b001b26800000000"
+    },
+    {
+        "counter": 27,
+        "internal_id": "6842fa71-2509-4f93-a6d5-737da56a0e5f",
+        "name": "Burn some UTXO",
+        "txid": "7d7327e29475ab90322310251dcf6da1da2822bd995091485ff960919d296f48",
+        "inputs": {
+            "0": {
+                "internal_id": "269cb634-6c46-451b-b2f8-353b31687256",
+                "transaction_internal_id": "6842fa71-2509-4f93-a6d5-737da56a0e5f",
+                "utxo_internal_id": "baf4a994-bcbf-41b0-9b1b-d8d0dd7f03dd",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 63,
+                "internal_id": "8bd37952-f386-4fb1-8010-1b2b6ad8d778",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "6842fa71-2509-4f93-a6d5-737da56a0e5f",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 64,
+                "internal_id": "102c9f4d-5f1a-4e82-ac85-2f16e71d95af",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "6842fa71-2509-4f93-a6d5-737da56a0e5f",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101ff621cc084cb440712e1a4d2324178afcf26ba100738200a0d27e3705905cebf0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100e9a1220097e793213965305dff3aefe8e1e16cfa4787ca798ee359ed3e1b657102200e8d25c6db614332ed8a2e451e20b29d7b13b56fa0a1635f2e44678f4eb575ff014830450221009f87cc01f4a296b6d7ce55294bd38729d9070d81681cbba94a2697f39d1f55da0220615ebda0b3538a662f834eead03009ff083b9f38809206e158a1f69ec0c3da16019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 28,
+        "internal_id": "e326571b-c0bc-472b-a9a4-d9a5382c54b3",
+        "name": "Vault transaction: spend one shard, re-vault the remaining shards",
+        "txid": "eac99f8cd913bbb8a7903b81b6833eba6078f0dcb87edab9d46cd13f50ce8c3b",
+        "inputs": {
+            "0": {
+                "internal_id": "428985c5-7091-44be-80c5-a49f98da2658",
+                "transaction_internal_id": "e326571b-c0bc-472b-a9a4-d9a5382c54b3",
+                "utxo_internal_id": "5dc0db27-4917-44e6-9f4a-ab84679bb965",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 65,
+                "internal_id": "f25b172a-3cd2-4555-9406-03842212e420",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "e326571b-c0bc-472b-a9a4-d9a5382c54b3",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 66,
+                "internal_id": "de497ddb-a5a7-4f4b-b900-be9e217e147f",
+                "name": "shard fragment UTXO",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "e326571b-c0bc-472b-a9a4-d9a5382c54b3",
+                "child_transaction_internal_ids": [
+                    "2634caff-a1e6-48db-99d4-d4d68a7779f1"
+                ]
+            },
+            "2": {
+                "counter": 71,
+                "internal_id": "fce10713-4fbc-49a2-9aed-dd6a234928c6",
+                "name": "vault UTXO",
+                "script_template_name": "BasicPresignedScriptTemplate",
+                "amount": 375000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "e326571b-c0bc-472b-a9a4-d9a5382c54b3",
+                "child_transaction_internal_ids": [
+                    "3946238c-0fef-432b-a58f-34cea97bf153",
+                    "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                    "7cb1ad48-13b7-4ec4-a857-ceba850309ab"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010126ee881af052e0d1d6ac43aeda5b78bbdb6b7549401943e9758a22d0aee3b9e80200000000900000000300000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e20c00b5a160000000022002095f39ea16fd7eb396dcb682d1ac462741198f14223cce27c341cc11db34e93f903483045022100b7d668a8787e0966c3ca8de8e9459b4a9e4ad412bc18351cf31632b301abb8ab022011bdcb99d14ea2667325f20ff9f5c0c102d2b538cb7cdf039b455971867d2fa50147304402204653ae614f15c56dda3d7dc1a6c9e32732e7f971cf3b36c8986b9b70a248b995022036b0a164a43fa1a528f40aec6be588f6f91e31a976ef09f04e17177cc3010d27014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 29,
+        "internal_id": "2634caff-a1e6-48db-99d4-d4d68a7779f1",
+        "name": "push-to-cold-storage",
+        "txid": "a8ac21fb9b9fc17567a81eeb692b2304ea0001705c4ce192a23be302cc22a8ab",
+        "inputs": {
+            "0": {
+                "internal_id": "33f3a5b1-309c-45d7-a041-42f40dd3e0c3",
+                "transaction_internal_id": "2634caff-a1e6-48db-99d4-d4d68a7779f1",
+                "utxo_internal_id": "de497ddb-a5a7-4f4b-b900-be9e217e147f",
+                "utxo_name": "shard fragment UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 67,
+                "internal_id": "db95ffdd-8a99-48e2-b0b9-f118985261e3",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "2634caff-a1e6-48db-99d4-d4d68a7779f1",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 68,
+                "internal_id": "47654030-ca4a-4310-bd33-4cce9f8fad91",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "2634caff-a1e6-48db-99d4-d4d68a7779f1",
+                "child_transaction_internal_ids": [
+                    "44f8207f-6314-4069-854a-4dd29f165475"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001013b8cce503fd16cd4b9da7eb8dcf07860ba3e83b6813b90a7b8bb13d98c9fc9ea0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100b44ae6131adfb827a29fb17862bc140427f6aed7d5a2289ba3e52744a863082d02206898441f811fb3f1ea98046ff97608e302c8989c903a5f7595785d5e95fc37b501483045022100b61c47cca854625e3f47d4fa42678965af97ffe0f550023d0cd386c210ffe3b602202d83fa38c176be771e3c788b6b25a8bbda7818efb60d5ff2a1e0f099230d8a95017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 30,
+        "internal_id": "44f8207f-6314-4069-854a-4dd29f165475",
+        "name": "Burn some UTXO",
+        "txid": "289819f476aeae58dcedc0760e2a01414923580dd47f0b2164f22db96b7544ad",
+        "inputs": {
+            "0": {
+                "internal_id": "366b7af2-e25b-4fc2-852e-d686d665cc47",
+                "transaction_internal_id": "44f8207f-6314-4069-854a-4dd29f165475",
+                "utxo_internal_id": "47654030-ca4a-4310-bd33-4cce9f8fad91",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 69,
+                "internal_id": "f9766511-c8f5-4a19-b9fa-bdca1dd90d85",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "44f8207f-6314-4069-854a-4dd29f165475",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 70,
+                "internal_id": "3092db0a-76b1-494d-96b1-3b67daf75c17",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "44f8207f-6314-4069-854a-4dd29f165475",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101aba822cc02e33ba292e14c5c700100ea04232b69eb1ea86775c19f9bfb21aca80100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100b4df94f348ae4830df56743b4e673879e940e86b7f2eda6dc0541d15145b7bd90220474531e7f6b664c3639a1a4b3d4adcf6e285a1717e7a3e7526d8b783695e6b9a01483045022100d937b9d85d23ec6d94af6f2c535682b55e36e2e4c3f6c15d52777c42a0df09cf0220710fccc7b5cac5fe1481a14280b6402aac6bf0a48e49e60ecdf87d2d6086ccf3019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 31,
+        "internal_id": "3946238c-0fef-432b-a58f-34cea97bf153",
+        "name": "push-to-cold-storage",
+        "txid": "043797c189e95d99d9b022f29e9d7cd092c905472e52643a14358ee4bda01b49",
+        "inputs": {
+            "0": {
+                "internal_id": "0b17a22a-ccd9-4a67-9c37-4a9209e64a87",
+                "transaction_internal_id": "3946238c-0fef-432b-a58f-34cea97bf153",
+                "utxo_internal_id": "fce10713-4fbc-49a2-9aed-dd6a234928c6",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 72,
+                "internal_id": "6b0bec59-7470-421b-b97c-5e791685ba48",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3946238c-0fef-432b-a58f-34cea97bf153",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 73,
+                "internal_id": "fa4397dc-eb13-4fe1-9fd7-2084c4783657",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 375000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "3946238c-0fef-432b-a58f-34cea97bf153",
+                "child_transaction_internal_ids": [
+                    "fcb35a25-c1fb-4857-8e45-778b25937fe4"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001013b8cce503fd16cd4b9da7eb8dcf07860ba3e83b6813b90a7b8bb13d98c9fc9ea0200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc33260c00b5a1600000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03473044022034ce0d2d5518905c0ff2b3677bf78356781fbf29362887964e23c45d45e87f71022004c3cd14dbec26fada1be79afab6649772923b63e4ca5bc9981e2c05eaef7a070148304502210080a78d65746c10379f9fb4f76a7f97aea765cd8b0a27c05bde39976f1d6599a602205862245a36ba8b5895dcfba7f8dabf0d0cdb1ea0f6f2426a9be4376c393c4370014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 32,
+        "internal_id": "fcb35a25-c1fb-4857-8e45-778b25937fe4",
+        "name": "Burn some UTXO",
+        "txid": "d73abcff46ca15e92298b634f52887d0a1ed9b096646b9f003e3d9d12bbab503",
+        "inputs": {
+            "0": {
+                "internal_id": "df16bc1d-6ba3-4dcd-b843-9b19bd561406",
+                "transaction_internal_id": "fcb35a25-c1fb-4857-8e45-778b25937fe4",
+                "utxo_internal_id": "fa4397dc-eb13-4fe1-9fd7-2084c4783657",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 74,
+                "internal_id": "067808a9-ab34-49d4-b463-9729a824f410",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "fcb35a25-c1fb-4857-8e45-778b25937fe4",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 75,
+                "internal_id": "1a76fb8d-2d4f-4ae6-930e-f8a321fb550e",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 375000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "fcb35a25-c1fb-4857-8e45-778b25937fe4",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101491ba0bde48e35143a64522e4705c992d07c9d9ef222b0d9995de989c19737040100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc33260c00b5a16000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203473044022014f5ebd435aff216bdf35fae051224000b01e6d01bc57178d505c94c39c36ac7022051ed2a11551c9d82c449e93ea70fe1c145cc9fa141d4b4d4b6bb61d564f05e5e0147304402201aa2af03e18ddfe078457b2aedd835d32450612f0e9a570e990eaa0c4f8c0dfd02205b7417713f7cc4b743dd5915fdc6fd58fb6b2f04693b0d99a5a0f7a62ce9b3e7019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 33,
+        "internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+        "name": "Vault (partial) stipend start transaction.",
+        "txid": "4b8d79786828b983d10ae835d020395f7f9b801c70834e4e8be8b64c54b0d6e0",
+        "inputs": {
+            "0": {
+                "internal_id": "a4b22e12-f88a-40c1-a00e-a4b798ec51d2",
+                "transaction_internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                "utxo_internal_id": "fce10713-4fbc-49a2-9aed-dd6a234928c6",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 76,
+                "internal_id": "b3f524b7-441f-4fb8-90c4-5c026112b04d",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 77,
+                "internal_id": "b1482c92-329a-4d8c-8478-699b135fbb45",
+                "name": "shard fragment UTXO 1/3",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 0,
+                "transaction_internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                "child_transaction_internal_ids": [
+                    "9a43690f-3c26-489f-9e25-6e4f277878b0"
+                ]
+            },
+            "2": {
+                "counter": 82,
+                "internal_id": "95c162dc-1e9a-492b-86f0-caae54a9eae3",
+                "name": "shard fragment UTXO 2/3",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                "child_transaction_internal_ids": [
+                    "a6ad2257-bc23-4b30-867e-a438de021759"
+                ]
+            },
+            "3": {
+                "counter": 87,
+                "internal_id": "e1bbe6f4-4dd6-4ed0-8bdf-eea8a18eb4aa",
+                "name": "shard fragment UTXO 3/3",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 2,
+                "transaction_internal_id": "992f8105-c426-4d9a-8f75-3acb838b64ea",
+                "child_transaction_internal_ids": [
+                    "e33fc84d-4203-472b-b19d-9e12b9349382"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001013b8cce503fd16cd4b9da7eb8dcf07860ba3e83b6813b90a7b8bb13d98c9fc9ea0200000000900000000400000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020ffc5b0b49dcd766a64c2035ed8c5557d058c67641239c62a72783f4df7baaedb4059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e204059730700000000220020d76f5670e256e6826cccf280db8aa51a9b4d57113c1ef6dc2a2727ad328076b203483045022100f036ae7ee64e92ab8193ccd05b1933d271ed71b199e21312f06405311c28ae2502200cc5f676f757c258535d73129f4e3f8957a66ccc2fca35c56910a4b233f3bfbc0147304402203eeff75d35c546d91ee3ff6e9d322d7348cdbdad8eb6fa17b49af689a2b5b7cf02206e98528b2398aa5e3cba7f57ef460b8182ec42b95e30ffd2b29daf856ec6eb2a014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 34,
+        "internal_id": "9a43690f-3c26-489f-9e25-6e4f277878b0",
+        "name": "push-to-cold-storage",
+        "txid": "900bae7a30b465da2ea51a79320ad77dcba3ec0613459937f1d796994fe6980a",
+        "inputs": {
+            "0": {
+                "internal_id": "4d4ca2d9-3006-4cf4-bcc9-c3caefe42a83",
+                "transaction_internal_id": "9a43690f-3c26-489f-9e25-6e4f277878b0",
+                "utxo_internal_id": "b1482c92-329a-4d8c-8478-699b135fbb45",
+                "utxo_name": "shard fragment UTXO 1/3",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 78,
+                "internal_id": "2bb61902-47de-4315-a0a7-9ecc91a39460",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9a43690f-3c26-489f-9e25-6e4f277878b0",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 79,
+                "internal_id": "b97e46d8-2d0d-4f70-9b02-6e04678d879e",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "9a43690f-3c26-489f-9e25-6e4f277878b0",
+                "child_transaction_internal_ids": [
+                    "0280b443-4f83-4360-aca6-c21b00bfe5b6"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101e0d6b0544cb6e88b4e4e83701c809b7f5f3920d035e80ad183b9286878798d4b0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100d6ccb79ff9b5465646a14eb326452ec3ec78fe88c79cf2f37ea09c3cabc35e850220304818604eccde0f51b7853e372f2c28c5bd8e817a2e07e8e4aa2b1555b477390147304402203dcb1dfb7fc315912260b62e1f86b19f9a4e00716d166515c6cc9a9502c2e11602206fed7c916e5430c98311ee14d482eb811b9ba8be0d062d0d8687ed275d705274016d21030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67b26800000000"
+    },
+    {
+        "counter": 35,
+        "internal_id": "0280b443-4f83-4360-aca6-c21b00bfe5b6",
+        "name": "Burn some UTXO",
+        "txid": "88bd45ce610aaaef87f87ed8ddd6a9ed544d285dc9b1d8f84d7e2fa1eb1877f2",
+        "inputs": {
+            "0": {
+                "internal_id": "5aefa1c5-f546-4d0f-912c-685cddae9ca7",
+                "transaction_internal_id": "0280b443-4f83-4360-aca6-c21b00bfe5b6",
+                "utxo_internal_id": "b97e46d8-2d0d-4f70-9b02-6e04678d879e",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 80,
+                "internal_id": "db382fd3-b43a-47fe-99e4-8a6204577e97",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "0280b443-4f83-4360-aca6-c21b00bfe5b6",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 81,
+                "internal_id": "6e6b4368-de95-428b-b35b-c66ed98e8ede",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "0280b443-4f83-4360-aca6-c21b00bfe5b6",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001010a98e64f9996d7f13799451306eca3cb7dd70a32791aa52eda65b4307aae0b900100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203473044022079cb9b3438ddbf2cefa66d30e0d941b2d0fa87193b3390e172f284b1aa2ab91c0220699899a006f11a9f7acd2dd8b18dbc3fc29fc1c055e071b0ae1b0e6248775dc201483045022100a6998c7b8f2896e027d5ea44cf13165ef02e5b28b9d26f8c3c9d746ad1667c1e022061296d7647fbc3f804044b15c6119ab660e9076814c411e9a0b1b539d2431bb3019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 36,
+        "internal_id": "a6ad2257-bc23-4b30-867e-a438de021759",
+        "name": "push-to-cold-storage",
+        "txid": "63bd8073ad980008498f4ad3fe6ee10e3ede4d143190f92821a92c1da1d0985d",
+        "inputs": {
+            "0": {
+                "internal_id": "2a5902d7-49cf-4251-aacf-9e864a8098e7",
+                "transaction_internal_id": "a6ad2257-bc23-4b30-867e-a438de021759",
+                "utxo_internal_id": "95c162dc-1e9a-492b-86f0-caae54a9eae3",
+                "utxo_name": "shard fragment UTXO 2/3",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 83,
+                "internal_id": "f2669428-f013-460f-bd26-ec712e0535e6",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a6ad2257-bc23-4b30-867e-a438de021759",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 84,
+                "internal_id": "93fe697a-1475-422c-8a04-ccd591f9665a",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "a6ad2257-bc23-4b30-867e-a438de021759",
+                "child_transaction_internal_ids": [
+                    "72a775d2-fd54-4e32-9c60-72c94711e644"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101e0d6b0544cb6e88b4e4e83701c809b7f5f3920d035e80ad183b9286878798d4b0200000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0348304502210082da6b993f1049cbf89368e13cb1d9c6a0caff64ed99e9225ba416e4a654becf02201edb8d85230cc2458d45bd2438931642eed3acebccdd30e9e3eea88641d207400147304402207accf05b83bce59d7da2e04cccda2c815d6c8a204faf45637edd954635fd90f20220772a18b61ae5a6ffbe541bb93983f8cdfd2dfd5c21d166a0c4f3d6d9b0c5abea017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 37,
+        "internal_id": "72a775d2-fd54-4e32-9c60-72c94711e644",
+        "name": "Burn some UTXO",
+        "txid": "67c0e0117771c2631331d608d3cea0e75eb72a733deaa7ed4058b87dc3ff42a4",
+        "inputs": {
+            "0": {
+                "internal_id": "4feefd41-9aa6-4514-a7e2-5c16abefa8ab",
+                "transaction_internal_id": "72a775d2-fd54-4e32-9c60-72c94711e644",
+                "utxo_internal_id": "93fe697a-1475-422c-8a04-ccd591f9665a",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 85,
+                "internal_id": "87a1efdc-9495-4967-a514-84bb7c717392",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "72a775d2-fd54-4e32-9c60-72c94711e644",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 86,
+                "internal_id": "26dfcd2d-1fd7-4ff5-95fd-e60ddf074abc",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "72a775d2-fd54-4e32-9c60-72c94711e644",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001015d98d0a11d2ca92128f99031144dde3e0ee16efed34a8f49080098ad7380bd630100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c63296049032620347304402207d898abbd0ad72bcd9ce17b636b1eae38e316f8d4d58b42b52abd8da5d42ef6a022075ed4e0e41e715fc46ad43bb77fca8839f8ec8ca0f7144c5720b2fb00a91a953014730440220733ad2e7a6823c35c6cd3c5ad4172e8b12771185b9ce8032c61e735374aded9d022060944d1c228333d8a86504d7545c9a420e2b2cb3ab2014fcae259f42f0efecad019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 38,
+        "internal_id": "e33fc84d-4203-472b-b19d-9e12b9349382",
+        "name": "push-to-cold-storage",
+        "txid": "39af1a663212f9949083d6c8d4d905a00f57cd62332d3cec9b301c906235ddb8",
+        "inputs": {
+            "0": {
+                "internal_id": "698124e3-4df3-4983-a307-4bc6dc0674b0",
+                "transaction_internal_id": "e33fc84d-4203-472b-b19d-9e12b9349382",
+                "utxo_internal_id": "e1bbe6f4-4dd6-4ed0-8bdf-eea8a18eb4aa",
+                "utxo_name": "shard fragment UTXO 3/3",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 88,
+                "internal_id": "c1385345-355e-434c-bf93-4802b4ec9fc6",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "e33fc84d-4203-472b-b19d-9e12b9349382",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 89,
+                "internal_id": "d95d8176-3587-41bd-ac40-99bb543fc797",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "e33fc84d-4203-472b-b19d-9e12b9349382",
+                "child_transaction_internal_ids": [
+                    "52c30475-9488-407b-b86a-9f931a555c5e"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101e0d6b0544cb6e88b4e4e83701c809b7f5f3920d035e80ad183b9286878798d4b0300000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100b4897357efb8914f1e1f8cebbf7d95f512d650ba8d5af55b81b5f025dec6997102204ea13ecc4106838794fb1fd4216bc08fb9f719765f796ee52b480d0915cac44801473044022062ecd9f60823fc6755710c454d518246f6f03333795666c6fa0ed928032cf77002206794baa488f23e734fa93f0641d466483831c99da7979934c43602a739b243e1017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67022001b26800000000"
+    },
+    {
+        "counter": 39,
+        "internal_id": "52c30475-9488-407b-b86a-9f931a555c5e",
+        "name": "Burn some UTXO",
+        "txid": "6038742490ad16265723d6b9ea06d5d016e7757254c575123fa2ede971796d36",
+        "inputs": {
+            "0": {
+                "internal_id": "e238f3c6-c207-4956-a203-8b775101701f",
+                "transaction_internal_id": "52c30475-9488-407b-b86a-9f931a555c5e",
+                "utxo_internal_id": "d95d8176-3587-41bd-ac40-99bb543fc797",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 90,
+                "internal_id": "b00aefaa-d85a-42e2-9c75-f5c88610d20c",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "52c30475-9488-407b-b86a-9f931a555c5e",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 91,
+                "internal_id": "63963aa4-e89f-4af1-a055-c95237712f26",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "52c30475-9488-407b-b86a-9f931a555c5e",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101b8dd3562901c309bec3c2d3362cd570fa005d9d4c8d6839094f91232661aaf390100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262034730440220670bca01fcdabd5745e0e201ab4a8246dfa4be4746f7cc66c4b1d4701f1ac10d022020a2cd4c3cd8a461153c8b0f4b6b878660b66b325217927ee84c28a7c700be4c01483045022100ab2a2a07ee9c8d73d3fcabdaf018e3a98810cd639fc685d6af56a1bbcd9cc49a0220097c49e8d53cc5a6cabb9a227d21da08fd09af3267c288b2140639d6c2888d0b019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 40,
+        "internal_id": "7cb1ad48-13b7-4ec4-a857-ceba850309ab",
+        "name": "Vault transaction: spend one shard, re-vault the remaining shards",
+        "txid": "710f72331fa95cf2d79cd7d8e411b65774309aa62843bc7b912034299f0ff785",
+        "inputs": {
+            "0": {
+                "internal_id": "2aef7f3d-71dd-42c9-a412-4f87d14ccca3",
+                "transaction_internal_id": "7cb1ad48-13b7-4ec4-a857-ceba850309ab",
+                "utxo_internal_id": "fce10713-4fbc-49a2-9aed-dd6a234928c6",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 92,
+                "internal_id": "90064ba2-b7cc-47c2-a782-ac6c3d7d5bbe",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7cb1ad48-13b7-4ec4-a857-ceba850309ab",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 93,
+                "internal_id": "9656fc79-daa7-4b04-883d-6b4204a9bfc5",
+                "name": "shard fragment UTXO",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7cb1ad48-13b7-4ec4-a857-ceba850309ab",
+                "child_transaction_internal_ids": [
+                    "236298e3-d4ac-4ff6-bb07-b2398d378c56"
+                ]
+            },
+            "2": {
+                "counter": 98,
+                "internal_id": "2c10552c-22af-407c-a83c-dd54c3eaa8c9",
+                "name": "vault UTXO",
+                "script_template_name": "BasicPresignedScriptTemplate",
+                "amount": 250000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7cb1ad48-13b7-4ec4-a857-ceba850309ab",
+                "child_transaction_internal_ids": [
+                    "434a1e24-8eef-4ee8-9816-3aeb5973f74d",
+                    "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+                    "dbc61fd0-8e33-445e-9992-6b6384577b7f"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001013b8cce503fd16cd4b9da7eb8dcf07860ba3e83b6813b90a7b8bb13d98c9fc9ea0200000000900000000300000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e2080b2e60e0000000022002095f39ea16fd7eb396dcb682d1ac462741198f14223cce27c341cc11db34e93f90347304402200702a329d81693a5d628011b68d64b535d5019c0b78566196681a99a6ceeca0802207c9832ae75b6922d733ef851149ff74b992c716d75db859fa41f3969554f5e790147304402206cbabafabbc4481201b89befe4d2770ceabe918f74fc2512287089b3cb6ce89f02204793e701e255d474c42fcdb329ce0d641493666b5b65a8a87466ddc6e9dab191014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 41,
+        "internal_id": "236298e3-d4ac-4ff6-bb07-b2398d378c56",
+        "name": "push-to-cold-storage",
+        "txid": "19039afb34a0cc753181a7f50fd9e16057a57ba874236c4faf5a2294470c3cf8",
+        "inputs": {
+            "0": {
+                "internal_id": "7fa28316-6084-46e1-bd76-846e7349d080",
+                "transaction_internal_id": "236298e3-d4ac-4ff6-bb07-b2398d378c56",
+                "utxo_internal_id": "9656fc79-daa7-4b04-883d-6b4204a9bfc5",
+                "utxo_name": "shard fragment UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 94,
+                "internal_id": "604fa86e-2622-4f85-9ea4-02e8d901fbac",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "236298e3-d4ac-4ff6-bb07-b2398d378c56",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 95,
+                "internal_id": "8ab2d88c-db65-4685-8691-8f68ad9432cf",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "236298e3-d4ac-4ff6-bb07-b2398d378c56",
+                "child_transaction_internal_ids": [
+                    "707b35db-8e2c-4a68-a840-f18c4540239c"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010185f70f9f293420917bbc4328a69a307457b611e4d8d79cd7f25ca91f33720f710100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c034730440220604050b6fb51bc83a7497d26a2f65cb5b9d49602d766189014819b4331bd75aa0220027c00e5707e05b36334914fe1ee9b9915debf3ff87506afd9ae29ec09f391a9014830450221009e9b91960ddc78a17f162c7ea5290ee892a8f51a60280791d52796276e9d1f3702205e691d3a8a2caf03a26c03ba5f0453b2de3e4fb4f13c92fee94c8a7b51928af3017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 42,
+        "internal_id": "707b35db-8e2c-4a68-a840-f18c4540239c",
+        "name": "Burn some UTXO",
+        "txid": "7763ca2bd5abfab41ed64a0d04de0c10ea7e540fa885c96af5da4d7e3fbe8a37",
+        "inputs": {
+            "0": {
+                "internal_id": "863730c9-39af-4333-8642-fbd7d41b1585",
+                "transaction_internal_id": "707b35db-8e2c-4a68-a840-f18c4540239c",
+                "utxo_internal_id": "8ab2d88c-db65-4685-8691-8f68ad9432cf",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 96,
+                "internal_id": "7afd9be4-4767-433d-9564-c8ae6120bafd",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "707b35db-8e2c-4a68-a840-f18c4540239c",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 97,
+                "internal_id": "5f4a8e17-d2df-4ddf-9558-8aa0dfb00b08",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "707b35db-8e2c-4a68-a840-f18c4540239c",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101f83c0c4794225aaf4f6c2374a87ba55760e1d90ff5a7813175cca034fb9a03190100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100feef6571f2b1eecb899afd10fb5988d1da0054c6bd9bf86aa7a32931d349c69202200b87af197eafda40d811f3bd208c9342742169722be25de410ecc57d96d09f370147304402200585a5d2e6f383b8d866ae77396cbaa6c02f2b4f347024e73fe7a0a0b664441402206ed66dd443bbd7a5ea6080ce5329ec73c40bcbe32eceaba4a07c79226df0d39c019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 43,
+        "internal_id": "434a1e24-8eef-4ee8-9816-3aeb5973f74d",
+        "name": "push-to-cold-storage",
+        "txid": "caaefb0c5b99a15e8fefe50f49773259aa07bd1f6d74a01fdc3814d740fa0da5",
+        "inputs": {
+            "0": {
+                "internal_id": "eae61648-b4ab-4126-ba05-4c3c20958c02",
+                "transaction_internal_id": "434a1e24-8eef-4ee8-9816-3aeb5973f74d",
+                "utxo_internal_id": "2c10552c-22af-407c-a83c-dd54c3eaa8c9",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 99,
+                "internal_id": "4b462bff-260c-465d-8ec6-e4871b35b200",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "434a1e24-8eef-4ee8-9816-3aeb5973f74d",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 100,
+                "internal_id": "0fa7b770-1aae-40c5-ac48-5f2a8867b33b",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 250000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "434a1e24-8eef-4ee8-9816-3aeb5973f74d",
+                "child_transaction_internal_ids": [
+                    "7b07d4f5-08e8-446e-adec-d8395f99ab24"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010185f70f9f293420917bbc4328a69a307457b611e4d8d79cd7f25ca91f33720f710200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326080b2e60e00000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100d5b7ae02c01b880f7cbecc182555c57229705745dc370f40afb3e5ce9f0277f502203034e910a15ccce97012d97aea8ad7f256cca7f6cd85d82502e3da9f53708084014730440220594b168f8f0e5fc79dc0c519cb9b8537a29a9439c251fecfe16666e75725193102203209de6e390993f8dbd7b8bcc553601ef69e38e6d0d7f0b1d01f5b1e0e7d4455014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 44,
+        "internal_id": "7b07d4f5-08e8-446e-adec-d8395f99ab24",
+        "name": "Burn some UTXO",
+        "txid": "279b99eaa498465adb8d66af82f8f7beedba0d8d1ff08c2b08b256333922d31f",
+        "inputs": {
+            "0": {
+                "internal_id": "7b9f533a-a564-478f-a836-e9200e873a4f",
+                "transaction_internal_id": "7b07d4f5-08e8-446e-adec-d8395f99ab24",
+                "utxo_internal_id": "0fa7b770-1aae-40c5-ac48-5f2a8867b33b",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 101,
+                "internal_id": "6dae755b-68b1-4898-920e-20bfbd0ce033",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7b07d4f5-08e8-446e-adec-d8395f99ab24",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 102,
+                "internal_id": "92811558-f030-41ff-b2a8-706228cb4cab",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 250000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "7b07d4f5-08e8-446e-adec-d8395f99ab24",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101a50dfa40d71438dc1fa0746d1fbd07aa593277490fe5ef8f5ea1995b0cfbaeca0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326080b2e60e000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100a5946de4d10b6daf1f4cef0f9133f7fa7f54e1949764dd2040d5e7a1adb1080c02200f603e37e20b83e16e18a4408dea89e6629e866e9cf3be71967fb68e325aad610147304402207e70b648843eae70a5ed498e6ce642c36f152f0b7d9200ffc4ec695eff1c546202202e256be0a4ac27e81374a129a3f0a5dfccc84dbfda12416cf12f1d4ec175522a019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 45,
+        "internal_id": "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+        "name": "Vault (partial) stipend start transaction.",
+        "txid": "aab8f2899f1ab886852a7c96eeb76e93ebde4429c9a5f64a93093abdfd6c37ac",
+        "inputs": {
+            "0": {
+                "internal_id": "673af325-b2a3-479b-b104-237f711ce45c",
+                "transaction_internal_id": "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+                "utxo_internal_id": "2c10552c-22af-407c-a83c-dd54c3eaa8c9",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 103,
+                "internal_id": "6c9540c2-6eb6-47b4-98a9-4b6f109ecae4",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 104,
+                "internal_id": "fd79d8c2-a061-47f8-9866-4134d7975aed",
+                "name": "shard fragment UTXO 1/2",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 0,
+                "transaction_internal_id": "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+                "child_transaction_internal_ids": [
+                    "686dfc51-cdb9-4fef-b50d-aab7072d7120"
+                ]
+            },
+            "2": {
+                "counter": 109,
+                "internal_id": "f8b7d5f5-46c5-49c2-aeb1-5e96f13eb86f",
+                "name": "shard fragment UTXO 2/2",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "afc9d3b9-ee51-4222-85d3-b82dc7132442",
+                "child_transaction_internal_ids": [
+                    "954ab944-2b75-45e3-b0ac-96c0f50b8b2f"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010185f70f9f293420917bbc4328a69a307457b611e4d8d79cd7f25ca91f33720f710200000000900000000300000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020ffc5b0b49dcd766a64c2035ed8c5557d058c67641239c62a72783f4df7baaedb4059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e200347304402201f4d933701539eb291111b130768db1e24cf59fae8fa9641c8784fb1c13fe5dc022072d4f82f2f0180b8e6a5fdde4c225908d63431ebf25993f0cc6c9121b2eb3f0e014730440220022d501cf4f8969a7b7d74967a4f155b21477a22acbf507dec6aa6981c03ee3302201c84d0b6792b58a5100732e138f8f6da286cdb1d546016f847cfd0a3a7498838014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 46,
+        "internal_id": "686dfc51-cdb9-4fef-b50d-aab7072d7120",
+        "name": "push-to-cold-storage",
+        "txid": "1c0044f71dfef67676c33689dd01c34af11d58e917bddda9f0a6b74d09672387",
+        "inputs": {
+            "0": {
+                "internal_id": "ff94fa8a-c19e-4ffc-b8b4-f74a4d9f93c8",
+                "transaction_internal_id": "686dfc51-cdb9-4fef-b50d-aab7072d7120",
+                "utxo_internal_id": "fd79d8c2-a061-47f8-9866-4134d7975aed",
+                "utxo_name": "shard fragment UTXO 1/2",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 105,
+                "internal_id": "1974ad09-b1a5-4e59-920d-7bcf97d25e31",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "686dfc51-cdb9-4fef-b50d-aab7072d7120",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 106,
+                "internal_id": "34a7e8d9-47fc-46df-a5ed-36a2ef4e82c9",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "686dfc51-cdb9-4fef-b50d-aab7072d7120",
+                "child_transaction_internal_ids": [
+                    "ea301103-2c05-45d0-a380-f52d3a7ecd77"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101ac376cfdbd3a09934af6a5c92944deeb936eb7ee967c2a8586b81a9f89f2b8aa0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c034830450221009525aadfcfc8a7780ebf031a182d6f6ca703898384b462fc9c63faabad36e968022065b828293de018258cf40aa35bd62b664b90b780fcfcf5ddbe353ab0847178bd0147304402205924ff093c6eb3a684ba24f3afa8a4dc31fb6ac31e37223621490a820205aa3f02204a1b028105f084b870a87a4647ebdaff045cb28cb89f6fcc827847904ea24a9e016d21030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67b26800000000"
+    },
+    {
+        "counter": 47,
+        "internal_id": "ea301103-2c05-45d0-a380-f52d3a7ecd77",
+        "name": "Burn some UTXO",
+        "txid": "c1a10a2c207b26880c860851275d3fa8d2f03319cc299f816d2e58c12749d564",
+        "inputs": {
+            "0": {
+                "internal_id": "fbcdc863-8479-4124-90e2-2ab7f862e785",
+                "transaction_internal_id": "ea301103-2c05-45d0-a380-f52d3a7ecd77",
+                "utxo_internal_id": "34a7e8d9-47fc-46df-a5ed-36a2ef4e82c9",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 107,
+                "internal_id": "36d64a0e-870d-480a-af32-9fc9cd5a2c5b",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ea301103-2c05-45d0-a380-f52d3a7ecd77",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 108,
+                "internal_id": "95883b32-e76b-4702-936c-ac7cc5706938",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "ea301103-2c05-45d0-a380-f52d3a7ecd77",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101872367094db7a6f0a9ddbd17e9581df14ac301dd8936c37676f6fe1df744001c0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100c4695703077cc067baf03d2febb775f9ecfc2731e6a7f6e98e68fd041f306c3c022054d4b5610ab5a688a8b962037e24f85cde55ed1ef4d4f5ffd56ad92f1adf74570147304402204f01c981be0a4f00f96b0dc33ee5f94535435a000eff2ac2954029b1bdbe17d702201a2d95aa110274871a4458996757f8c03cc7da378aa13d5e20828259a838bb54019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 48,
+        "internal_id": "954ab944-2b75-45e3-b0ac-96c0f50b8b2f",
+        "name": "push-to-cold-storage",
+        "txid": "bde507e73d870ffb9b03fea5009eb85e3f7b4720cd4672a9ebd3df4c465d464e",
+        "inputs": {
+            "0": {
+                "internal_id": "0686fc37-8551-4e62-94c6-ee12a6b83da4",
+                "transaction_internal_id": "954ab944-2b75-45e3-b0ac-96c0f50b8b2f",
+                "utxo_internal_id": "f8b7d5f5-46c5-49c2-aeb1-5e96f13eb86f",
+                "utxo_name": "shard fragment UTXO 2/2",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 110,
+                "internal_id": "493aa962-023b-4bda-900f-dd74da114676",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "954ab944-2b75-45e3-b0ac-96c0f50b8b2f",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 111,
+                "internal_id": "4f36a4bb-4add-4d94-a872-6c61f982c61e",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "954ab944-2b75-45e3-b0ac-96c0f50b8b2f",
+                "child_transaction_internal_ids": [
+                    "12dfe66f-edd3-4813-9d05-e977cfc342c0"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101ac376cfdbd3a09934af6a5c92944deeb936eb7ee967c2a8586b81a9f89f2b8aa0200000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c034730440220377614188d2139f7ab7102b46be66fe082f4e8c3ef9890e17c115c67e44c4f6502204219e59b30bd74f4a95d37bf32f76c435823bc41f951b610dd0fa1ca86dd823e0147304402201bd6b67e8924ef769f0022412909372f25d25f35013ac4746531b1c91e64d5340220251981e9ae7215b93fbf0e119a04fc95e31a984b2fe4d01dcb06e99c5299e802017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 49,
+        "internal_id": "12dfe66f-edd3-4813-9d05-e977cfc342c0",
+        "name": "Burn some UTXO",
+        "txid": "7d7b5ef44558e83a917bcef0ab6069cb6c8a4f44deaaffaa31087f2aed4d2081",
+        "inputs": {
+            "0": {
+                "internal_id": "e9be1a1c-89cd-4e7a-83a0-f1cc566c6faa",
+                "transaction_internal_id": "12dfe66f-edd3-4813-9d05-e977cfc342c0",
+                "utxo_internal_id": "4f36a4bb-4add-4d94-a872-6c61f982c61e",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 112,
+                "internal_id": "acd2b708-071b-48b9-a84c-5cd59777d792",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "12dfe66f-edd3-4813-9d05-e977cfc342c0",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 113,
+                "internal_id": "65c823d1-5e93-4ad4-b938-b7d9b5f45828",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "12dfe66f-edd3-4813-9d05-e977cfc342c0",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001014e465d464cdfd3eba97246cd20477b3f5eb89e00a5fe039bfb0f873de707e5bd0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100b048d87f6fa8b404b3d840e9f94c9d997d73b76f7aeb0dd99a13ba842de83b1a02205a21421b3d9a8475ee57e8e5d23dc693bcde6cb985143460b3e97dfc6d6b70d901483045022100823fef4820eacbd66152370c76ca2db8cbb6be39fc92ac47238acf480bc2632e022077138fff78f25deffea12518b178a1700774610f26b4eab57f96c6cd9cf0bced019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 50,
+        "internal_id": "dbc61fd0-8e33-445e-9992-6b6384577b7f",
+        "name": "Vault transaction: spend one shard, re-vault the remaining shards",
+        "txid": "9d8d611b92985232752b596446380c318e3b99eeb58d8d3833c4134b1a5f01d6",
+        "inputs": {
+            "0": {
+                "internal_id": "97b068ce-ed8e-41b0-a84a-748d07696215",
+                "transaction_internal_id": "dbc61fd0-8e33-445e-9992-6b6384577b7f",
+                "utxo_internal_id": "2c10552c-22af-407c-a83c-dd54c3eaa8c9",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 114,
+                "internal_id": "776b383e-adb3-4061-a707-900c33946422",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "dbc61fd0-8e33-445e-9992-6b6384577b7f",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 115,
+                "internal_id": "34448c58-9fa5-4450-91cd-cf1a63b0ad49",
+                "name": "shard fragment UTXO",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "dbc61fd0-8e33-445e-9992-6b6384577b7f",
+                "child_transaction_internal_ids": [
+                    "1cbbc2d1-fafe-4c87-abfc-7fbff3183185"
+                ]
+            },
+            "2": {
+                "counter": 120,
+                "internal_id": "1e4d7829-e77d-4173-aae0-cf1078a66bdd",
+                "name": "vault UTXO",
+                "script_template_name": "BasicPresignedScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "dbc61fd0-8e33-445e-9992-6b6384577b7f",
+                "child_transaction_internal_ids": [
+                    "64c68d79-14af-4024-9261-c7ba23219697",
+                    "0ede023b-a400-4243-8186-df681b6d9f04",
+                    "80f7352d-2667-4027-84c3-afa09a19919e"
+                ]
+            }
+        },
+        "bitcoin_transaction": "0200000000010185f70f9f293420917bbc4328a69a307457b611e4d8d79cd7f25ca91f33720f710200000000900000000300000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e20405973070000000022002095f39ea16fd7eb396dcb682d1ac462741198f14223cce27c341cc11db34e93f903473044022063707ed3b75fcddf1b0a3ba2145ec8ed83e6e4da42cb25014fb9bffd465fbd320220464edc34c74e649d470fefa615a15f8a45045fe02d72203789462c0a6ab2e6c401483045022100aa6af5c8551af22ff0674abffc937cddc9603427271ca9a07d5e68a4e2148510022036a0e647591493d00393d6f2042a56c17d862dcc42fc56b68f133e9fc6c9ac7a014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 51,
+        "internal_id": "1cbbc2d1-fafe-4c87-abfc-7fbff3183185",
+        "name": "push-to-cold-storage",
+        "txid": "1976207e9ca8fe62f6f42888306ebd7f42601461d76ad4885ce6433b63d95850",
+        "inputs": {
+            "0": {
+                "internal_id": "9fcf47e9-509b-4775-b1d0-4d64cacb9925",
+                "transaction_internal_id": "1cbbc2d1-fafe-4c87-abfc-7fbff3183185",
+                "utxo_internal_id": "34448c58-9fa5-4450-91cd-cf1a63b0ad49",
+                "utxo_name": "shard fragment UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 116,
+                "internal_id": "99760921-68ee-4b0f-bc3f-98928322fc2e",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "1cbbc2d1-fafe-4c87-abfc-7fbff3183185",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 117,
+                "internal_id": "146bcfa6-5068-4478-820d-34117423dd65",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "1cbbc2d1-fafe-4c87-abfc-7fbff3183185",
+                "child_transaction_internal_ids": [
+                    "8aa8e3bc-551f-4c2a-9dc5-6565c850c094"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101d6015f1a4b13c433388d8db5ee993b8e310c384664592b75325298921b618d9d0100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03473044022042492f08cff9626e6e0675fe6e0acc93554a111460aff35ada5bad3bf0607307022002dac3b553a59155816fef4fb5b018d92b1ca9a99310734443dfb6810944160b0147304402206967445d49ef71266899c4a605de498956cd68c990fe64a88de030c2a2b5724502201d7a0365047e887153230f6bcc102346712fd0e581b9a1a61502e0c918508378017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 52,
+        "internal_id": "8aa8e3bc-551f-4c2a-9dc5-6565c850c094",
+        "name": "Burn some UTXO",
+        "txid": "bdb92a084511f5065d913e1ded2a175726c45b88e89e1b1b2ee90dd95d934d82",
+        "inputs": {
+            "0": {
+                "internal_id": "7d2edd05-9d6c-4aee-9e47-2c1eb4111799",
+                "transaction_internal_id": "8aa8e3bc-551f-4c2a-9dc5-6565c850c094",
+                "utxo_internal_id": "146bcfa6-5068-4478-820d-34117423dd65",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 118,
+                "internal_id": "303f9df2-9175-4f01-920f-6250a7496465",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "8aa8e3bc-551f-4c2a-9dc5-6565c850c094",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 119,
+                "internal_id": "e1d04e5f-bd8b-4401-a01b-cef831aba065",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "8aa8e3bc-551f-4c2a-9dc5-6565c850c094",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "020000000001015058d9633b43e65c88d46ad7611460427fbd6e308828f4f662fea89c7e2076190100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c63296049032620348304502210087c25111e6f5f04635e97e47ea53eac651f893060220d1a438bb0c738e6b0fa30220130d57eaf9d0957b6ca9d126bfee6d2cfc0774a14e47d5a07b1f9fc380512ade0147304402200e0620b294226d05a9f5f28271715c1759463f29c72f11575a0a65e262ec26e102201d15254b566fa35cb00d9434ac6d47cc7e9352851795cb65b52ce10a8a5cb76f019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 53,
+        "internal_id": "64c68d79-14af-4024-9261-c7ba23219697",
+        "name": "push-to-cold-storage",
+        "txid": "21c4c375b69fb678ac5815d4cf1067174570878c72cc2ac93bcd8b940a8f3409",
+        "inputs": {
+            "0": {
+                "internal_id": "481ebc74-d8c0-4ee3-9764-e0ffaa6b02d6",
+                "transaction_internal_id": "64c68d79-14af-4024-9261-c7ba23219697",
+                "utxo_internal_id": "1e4d7829-e77d-4173-aae0-cf1078a66bdd",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 121,
+                "internal_id": "8844a43f-64f6-4308-b783-3879e2c2b691",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "64c68d79-14af-4024-9261-c7ba23219697",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 122,
+                "internal_id": "b3f60ca3-da56-43ab-99d3-f0d732f1df4a",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "64c68d79-14af-4024-9261-c7ba23219697",
+                "child_transaction_internal_ids": [
+                    "833e54b3-aecf-4ec5-bf3a-67e6b1ea9491"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101d6015f1a4b13c433388d8db5ee993b8e310c384664592b75325298921b618d9d0200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c0347304402207dcabf0aee4b04c260352d797e529c406ff3dff7f0650fc589cf0f33d4df991f02207be830dc6b778e870d1717acba2b0bb5c7dc4e45b0237bd26b38a360a4367cdc01473044022041e8ebcb7b2c9163b2d74cc30d21412e474b42da09060532f75c3754597e57cd022032ffe8098cc5f004c5dbeee7a859cc24c06ea9e537d66cb6454fb398e9930a40014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 54,
+        "internal_id": "833e54b3-aecf-4ec5-bf3a-67e6b1ea9491",
+        "name": "Burn some UTXO",
+        "txid": "c602c7b551f6f311f0176d4e5743f672612fc293ee4e14577300a44e22139d44",
+        "inputs": {
+            "0": {
+                "internal_id": "02449047-590b-4241-b136-9e6792a8e62b",
+                "transaction_internal_id": "833e54b3-aecf-4ec5-bf3a-67e6b1ea9491",
+                "utxo_internal_id": "b3f60ca3-da56-43ab-99d3-f0d732f1df4a",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 123,
+                "internal_id": "dbea3861-6673-421a-b39e-57f96a6f61aa",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "833e54b3-aecf-4ec5-bf3a-67e6b1ea9491",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 124,
+                "internal_id": "f95dda40-92fb-4148-90d5-2930de9398a5",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "833e54b3-aecf-4ec5-bf3a-67e6b1ea9491",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "0200000000010109348f0a948bcd3bc92acc728c877045176710cfd41558ac78b69fb675c3c4210100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c63296049032620347304402204f0bb0cd5693f51ec56c8ae959ab3c23e82542b6fac046c7dbda5756297411fa0220334ca261ca222a3c0572fbfd0afb642c30a385b22f11eacc8a939258cb02c81201473044022006a6b165532dc192b8dc7f98579e1f00300507ac067f268ce207c27b46981130022064c1099f4e3d4f89217788149d9a0638875ca1504c54649d59c7819bd6cba89a019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 55,
+        "internal_id": "0ede023b-a400-4243-8186-df681b6d9f04",
+        "name": "Vault (partial) stipend start transaction.",
+        "txid": "c960c489b0cf1e0f8eee1c9d9d215a6478d74f483a87b9c2cefe1958a0f86005",
+        "inputs": {
+            "0": {
+                "internal_id": "1d9ad281-6289-4867-88d8-cc43f4d5884b",
+                "transaction_internal_id": "0ede023b-a400-4243-8186-df681b6d9f04",
+                "utxo_internal_id": "1e4d7829-e77d-4173-aae0-cf1078a66bdd",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 125,
+                "internal_id": "b60cfb01-a4ac-46cb-a20d-b3a727328292",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "0ede023b-a400-4243-8186-df681b6d9f04",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 126,
+                "internal_id": "f87280b7-264a-4256-9927-b7237dcad487",
+                "name": "shard fragment UTXO 1/1",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 0,
+                "transaction_internal_id": "0ede023b-a400-4243-8186-df681b6d9f04",
+                "child_transaction_internal_ids": [
+                    "b83b185a-69b1-425a-b5ef-1f6467a1631b"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101d6015f1a4b13c433388d8db5ee993b8e310c384664592b75325298921b618d9d0200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020ffc5b0b49dcd766a64c2035ed8c5557d058c67641239c62a72783f4df7baaedb034830450221009289c26c59c7f78535bd156eb739e4710a7b841140a2532876599285eec6d61b0220136f2fed6a3fcab95a2c62081fc2bfe461fa0ed9da0d6865bccec73ebe1c32b601483045022100e26bcedf21575cb83295b90c310428c5c4acddff22dbacbddbd028822609aa1702201c7553c0f40972ddcca346d5dba4a793c6bfc143f1f593342550c5ea815453c3014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 56,
+        "internal_id": "b83b185a-69b1-425a-b5ef-1f6467a1631b",
+        "name": "push-to-cold-storage",
+        "txid": "61c0bccd7f1f88941f6722c3bd176b53f55f53d04fdf3b3f9b5cedf9404155b0",
+        "inputs": {
+            "0": {
+                "internal_id": "d26372ef-5699-4db5-8b1d-841ce4602bd6",
+                "transaction_internal_id": "b83b185a-69b1-425a-b5ef-1f6467a1631b",
+                "utxo_internal_id": "f87280b7-264a-4256-9927-b7237dcad487",
+                "utxo_name": "shard fragment UTXO 1/1",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 127,
+                "internal_id": "0fb19ddb-b771-43cf-a02e-58423e62ac4a",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "b83b185a-69b1-425a-b5ef-1f6467a1631b",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 128,
+                "internal_id": "7fd88685-9b3b-4f5f-9e68-75c78c51da8b",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "b83b185a-69b1-425a-b5ef-1f6467a1631b",
+                "child_transaction_internal_ids": [
+                    "5b3fee73-34b2-45d1-bf6d-c6098d641d72"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001010560f8a05819fecec2b9873a484fd778645a219d9d1cee8e0f1ecfb089c460c90100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c034830450221009d36b14aa385ae92654eed3cbbcd9f19a60d7d0264ff39b3f585af25af1e4bbe02203c628a66d501f5420123b6c1ebf3bd4503a933ddc80568bde2dc966224daeb4101473044022074f3d6e6b86e9015d47bc4581268de642a65c2d8c6081f416285c3d71bb556a902203ae6f798a579407c06569cf8a39441b14b1ed7db936b6e902684bb33830f5e04016d21030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67b26800000000"
+    },
+    {
+        "counter": 57,
+        "internal_id": "5b3fee73-34b2-45d1-bf6d-c6098d641d72",
+        "name": "Burn some UTXO",
+        "txid": "b206bedf5119075e9d1ea1ba34af67a11e3e2309a9ada078c5ddb60a1df38400",
+        "inputs": {
+            "0": {
+                "internal_id": "38f92f5f-1d35-4c90-ad23-55961c1e5e3e",
+                "transaction_internal_id": "5b3fee73-34b2-45d1-bf6d-c6098d641d72",
+                "utxo_internal_id": "7fd88685-9b3b-4f5f-9e68-75c78c51da8b",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 129,
+                "internal_id": "7fde2a48-c9b0-4863-8454-69b3e26a9fe2",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "5b3fee73-34b2-45d1-bf6d-c6098d641d72",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 130,
+                "internal_id": "a04575eb-b03a-4644-b0df-5c172850ef96",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "5b3fee73-34b2-45d1-bf6d-c6098d641d72",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101b0554140f9ed5c9b3f3bdf4fd0535ff5536b17bdc322671f94881f7fcdbcc0610100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c63296049032620348304502210080516148232a4d589ca0ac94dbf140b087d5b007b49d1018d6480a1ad019326002204904d2d047e0a925707225ab3254e49568107a62509fe27ad4fa863da54790500147304402202adae4fe49442fd74cfb03bb32894b098f5a68519440e883115954fc6807aaac02203a70781863c232a3de7a51f30d07f3ae42c21c086342be7251b89a46da9f33f9019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    },
+    {
+        "counter": 58,
+        "internal_id": "80f7352d-2667-4027-84c3-afa09a19919e",
+        "name": "Vault transaction: spend one shard, re-vault the remaining shards",
+        "txid": "157af9e403e6eda932e8590de7c31deddbe86a160147524030497ff9a3c8a07a",
+        "inputs": {
+            "0": {
+                "internal_id": "af67ee85-92c7-4f61-8ee8-05994d1ab288",
+                "transaction_internal_id": "80f7352d-2667-4027-84c3-afa09a19919e",
+                "utxo_internal_id": "1e4d7829-e77d-4173-aae0-cf1078a66bdd",
+                "utxo_name": "vault UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 131,
+                "internal_id": "4628d01d-dc0c-47e4-981e-6477f307683b",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "80f7352d-2667-4027-84c3-afa09a19919e",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 132,
+                "internal_id": "522aa0b7-7090-4e4a-a8e9-5297d803d2ee",
+                "name": "shard fragment UTXO",
+                "script_template_name": "ShardScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "80f7352d-2667-4027-84c3-afa09a19919e",
+                "child_transaction_internal_ids": [
+                    "4ab22b5a-0b18-4165-8022-7310a3bf589c"
+                ]
+            }
+        },
+        "bitcoin_transaction": "02000000000101d6015f1a4b13c433388d8db5ee993b8e310c384664592b75325298921b618d9d0200000000900000000200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020c395b73d9f4536323dbc7dad01ba5b7f4b1e1e44d87dfd5bae7cb2bc39bd2e2003483045022100812dfa0942edfb04fb31173cad1d81426905fd0629a71e5028b39b5d7bf5973702207e5a5a0e5f64b0174da4e513e6cb80a2998c15dcee036121755d1495bdfbbbbf01483045022100c35d80f663a7ed8437fe055ce8aded2e20cc119a96faa72b156b17463878e05b02206e6083b3d642b9238d628b30195f3668a0549ffa960f854d821374b91f929d41014a21031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad029000b200000000"
+    },
+    {
+        "counter": 59,
+        "internal_id": "4ab22b5a-0b18-4165-8022-7310a3bf589c",
+        "name": "push-to-cold-storage",
+        "txid": "773284f318444b7f89859c1af28d620fc7583eb9a2223996007e1f3d2f9bd2ff",
+        "inputs": {
+            "0": {
+                "internal_id": "0c9fd02a-f7e1-4325-81cd-99dacc4849e9",
+                "transaction_internal_id": "4ab22b5a-0b18-4165-8022-7310a3bf589c",
+                "utxo_internal_id": "522aa0b7-7090-4e4a-a8e9-5297d803d2ee",
+                "utxo_name": "shard fragment UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 133,
+                "internal_id": "a0023eaa-82b2-4aab-982c-fca50ba78484",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "4ab22b5a-0b18-4165-8022-7310a3bf589c",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 134,
+                "internal_id": "4587cf66-364e-4f66-91a9-3a596649f0ff",
+                "name": "cold storage UTXO",
+                "script_template_name": "ColdStorageScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "4ab22b5a-0b18-4165-8022-7310a3bf589c",
+                "child_transaction_internal_ids": [
+                    "d69b4108-c864-4b24-b48a-61b1a0345de0"
+                ]
+            }
+        },
+        "bitcoin_transaction": "020000000001017aa0c8a3f97f493040524701166ae8dbed1dc3e70d59e832a9ede603e4f97a150100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc332604059730700000000220020a7dfd3c394b5cef8f6f315d02ec89739079c85bbdd816003e435dd5cf853a61c03483045022100cc270a1d97c9752132a28db9a0eee07de9155d177eb1e0f2eba60dbe6f703a9b02200c1a21d69f7db754698db5d4543a5e3f2dba8e1e6a7473987d09c582c2dd84380147304402202e3a452e67461fbaac99f297f3e7b645a50d3e08e7511eefc65de67fa9a4afb102203803ec2f4325f06f39d2cd0b514add673c1210a26260086e98343af82b1a4308017021030805f472b6f2658dc635962991fa72fc21fb303f5f2ec81ffed2c9427af28b17ac6421031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ad210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ad67029000b26800000000"
+    },
+    {
+        "counter": 60,
+        "internal_id": "d69b4108-c864-4b24-b48a-61b1a0345de0",
+        "name": "Burn some UTXO",
+        "txid": "0257d8ccbfa5e8412a7aecfca585d8726c55ba81ea7ce3bdddd7cd3d97ebe121",
+        "inputs": {
+            "0": {
+                "internal_id": "f5a479f6-97bb-4e38-95a8-cb55937ec273",
+                "transaction_internal_id": "d69b4108-c864-4b24-b48a-61b1a0345de0",
+                "utxo_internal_id": "4587cf66-364e-4f66-91a9-3a596649f0ff",
+                "utxo_name": "cold storage UTXO",
+                "witness_template_selection": "presigned"
+            }
+        },
+        "outputs": {
+            "0": {
+                "counter": 135,
+                "internal_id": "e26c432c-9d83-4c0a-b6b3-a22f306ab7e6",
+                "name": "CPFP hook",
+                "script_template_name": "CPFPHookScriptTemplate",
+                "amount": 0,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "d69b4108-c864-4b24-b48a-61b1a0345de0",
+                "child_transaction_internal_ids": []
+            },
+            "1": {
+                "counter": 136,
+                "internal_id": "12996cc8-12c2-4dd0-9453-cc03bae9b2b5",
+                "name": "burned UTXO",
+                "script_template_name": "BurnUnspendableScriptTemplate",
+                "amount": 125000000,
+                "timelock_multiplier": 1,
+                "transaction_internal_id": "d69b4108-c864-4b24-b48a-61b1a0345de0",
+                "child_transaction_internal_ids": []
+            }
+        },
+        "bitcoin_transaction": "02000000000101ffd29b2f3d1f7e00963922a2b93e58c70f628df21a9c85897f4b4418f38432770100000000ffffffff0200000000000000002200204ae81572f06e1b88fd5ced7a1a000945432e83e1551e6f721ee9c00b8cc3326040597307000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326203483045022100f763f05309b050f5690861b1a9ac96f6a7e7fe77207c9ab7e4c2e2f8c91c547a022048610106e407b05822a271fddd2747c724a61a28b5750c8cbda5a56b969374030148304502210082ed8a29e49883faad3c7fbeb7bdd7ef8c357271c94858b3142f0fa6152633aa02203210f2ce3de4890c3972451cf64707441fe95ba59df69b3fa0e34c2bcf675c04019321031ba3b4413d3c1698da8fa802b5fd35ad7f537a5243fa9d8d382f7a8ed3c0dea9ac642103ea73acad80881f97d2c8039678e8d270a923034b0ca56cb0194a5fd8499dbbb7ad210378d430274f8c5ec1321338151e9f27f4c676a008bdf8638d07c0b6be9ab35c71ad029000b267210278692345a26e59103f73c5319b87ea5a00b0fa062b37675438d42206d167afa4ac6800000000"
+    }
+]

@@ -1465,14 +1465,17 @@ def from_dict(transaction_dicts):
 
     return transactions[0]
 
-def load(transaction_store_filename=TRANSACTION_STORE_FILENAME):
+def load(path=None, transaction_store_filename=TRANSACTION_STORE_FILENAME):
     """
     Read and deserialize a saved planned transaction tree from file.
     """
-    transaction_store_fd = open(os.path.join(os.getcwd(), transaction_store_filename), "r")
+    if path == None:
+        path = os.path.join(os.getcwd(), transaction_store_filename)
+    transaction_store_fd = open(path, "r")
     content = transaction_store_fd.read()
     data = json.loads(content)
     initial_tx = from_dict(data)
+    transaction_store_fd.close()
     return initial_tx
 
 def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):

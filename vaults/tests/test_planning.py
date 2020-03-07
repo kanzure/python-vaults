@@ -1,12 +1,15 @@
+import os
 import unittest
 
 from vaults.experiment import (
     PlannedTransaction,
     PlannedUTXO,
+    InitialTransaction,
     ScriptTemplate,
     sha256,
     b2x,
     make_private_keys,
+    load,
 )
 
 class AbstractPlanningTests(unittest.TestCase):
@@ -59,5 +62,13 @@ class OtherTests(unittest.TestCase):
 
     def test_make_private_keys_runs(self):
         make_private_keys()
+
+    def test_load(self):
+        basepath = os.path.dirname(__file__)
+        path = os.path.join(basepath, "data/transaction-store.001.json")
+        initial_tx = load(path=path)
+
+        self.assertEqual(type(initial_tx), InitialTransaction)
+        self.assertEqual(type(initial_tx.child_transactions[0]), PlannedTransaction)
 
 
