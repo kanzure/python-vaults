@@ -4,6 +4,9 @@ from vaults.experiment import (
     PlannedTransaction,
     PlannedUTXO,
     ScriptTemplate,
+    sha256,
+    b2x,
+    make_private_keys,
 )
 
 class AbstractPlanningTests(unittest.TestCase):
@@ -49,3 +52,12 @@ class AbstractPlanningTests(unittest.TestCase):
         planned_transaction = PlannedTransaction(name="name goes here")
         self.assertEqual(len(planned_transaction.output_utxos), 1)
         self.assertEqual(planned_transaction.output_utxos[0].name, "CPFP hook")
+
+class OtherTests(unittest.TestCase):
+    def test_sha256(self):
+        self.assertEqual(b2x(sha256(b"hello world")), "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9")
+
+    def test_make_private_keys_runs(self):
+        make_private_keys()
+
+
