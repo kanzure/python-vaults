@@ -20,8 +20,6 @@ from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.exceptions import VaultException
 from vaults.loggingconfig import logger
 
-from bitcoin.wallet import CBitcoinSecret
-
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
 from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP, OP_2DROP, OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKSIGVERIFY, OP_NOP3
@@ -31,6 +29,8 @@ import bitcoin.rpc
 
 # TODO: VerifyScript doesn't work with segwit yet...
 #from bitcoin.core.scripteval import VerifyScript
+# python-bitcointx just farms this out to libbitcoinconsensus, so that's an
+# option...
 
 SelectParams("regtest")
 
@@ -1861,6 +1861,19 @@ def safety_check(initial_tx=None):
 
     return True
 
+def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME):
+    """
+    Dump some text describing the planned transaction tree to a text file.
+    """
+    logger.info("Rendering to text...")
+    output = segwit_utxo.to_text()
+    filename = TEXT_RENDERING_FILENAME
+    fd = open(os.path.join(os.getcwd(), filename), "w")
+    fd.write(output)
+    fd.close()
+    logger.info(f"Wrote to {filename}")
+    return
+
 # pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
 def compute_standard_template_hash(child_transaction, nIn):
     if child_transaction.ctv_baked == False and child_transaction.ctv_bitcoin_transaction == None:
@@ -2286,13 +2299,7 @@ def main():
 
     # Display all UTXOs and transactions-- render the tree of possible
     # transactions.
-    logger.info("Rendering to text...")
-    output = segwit_utxo.to_text()
-    filename = TEXT_RENDERING_FILENAME
-    fd = open(os.path.join(os.getcwd(), filename), "w")
-    fd.write(output)
-    fd.close()
-    logger.info(f"Wrote to {filename}")
+    render_planned_tree_to_text_file(segwit_utxo, filename=TEXT_RENDERING_FILENAME)
 
     # stats
     logger.info("*** Stats and numbers")
