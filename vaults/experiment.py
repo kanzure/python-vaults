@@ -351,7 +351,6 @@ class PlannedUTXO(object):
         planned_utxo.amount = data["amount"]
         planned_utxo.timelock_multiplier = data["timelock_multiplier"]
 
-        # TODO: second pass to add back object references
         planned_utxo._transaction_internal_id = data["transaction_internal_id"]
         planned_utxo._child_transaction_internal_ids = data["child_transaction_internal_ids"]
 
@@ -1502,6 +1501,8 @@ def from_dict(transaction_dicts):
     inputs = list(set(inputs))
     outputs = list(set(outputs))
 
+    # Second pass to add back object-to-object references. Maybe I should have
+    # just used an ORM tool....
     for some_utxo in outputs:
         some_utxo.connect_objects(inputs, outputs, transactions)
 
