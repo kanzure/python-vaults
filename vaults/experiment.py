@@ -819,6 +819,11 @@ class AbstractPlanningTests(unittest.TestCase):
 
 
 def make_burn_transaction(incoming_utxo, parameters=None):
+    """
+    Extend the planned transaction tree by making a "burn" transaction that
+    spends the coin and making it unspendable in the future forevermore.
+    """
+
     if not parameters["enable_burn_transactions"] == True:
         return None
 
@@ -846,6 +851,14 @@ def make_burn_transaction(incoming_utxo, parameters=None):
     return burn_transaction
 
 def make_push_to_cold_storage_transaction(incoming_utxo, parameters=None):
+    """
+    Extend the planned transaction tree with a transaction that pushes a coin
+    into the cold storage layer (defined by ColdStorageScriptTemplate).
+
+    Also make a planned transaction that can burn the cold storage UTXO as
+    another possible exit from the vault.
+    """
+
     # name was (phase 2): "push-to-cold-storage-from-sharded" But this is
     # inaccurate because only some of them are from a sharded UTXO. Others will
     # be the re-vault transaction.
