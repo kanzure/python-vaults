@@ -1586,6 +1586,10 @@ def generate_graphviz(some_utxo, parameters):
     return diagram
 
 def check_blockchain_has_transaction(txid, connection=None):
+    """
+    Check whether a given transaction id (txid) is present in the bitcoin
+    blockchain with at least one confirmation.
+    """
     if connection == None:
         connection = get_bitcoin_rpc_connection()
 
@@ -1603,6 +1607,11 @@ def check_blockchain_has_transaction(txid, connection=None):
         return False
 
 def get_next_possible_transactions_by_walking_tree(current_transaction, connection=None):
+    """
+    Walk the planned transaction tree and find which transaction is not yet in
+    the blockchain. Recursively check child transactions until an unconfirmed
+    tree node is found.
+    """
     if connection == None:
         connection = get_bitcoin_rpc_connection()
 
@@ -1628,6 +1637,14 @@ def get_next_possible_transactions_by_walking_tree(current_transaction, connecti
     return list(set(possible_transactions))
 
 def get_current_confirmed_transaction(current_transaction, connection=None):
+    """
+    Find the most recently broadcasted-and-confirmed  pre-signed transaction
+    from the vault, by walking the tree starting from the root (the first
+    transaction) and checking each transaction for inclusion in the blockchain.
+
+    The "current confirmed transaction" is the transaction where no child
+    transactions are broadcasted or confirmed.
+    """
     if connection == None:
         connection = get_bitcoin_rpc_connection()
 
@@ -1674,6 +1691,9 @@ def broadcast_next_transaction(internal_id):
     return result
 
 def render_planned_output(planned_output, depth=0):
+    """
+    Describe an output object, in text.
+    """
     prefix = "\t" * depth
 
     output_text  = prefix + "Output:\n"
@@ -1683,6 +1703,9 @@ def render_planned_output(planned_output, depth=0):
     return output_text
 
 def render_planned_transaction(planned_transaction, depth=0):
+    """
+    Render a planned transaction into text for use in the get_info command.
+    """
     prefix = "\t" * depth
 
     output_text  = prefix + "Transaction:\n"
@@ -1701,6 +1724,11 @@ def render_planned_transaction(planned_transaction, depth=0):
     return output_text
 
 def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=None):
+    """
+    Render information about the state of the vault based on (1) pre-computed
+    vault data and (2) the current state of the blockchain and most recently
+    broadcasted transaction from the vault.
+    """
     initial_tx = load(transaction_store_filename=transaction_store_filename)
 
     latest_info = get_current_confirmed_transaction(initial_tx)
@@ -1720,6 +1748,9 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
     return output_text
 
 def check_vaultfile_existence(die=True):
+    """
+    Check whether a "vaultfile" file is present.
+    """
     existence = os.path.exists(os.path.join(os.getcwd(), VAULTFILE_FILENAME))
     if existence and die:
         logger.error("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
@@ -1728,6 +1759,10 @@ def check_vaultfile_existence(die=True):
         return existence
 
 def make_vaultfile():
+    """
+    Create a "vaultfile" file that has a file format version for later
+    inspection and the possibility of migrations/upgrades in the future.
+    """
     filepath = os.path.join(os.getcwd(), VAULTFILE_FILENAME)
     with open(filepath, "w") as fd:
         fd.write(json.dumps({"version": VAULT_FILE_FORMAT_VERSION}))
@@ -1772,6 +1807,8 @@ def safety_check(initial_tx=None):
 
     if counter < 1 or counter < len(planned_transactions):
         raise VaultException("Length of the list of planned transactions is too low.")
+
+    return True
 
 # pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
 def compute_standard_template_hash(child_transaction, nIn):
