@@ -235,6 +235,14 @@ otherwise you will have to run with `-conf=/path/to/bitcoin.conf` each time.
 bitcoin-cli -regtest getblockchaininfo
 ```
 
+# Testing
+
+Run the tests like this:
+
+```
+python3 -m unittest
+```
+
 # Other pre-signed vault implementations
 
 * [python-vaults](https://github.com/kanzure/python-vaults) (you are here)
