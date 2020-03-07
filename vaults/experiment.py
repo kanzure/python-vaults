@@ -919,7 +919,12 @@ def make_telescoping_subsets(some_set):
 
 def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_shard_extra_amount=0, incoming_utxo=None, original_num_shards=None, make_sweeps=False, parameters=None):
     """
-    Make a new sharding transaction.
+    Make a new sharding transaction. A sharding transaction is one that takes
+    some coin and splits the coin into many UTXOs each with a fraction of the
+    original amount. Each coin will have a script that includes a monotonically
+    increasing relative timelock so that each UTXO becomes spendable
+    one-at-a-time and a watchtower can later take some action if more than one
+    of these UTXOs is spendable at any given time.
     """
 
     if num_shards < original_num_shards:
@@ -1084,16 +1089,20 @@ def make_one_shard_possible_spend(incoming_utxo, per_shard_amount, num_shards, o
             parameters=parameters,
         )
 
-# Now that we have segwit outputs, proceed with the protocol.
-#
-# Construct a 2-of-2 P2WSH script for the pre-signed transaction tree. All of
-# the deleted keys should be at least 2-of-2.
-#
-# After signing all of those transactions (including the one spending the
-# 2-of-2 root P2SH), delete the key.
-#
-# Then move the segwit coins into that top-level P2WSH scriptpubkey.
 def setup_vault(segwit_utxo, parameters):
+    """
+    Generate a pre-signed transaction tree using the segwit_utxo as the coins
+    to be inserted into the vault. The pre-signed transaction tree is
+    constructed in this function, but not signed. Signing occurs in another
+    independent function.
+
+    The movement of the given coins (from segwit_utxo) into the vault should
+    only be signed once the user has looked at and signed-off on the entire
+    planned transaction tree. This sign-off should be predicated on secure key
+    deletion of the keys used to create the pre-signed transactions in the
+    planned transaction tree.
+    """
+
     # name was: Vault locking transaction
     # phase 2 name: Funding commitment transaction
     vault_locking_transaction = PlannedTransaction(name="Funding commitment transaction")
