@@ -1534,7 +1534,7 @@ def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):
         fd.write(output_json)
     logger.info(f"Wrote to {filename}")
 
-def generate_graphviz(some_utxo, parameters):
+def generate_graphviz(some_utxo, parameters, output_filename="output.gv"):
     """
     Generate a graphviz dotfile, which can be used to create a
     pictorial/graphical representation of the planned transaction tree.
@@ -1545,7 +1545,7 @@ def generate_graphviz(some_utxo, parameters):
     """
     (utxos, transactions) = some_utxo.crawl()
 
-    diagram = Digraph("output", filename="output.gv")
+    diagram = Digraph("output", filename=output_filename)
 
     diagram.attr("node", shape="square")
     for transaction in transactions:
@@ -2242,7 +2242,7 @@ def main():
 
     # (graph generation can wait until after key deletion)
     if parameters["enable_graphviz"] == True:
-        generate_graphviz(segwit_utxo, parameters)
+        generate_graphviz(segwit_utxo, parameters, output_filename="output.gv")
 
     # Create another planned transaction tree this time using
     # OP_CHECKTEMPLATEVERIFY from bip119. This can be performed after key
