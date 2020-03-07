@@ -1548,6 +1548,9 @@ def from_dict(transaction_dicts):
     return transactions[0]
 
 def load(transaction_store_filename=TRANSACTION_STORE_FILENAME):
+    """
+    Read and deserialize a saved planned transaction tree from file.
+    """
     transaction_store_fd = open(os.path.join(os.getcwd(), transaction_store_filename), "r")
     content = transaction_store_fd.read()
     data = json.loads(content)
@@ -1555,6 +1558,11 @@ def load(transaction_store_filename=TRANSACTION_STORE_FILENAME):
     return initial_tx
 
 def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):
+    """
+    Serialize the planned transaction tree (starting from some given planned
+    output/UTXO) and then dump the serialization into json and write into a
+    file.
+    """
     output_data = to_dict(some_utxo)
     output_json = json.dumps(output_data, sort_keys=False, indent=4, separators=(',', ': '))
 
@@ -1563,6 +1571,14 @@ def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):
     logger.info(f"Wrote to {filename}")
 
 def generate_graphviz(some_utxo, parameters):
+    """
+    Generate a graphviz dotfile, which can be used to create a
+    pictorial/graphical representation of the planned transaction tree.
+
+    legend:
+        squares: transactions
+        circles: outputs because coins are circular
+    """
     (utxos, transactions) = some_utxo.crawl()
 
     diagram = Digraph("output", filename="output.gv")
