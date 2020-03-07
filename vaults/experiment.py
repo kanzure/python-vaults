@@ -880,10 +880,9 @@ def make_push_to_cold_storage_transaction(incoming_utxo, parameters=None):
     return push_transaction
 
 def make_sweep_to_cold_storage_transaction(incoming_utxos, parameters=None):
-
-    # This function shouldn't be used because it makes the transaction tree
-    # planner too slow.
-    raise VaultException("Bad code, too slow. Not recommended.")
+    """
+    Create a transaction that sweeps some input coins into the cold storage layer.
+    """
 
     # name was: "Sweep UTXOs to cold storage wallet"
     # phase 2 name was: Sharded UTXO sweep transaction
@@ -912,6 +911,18 @@ def make_sweep_to_cold_storage_transaction(incoming_utxos, parameters=None):
     return push_transaction
 
 def make_telescoping_subsets(some_set):
+    """
+    Creates a list of lists where each list at the second level is a subset of
+    the function's input each time minus one additional element.
+
+    The original purpose of this function was to produce a list of different
+    UTXO sets. These could then be used to construct alternative-possible sweep
+    transactions, such as sweep transactions for each of the scenarios where
+    the first UTXO is spent or not spent, the first and second UTXO are spent
+    or not spent, etc. Ultimately the sweep transactions are not enabled by
+    default in this prototype, because they combinatorially explode the planned
+    transaction tree size.
+    """
     item_sets = []
     for x in range(0, len(some_set)-1):
         item_sets.append(some_set[x:len(some_set)])
@@ -981,6 +992,8 @@ def make_sharding_transaction(per_shard_amount=1 * COIN, num_shards=100, first_s
     # need to be CPFPed would be easier to deal with.
     if make_sweeps == True:
         subsets = make_telescoping_subsets(shard_utxos)
+        # Iteration over all the possible subsets substantially and negatively
+        # impacts the runtime of the program.
         #sweep_transactions = []
         for some_subset in subsets:
             sweep_transaction = make_sweep_to_cold_storage_transaction(some_subset, parameters=parameters)
