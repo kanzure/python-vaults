@@ -9,7 +9,9 @@ of the planned transaction tree.
 
 # WARNING
 
-This is not production-ready code. Do not use this on bitcoin mainnet or any other mainnet.
+This is not production-ready code. Do not use this on bitcoin mainnet or any
+other mainnet. In fact, the private keys are static and hard coded into the
+prototype. Don't use this right now.
 
 # Background (summary)
 

@@ -1337,7 +1337,9 @@ def sha256(data):
 
 def make_private_keys():
     """
-    Convert a list of passphrases into a list of private keys.
+    Convert a list of passphrases into a list of private keys. For the purposes
+    of prototyping, the passphrases are static values. System random should be
+    used for the real deal, though.
     """
     # Note that this function uses python-bitcoinlib CBitcoinSecret objects.
 
