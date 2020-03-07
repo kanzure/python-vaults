@@ -13,13 +13,11 @@ from copy import copy
 import json
 import struct
 
-# pip3 install graphviz
-from graphviz import Digraph
-
 import bitcoin
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.exceptions import VaultException
 from vaults.loggingconfig import logger
+from vaults.graphics import generate_graphviz
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
@@ -1533,37 +1531,6 @@ def save(some_utxo, filename=TRANSACTION_STORE_FILENAME):
     with open(os.path.join(os.getcwd(), filename), "w") as fd:
         fd.write(output_json)
     logger.info(f"Wrote to {filename}")
-
-def generate_graphviz(some_utxo, parameters, output_filename="output.gv"):
-    """
-    Generate a graphviz dotfile, which can be used to create a
-    pictorial/graphical representation of the planned transaction tree.
-
-    legend:
-        squares: transactions
-        circles: outputs because coins are circular
-    """
-    (utxos, transactions) = some_utxo.crawl()
-
-    diagram = Digraph("output", filename=output_filename)
-
-    diagram.attr("node", shape="square")
-    for transaction in transactions:
-        diagram.node(str(transaction.internal_id), transaction.name)
-
-    diagram.attr("node", shape="circle")
-    for utxo in utxos:
-        diagram.node(str(utxo.internal_id), utxo.name)
-
-        diagram.edge(str(utxo.transaction.internal_id), str(utxo.internal_id))
-
-        for child_transaction in utxo.child_transactions:
-            diagram.edge(str(utxo.internal_id), str(child_transaction.internal_id))
-
-    if parameters["enable_graphviz_popup"] == True:
-        diagram.view()
-
-    return diagram
 
 def check_blockchain_has_transaction(txid, connection=None):
     """
