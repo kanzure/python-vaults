@@ -127,10 +127,12 @@ OP_ENDIF
         "presigned": "<ephemeral_sig_2> <ephemeral_sig_1>",
         "cold-wallet": "<cold_key2_sig> <cold_key1_sig>",
     }
-    # TODO: Note that the "cold-wallet" witness template cannot be used to make
-    # a valid witness unless the cold keys's private keys are accessed. In
-    # contrast, the "presigned" witness can be parameterized and correct before
-    # secure key deletion occurs.
+    # Note that the "cold-wallet" witness template cannot be used to make a
+    # valid witness unless the cold keys's private keys are accessed because
+    # that's the only way to generate the required signatures. In contrast, the
+    # "presigned" witness can be parameterized and correct before secure key
+    # deletion occurs, producing a transaction that pushes to cold storage,
+    # without requiring access to the cold storage keys.
 
     relative_timelocks = {
         "replacements": {
@@ -162,7 +164,8 @@ class BasicPresignedScriptTemplate(ScriptTemplate):
     spendable by: n-of-n ephemeral multisig after relative timelock
     """
 
-    # TODO: pick an appropriate relative timelock
+    # TODO: pick an appropriate relative timelock (and let it be parameterized
+    # somehow)
     miniscript_policy = "and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144)))"
     miniscript_policy_definitions = {"ephemeral_key_1": "...", "ephemeral_key_2": "..."}
 
@@ -188,8 +191,9 @@ class ShardScriptTemplate(ScriptTemplate):
     """
 
     ephemeral_multisig_gated = BasicPresignedScriptTemplate.miniscript_policy
-    # TODO: pick an appropriate timelock length (also, it should be variable
-    # increasing in each sharded UTXO).
+    # TODO: pick an appropriate timelock length.
+    # (Other code is currently manipulating the timelock to make it
+    # monotonically increasing in each sharded UTXO.)
     miniscript_policy = f"or(and(pk(hot_wallet_key),older(144)),{ephemeral_multisig_gated})"
     miniscript_policy_definitions = {"hot_wallet_key": "...", "ephemeral_key_1": "...", "ephemeral_key_2": "..."}
     # or(and(pk(hot_wallet_key),older(144)),and(pk(ephemeral_key_1),and(pk(ephemeral_key_2),older(144))))
@@ -511,7 +515,6 @@ class PlannedInput(object):
         planned_input.witness_template_selection = data["witness_template_selection"]
         planned_input.is_finalized = True
 
-        # TODO: second pass to add back object references
         planned_input._transaction_internal_id = data["transaction_internal_id"]
         planned_input._utxo_name = data["utxo_name"]
         planned_input._utxo_internal_id = data["utxo_internal_id"]
@@ -1971,6 +1974,8 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
 
             relative_timelock = None
             if some_input.utxo.script_template.__class__ in [ColdStorageScriptTemplate, ShardScriptTemplate]:
+                # TODO: This should be controlled by the template or whole
+                # program parameters.
                 relative_timelock = 144
 
             if relative_timelock:
