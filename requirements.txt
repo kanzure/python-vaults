@@ -3,6 +3,7 @@
 
 # for bitcoin primitives and RPC
 # need python-bitcoinlib>=0.11.0dev
+#python-bitcoinlib>=0.11.0
 -e git://github.com/petertodd/python-bitcoinlib.git@master#egg=python-bitcoinlib
 
 # for command line argument parsing stuff

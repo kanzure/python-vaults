@@ -11,7 +11,7 @@ with open(os.path.join(here, "README.md")) as fd:
 
 # see requirements.txt for explanations
 install_requires = [
-    #"python-bitcoinlib==0.11.0dev",
+    "python-bitcoinlib==0.11.0",
     "click>=7.0",
 ]
 
