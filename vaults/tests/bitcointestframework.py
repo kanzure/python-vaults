@@ -2,13 +2,26 @@
 This file describes an unused test. Could be deleted.
 """
 
-# TODO: create a python library for bitcoin's test_framework
-import sys
-sys.path.insert(0, "/home/kanzure/local/bitcoin/bitcoin/test/functional")
+import os
 
-from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import connect_nodes
-from test_framework.messages import ser_string
+from vaults.loggingconfig import logger
+
+# TODO: create a python library for bitcoin's test_framework
+try:
+
+    if os.environ.get("BITCOIN_CORE_PATH", None) == None:
+        raise ImportError("Can't find Bitcoin Core source code")
+
+    import sys
+    sys.path.insert(0, os.path.join(os.environ["BITCOIN_CORE_PATH"], "/test/functional"))
+
+    from test_framework.test_framework import BitcoinTestFramework
+    from test_framework.util import connect_nodes
+except ImportError:
+    logger.error("Unable to import BitcoinTestFramework")
+
+    class BitcoinTestFramework(object):
+        pass
 
 class VaultsTest(BitcoinTestFramework):
     def set_test_params(self):
