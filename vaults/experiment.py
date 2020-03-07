@@ -1718,7 +1718,7 @@ def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME
     Dump some text describing the planned transaction tree to a text file.
     """
     logger.info("Rendering to text...")
-    output = segwit_utxo.to_text()
+    output = some_utxo.to_text()
     filename = TEXT_RENDERING_FILENAME
     fd = open(os.path.join(os.getcwd(), filename), "w")
     fd.write(output)
