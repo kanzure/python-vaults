@@ -1913,20 +1913,21 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
 
     return (some_script, witness_fragments)
 
-def bake_output(some_planned_utxo, parameters=None):
+def bake_ctv_output(some_planned_utxo, parameters=None):
     """
-    The bake_output function computes the witness that an input spending said
-    output would need to provide. Since these transactions use P2WSH, this
+    The bake_ctv_output function computes the witness that an input spending
+    said output would need to provide. Since these transactions use P2WSH, this
     witness can only be computed once the redeemScript is calculated, which
     requires calculating the standard template hash-- which requires knowing
-    what the rest of the planned transaction tree looks like. Thus, bake_output
-    will recursively travel down the tree until it is able to collect certainty
-    and begin computing the recursively-referential standard template hashes.
+    what the rest of the planned transaction tree looks like. Thus,
+    bake_ctv_output will recursively travel down the tree until it is able to
+    collect certainty and begin computing the recursively-referential standard
+    template hashes.
 
     The standard template hash can only be determined by performing these same
     calculations on the rest of the pre-planned transaction tree.
 
-    Note that bake_output calls bake_ctv_transaction somewhere in another
+    Note that bake_ctv_output calls bake_ctv_transaction somewhere in another
     subsequent function.
     """
 
@@ -2035,7 +2036,7 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
     standard template hash, otherwise there would be a recursive hash
     commitment dependency loop error.
 
-    See the docstring for bake_output too.
+    See the docstring for bake_ctv_output too.
     """
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
@@ -2043,7 +2044,7 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
 
     # Bake each UTXO.
     for utxo in some_transaction.output_utxos:
-        bake_output(utxo, parameters=parameters)
+        bake_ctv_output(utxo, parameters=parameters)
 
     # Construct python-bitcoinlib bitcoin transactions and attach them to the
     # PlannedTransaction objects, once all the UTXOs are ready.
@@ -2146,7 +2147,7 @@ def make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY(initial_tx
     #planned_transactions = reversed(sorted(planned_transactions, key=lambda tx: tx.id))
     planned_transactions = sorted(planned_transactions, key=lambda tx: tx.id)
 
-    #bake_output(initial_utxo, parameters=parameters)
+    #bake_ctv_output(initial_utxo, parameters=parameters)
 
     for planned_transaction in planned_transactions:
         bake_ctv_transaction(planned_transaction, parameters=parameters)
