@@ -1932,7 +1932,13 @@ def bake_ctv_output(some_planned_utxo, parameters=None):
     else:
         has_extra_branch = False
 
+    # Recurse down the tree and calculate the ScriptTemplateHash values for
+    # OP_CHECKTEMPLATEVERIFY.
     (ctv_script_fragment, witness_fragments) = construct_ctv_script_fragment_and_witness_fragments(utxo.child_transactions, parameters=parameters)
+    # The remaining work of the current function is to setup the inputs that
+    # spend the current output, and make sure they have the appropriate witness
+    # values (as determined by the output's script template and output's
+    # script).
 
     # By convention, the key spends are in the first part of the OP_IF block.
     if has_extra_branch:
