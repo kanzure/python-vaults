@@ -241,6 +241,12 @@ class CPFPHookScriptTemplate(ScriptTemplate):
     witness_templates = {} # (intentionally empty)
 
 class PlannedUTXO(object):
+    """
+    Represents a planned transaction output (txout), and connects to the rest
+    of the tree by linking to the current transaction and any possible child
+    transactions.
+    """
+
     __counter__ = 0
 
     def __init__(self, name=None, transaction=None, script_template=None, amount=None, timelock_multiplier=1):
@@ -267,6 +273,12 @@ class PlannedUTXO(object):
 
     @property
     def vout(self):
+        """
+        Identify what the vout value should be for this particular output coin
+        on a transaction. Check the output's index by looking at the
+        transaction that created this output. This is useful for populating
+        inputs (txid, vout).
+        """
         if self._vout_override == None:
             return self.transaction.output_utxos.index(self)
         else:
@@ -275,7 +287,8 @@ class PlannedUTXO(object):
     def crawl(self):
         """
         Return a tuple that contains two items: a list of UTXOs and a list of
-        transactions.
+        transactions. Crawl the entire planned transaction tree starting from
+        "self", and return a list of all the UTXOs and all the transactions.
         """
         utxos = [self]
         transactions = [self.transaction]
@@ -296,8 +309,10 @@ class PlannedUTXO(object):
         return (utxos, transactions)
 
     def to_text(self, depth=0, cache=[]):
+        """
+        Make a text representation of this UTXO suitable for human reading.
+        """
         output = ""
-
         prefix = "-" * depth
 
         output += f"{prefix} UTXO {self.name} amount = {self.amount}\n"
@@ -319,6 +334,9 @@ class PlannedUTXO(object):
         return output
 
     def to_dict(self):
+        """
+        Convert the current coin to a formatted dictionary object.
+        """
         data = {
             "counter": self.id,
             "internal_id": str(self.internal_id),
@@ -336,10 +354,16 @@ class PlannedUTXO(object):
         return data
 
     def to_json(self):
+        """
+        Convenience method: format self as a dictionary, and then produce json.
+        """
         return json.dumps(self.to_dict())
 
     @classmethod
     def from_dict(cls, data):
+        """
+        Instantiate a planned output from a dictionary.
+        """
         planned_utxo = cls()
         planned_utxo.internal_id = data["internal_id"]
         planned_utxo.id = data["counter"]
@@ -362,6 +386,10 @@ class PlannedUTXO(object):
 
     @classmethod
     def from_json(cls, payload):
+        """
+        Convenience method: parse json and then instantiate a planned output
+        from that dictionary data.
+        """
         data = json.loads(payload)
         return cls.from_dict(data)
 
@@ -386,6 +414,10 @@ class PlannedUTXO(object):
             raise Exception("Failed to break")
 
 class PlannedInput(object):
+    """
+    Represents a planned input to a planned bitcoin transaction, and links to
+    the coin that the input is consuming.
+    """
 
     def __init__(self, utxo=None, witness_template_selection=None, transaction=None):
         self.utxo = utxo
@@ -496,6 +528,9 @@ class PlannedInput(object):
         return computed_witness
 
     def to_dict(self):
+        """
+        Convert the current planned input to a formatted dictionary.
+        """
         data = {
             "internal_id": str(self.internal_id),
             "transaction_internal_id": str(self.transaction.internal_id),
@@ -507,10 +542,17 @@ class PlannedInput(object):
         return data
 
     def to_json(self):
+        """
+        Convenience method: convert the current planned input to a formatted
+        dictionary, and then convert to json format.
+        """
         return json.dumps(self.to_dict())
 
     @classmethod
     def from_dict(cls, data):
+        """
+        Instantiate a planned input from formatted dictionary data.
+        """
         planned_input = cls()
         planned_input.internal_id = data["internal_id"]
         planned_input.witness_template_selection = data["witness_template_selection"]
@@ -524,6 +566,9 @@ class PlannedInput(object):
 
     @classmethod
     def from_json(cls, payload):
+        """
+        Convenience method: instantiate a planned input from json.
+        """
         data = json.loads(payload)
         return cls.from_dict(data)
 
@@ -544,6 +589,16 @@ class PlannedInput(object):
             raise Exception("can't find UTXO {}".format(self._utxo_internal_id))
 
 class PlannedTransaction(object):
+    """
+    Represents a planned transaction. Has a list of planned inputs and a list
+    of planned outputs. This transaction can also become pre-signed, even if
+    there is no plan to presently broadcast this pre-signed transaction.
+
+    The planned transaction links to a number of possible child transactions,
+    each of which are linked through the different output coins on the planned
+    transaction.
+    """
+
     __counter__ = 0
 
     def __init__(self, name=None, enable_cpfp_hook=True):
