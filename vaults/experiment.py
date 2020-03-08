@@ -16,6 +16,7 @@ from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.exceptions import VaultException
 from vaults.loggingconfig import logger
 from vaults.graphics import generate_graphviz
+from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
@@ -1652,27 +1653,6 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
     output_text += "\nTo broadcast the next transaction, run:\n\tvault broadcast <internal_id>\n"
 
     return output_text
-
-def check_vaultfile_existence(die=True):
-    """
-    Check whether a "vaultfile" file is present.
-    """
-    existence = os.path.exists(os.path.join(os.getcwd(), VAULTFILE_FILENAME))
-    if existence and die:
-        logger.error("Error: vaultfile already exists. Is this an active vault? Don't re-initialize.")
-        sys.exit(1)
-    else:
-        return existence
-
-def make_vaultfile():
-    """
-    Create a "vaultfile" file that has a file format version for later
-    inspection and the possibility of migrations/upgrades in the future.
-    """
-    filepath = os.path.join(os.getcwd(), VAULTFILE_FILENAME)
-    with open(filepath, "w") as fd:
-        fd.write(json.dumps({"version": VAULT_FILE_FORMAT_VERSION}))
-        fd.write("\n")
 
 def safety_check(initial_tx=None):
     """
