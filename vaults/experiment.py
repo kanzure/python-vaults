@@ -17,6 +17,7 @@ from vaults.exceptions import VaultException
 from vaults.loggingconfig import logger
 from vaults.graphics import generate_graphviz
 from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
+from vaults.utils import ser_string
 
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
@@ -31,30 +32,6 @@ import bitcoin.rpc
 # option...
 
 SelectParams("regtest")
-
-# ----
-#
-# This is from bitcoin's test_framework/messages.py
-# required for ser_string
-
-def deser_compact_size(f):
-    nit = struct.unpack("<B", f.read(1))[0]
-    if nit == 253:
-        nit = struct.unpack("<H", f.read(2))[0]
-    elif nit == 254:
-        nit = struct.unpack("<I", f.read(4))[0]
-    elif nit == 255:
-        nit = struct.unpack("<Q", f.read(8))[0]
-    return nit
-
-def deser_string(f):
-    nit = deser_compact_size(f)
-    return f.read(nit)
-
-def ser_string(s):
-    return ser_compact_size(len(s)) + s
-
-# ----
 
 TRANSACTION_STORE_FILENAME ="transaction-store.json"
 TEXT_RENDERING_FILENAME = "text-rendering.txt"
