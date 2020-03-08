@@ -627,10 +627,18 @@ class PlannedTransaction(object):
 
     @property
     def input_utxos(self):
+        """
+        A list of planned UTXOs corresponding to each of the inputs on this
+        planned transaction.
+        """
         return [some_input.utxo for some_input in self.inputs]
 
     @property
     def parent_transactions(self):
+        """
+        A list of all the transactions that create each of the input coins
+        consumed by this planned transaction.
+        """
         _parent_transactions = []
         for some_utxo in self.input_utxos:
             _parent_transactions.append(some_utxo.transaction)
@@ -638,6 +646,10 @@ class PlannedTransaction(object):
 
     @property
     def child_transactions(self):
+        """
+        A list of all the different possible child transactions hanging off of
+        each of the UTXOs created by this planned transaction.
+        """
         _child_transactions = []
         for some_utxo in self.output_utxos:
             _child_transactions.extend(some_utxo.child_transactions)
@@ -645,12 +657,19 @@ class PlannedTransaction(object):
 
     @property
     def txid(self):
+        """
+        Get a byte representation of the txid of the planned transaction. Note
+        that this is only helpful once the transaction is "finished".
+        """
         # It's important to note that the txid can only be calculated after the
         # rest of the transaction has been finalized, and it is possible to
         # serialize the transaction.
         return self.bitcoin_transaction.GetTxid()
 
     def serialize(self):
+        """
+        Convenience function: serialize the bitcoin transaction to bytes.
+        """
         return self.bitcoin_transaction.serialize()
 
     def check_inputs_outputs_are_finalized(self):
@@ -671,8 +690,11 @@ class PlannedTransaction(object):
         return True
 
     def to_text(self, depth=0, cache=[]):
+        """
+        Make a text representation of this planned transaction suitable for
+        human reading.
+        """
         output = ""
-
         prefix = "-" * depth
 
         num_utxos = len(self.output_utxos)
@@ -697,6 +719,9 @@ class PlannedTransaction(object):
         return output
 
     def to_dict(self):
+        """
+        Convert the current planned transaction to a formatted dictionary.
+        """
         data = {
             "counter": self.id,
             "internal_id": str(self.internal_id),
@@ -715,10 +740,17 @@ class PlannedTransaction(object):
         return data
 
     def to_json(self):
+        """
+        Convenience method: serialize this planned transaction as json.
+        """
         return json.dumps(self.to_dict())
 
     @classmethod
     def from_dict(cls, data):
+        """
+        Instantiate a planned transaction using data from a formatted
+        dictionary.
+        """
         planned_transaction = cls(enable_cpfp_hook=False)
         planned_transaction.output_utxos = [] # remove CPFP hook transaction
         planned_transaction.name = data["name"]
@@ -739,6 +771,9 @@ class PlannedTransaction(object):
 
     @classmethod
     def from_json(cls, payload):
+        """
+        Convenience method: instantiate a planned transaction from json.
+        """
         data = json.loads(payload)
         return cls.from_dict(data)
 
