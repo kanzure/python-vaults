@@ -1796,8 +1796,13 @@ def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME
     logger.info(f"Wrote to {filename}")
     return
 
-# pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
 def compute_standard_template_hash(child_transaction, nIn):
+    """
+    Compute the bip119 OP_CHECKTEMPLATEVERIFY StandardTemplateHash value for
+    the given transaction.
+
+    pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
+    """
     if child_transaction.ctv_baked == False and child_transaction.ctv_bitcoin_transaction == None:
         raise Exception("Error: child transaction is not baked.")
 
