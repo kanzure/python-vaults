@@ -1,3 +1,6 @@
+import struct
+import hashlib
+
 # ----
 #
 # This is from bitcoin's test_framework/messages.py
@@ -21,3 +24,11 @@ def ser_string(s):
     return ser_compact_size(len(s)) + s
 
 # ----
+
+def sha256(data):
+    """
+    Compute the sha256 digest of the given data.
+
+    returns bytes
+    """
+    return hashlib.sha256(data).digest()
