@@ -3,6 +3,11 @@ import sys
 
 from vaults.loggingconfig import logger
 
+from vaults.config import (
+    VAULTFILE_FILENAME,
+    VAULT_FILE_FORMAT_VERSION,
+)
+
 def check_vaultfile_existence(die=True):
     """
     Check whether a "vaultfile" file is present.

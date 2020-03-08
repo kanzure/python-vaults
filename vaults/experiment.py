@@ -19,6 +19,11 @@ from vaults.graphics import generate_graphviz
 from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
 from vaults.utils import ser_string
 
+from vaults.config import (
+    TRANSACTION_STORE_FILENAME,
+    TEXT_RENDERING_FILENAME,
+)
+
 from bitcoin import SelectParams
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
 from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160, OP_ROLL, OP_NOP4, OP_DROP, OP_2DROP, OP_IF, OP_ELSE, OP_ENDIF, OP_CHECKSIGVERIFY, OP_NOP3
@@ -32,12 +37,6 @@ import bitcoin.rpc
 # option...
 
 SelectParams("regtest")
-
-TRANSACTION_STORE_FILENAME ="transaction-store.json"
-TEXT_RENDERING_FILENAME = "text-rendering.txt"
-VAULTFILE_FILENAME = "vaultfile"
-
-VAULT_FILE_FORMAT_VERSION = "0.0.1"
 
 class ScriptTemplate(object):
 
