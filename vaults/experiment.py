@@ -1914,6 +1914,22 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
     return (some_script, witness_fragments)
 
 def bake_output(some_planned_utxo, parameters=None):
+    """
+    The bake_output function computes the witness that an input spending said
+    output would need to provide. Since these transactions use P2WSH, this
+    witness can only be computed once the redeemScript is calculated, which
+    requires calculating the standard template hash-- which requires knowing
+    what the rest of the planned transaction tree looks like. Thus, bake_output
+    will recursively travel down the tree until it is able to collect certainty
+    and begin computing the recursively-referential standard template hashes.
+
+    The standard template hash can only be determined by performing these same
+    calculations on the rest of the pre-planned transaction tree.
+
+    Note that bake_output calls bake_ctv_transaction somewhere in another
+    subsequent function.
+    """
+
     utxo = some_planned_utxo
 
     # Note that the CTV fragment of the script isn't the only part. There might
@@ -1948,8 +1964,8 @@ def bake_output(some_planned_utxo, parameters=None):
             witness_fragment.append(b"\x00")
 
     # Note that we're not going to construct any witness_fragments for the key
-    # spend scenario. It is up to the user to create a valid script on their
-    # own for that situation. But it's pretty simple, it's just:
+    # spend scenario. It is up to the user to create a valid witness script on
+    # their own for that situation. But it's pretty simple, it's just:
     #   OP_1 <sig1> <sig2> etc..
 
     # Make the appropriate script template. Parameterize the script template.
@@ -2006,26 +2022,20 @@ def bake_output(some_planned_utxo, parameters=None):
 
 def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
     """
-    Create a CTV transaction for the planned transaction tree.
+    Create a OP_CHECKTEMPLATEVERIFY version transaction for the planned
+    transaction tree. This version uses a hash-based covenant opcode instead of
+    using pre-signed transactions with trusted key deletion.
 
-    This is done in two passes: bake_output (looped) and bake_ctv_transaction
-    (also looped). The bake_ctv_transaction function is called on an ordered
-    list of all transactions, starting with the "first" transaction of all the
-    planned transactions. For each transaction, all of the transaction outputs
-    get "baked": they are assigned a txid based on the hash of the parent
-    transaction (the txid) which commits to a certain standard template hash.
-    However, that standard template hash can only be determined by rendering
-    the rest of the pre-planned transaction tree.
+    This function does two passes over the planned transaction tree, consisting
+    of (1) crawling the whole tree and generating standard template hashes
+    (starting with the deepest elements in the tree and working backwards
+    towards the root of the tree), and then (2) crawling the whole tree and
+    assigning txids to the inputs. This is possible because
+    OP_CHECKTEMPLATEVERIFY does not include the hash of the inputs in the
+    standard template hash, otherwise there would be a recursive hash
+    commitment dependency loop error.
 
-    Note that bake_output calls bake_ctv_transaction somewhere in another
-    subsequent function.
-
-    Hence the two passes are about (1) crawling the whole tree and generating
-    standard template hashes (starting with the deepest elements in the tree
-    and working backwards), and then (2) crawling the whole tree and assigning
-    txids to the inputs. This is possible because OP_CHECKTEMPLATEVERIFY does
-    not include the hash of the inputs in the standard template hash, otherwise
-    there would be a recursive hash commitment dependency loop error.
+    See the docstring for bake_output too.
     """
 
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
