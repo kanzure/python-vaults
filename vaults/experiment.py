@@ -1847,8 +1847,20 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
     some_script = []
 
     for child_transaction in child_transactions:
+        # Bake each of the child transactions: that is, compute standard
+        # template hashes on all of the children of the current child. Set
+        # skip_inputs=True so that the inputs get skipped-- when processing
+        # inputs, that function looks at
+        # some_input.utxo.transaction.ctv_bitcoin_transaction which doesn't
+        # exist yet. Note that the standard template hash doesn't include
+        # inputs (so the txids referenced by inputs don't modify the standard
+        # template hash result).
         bake_ctv_transaction(child_transaction, skip_inputs=True, parameters=parameters)
+
+        # The transaction is now ready to be convered into a standard template
+        # hash for bip119.
         standard_template_hash = compute_standard_template_hash(child_transaction, nIn=0)
+
         some_script.append(standard_template_hash)
 
     if len(child_transactions) == 0:
@@ -1935,6 +1947,7 @@ def bake_ctv_output(some_planned_utxo, parameters=None):
     # Recurse down the tree and calculate the ScriptTemplateHash values for
     # OP_CHECKTEMPLATEVERIFY.
     (ctv_script_fragment, witness_fragments) = construct_ctv_script_fragment_and_witness_fragments(utxo.child_transactions, parameters=parameters)
+
     # The remaining work of the current function is to setup the inputs that
     # spend the current output, and make sure they have the appropriate witness
     # values (as determined by the output's script template and output's
@@ -2025,7 +2038,10 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
     if hasattr(some_transaction, "ctv_baked") and some_transaction.ctv_baked == True:
         return some_transaction.ctv_bitcoin_transaction
 
-    # Bake each UTXO.
+    # Bake each UTXO. Recurse down the tree and compute StandardTemplateHash
+    # values (to be placed in scriptpubkeys) for OP_CHECKTEMPLATEVERIFY. These
+    # standard template hashes can only be computed once the descendant tree is
+    # computed, so it must be done recursively.
     for utxo in some_transaction.output_utxos:
         bake_ctv_output(utxo, parameters=parameters)
 
@@ -2042,7 +2058,7 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
             # the child transaction needs to be only "partially" baked. It doesn't
             # need to have the inputs yet.
 
-            if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name in ["Burn some UTXO", ]:
+            if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name == "Burn some UTXO":
                 txid = some_input.utxo.transaction.txid
             else:
                 logger.info("The parent transaction name is: {}".format(some_input.utxo.transaction.name))
