@@ -35,6 +35,8 @@ from vaults.models.script_templates import (
     BasicPresignedScriptTemplate,
 )
 
+from vaults.models.plans import InitialTransaction
+
 def compute_standard_template_hash(child_transaction, nIn):
     """
     Compute the bip119 OP_CHECKTEMPLATEVERIFY StandardTemplateHash value for
@@ -302,8 +304,7 @@ def bake_ctv_transaction(some_transaction, skip_inputs=False, parameters=None):
             # the child transaction needs to be only "partially" baked. It doesn't
             # need to have the inputs yet.
 
-            # TODO: don't use string comparison for type detection....
-            if str(some_input.utxo.transaction.__class__) == "InitialTransaction" or some_input.transaction.name == "Burn some UTXO":
+            if some_input.utxo.transaction.__class__ == InitialTransaction or some_input.transaction.name == "Burn some UTXO":
                 txid = some_input.utxo.transaction.txid
             else:
                 logger.info("The parent transaction name is: {}".format(some_input.utxo.transaction.name))
