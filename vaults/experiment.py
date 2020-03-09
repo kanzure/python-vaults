@@ -235,6 +235,7 @@ def sign_planned_transaction(planned_transaction, parameters=None):
     witnesses = []
     for planned_input in planned_transaction.inputs:
         # sign!
+        # Make a signature. Use some code defined in the PlannedInput model.
         witness = planned_input.parameterize_witness_template_by_signing(parameters)
         witnesses.append(witness)
 
