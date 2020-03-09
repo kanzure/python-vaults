@@ -29,7 +29,7 @@ from bitcoin.core.script import (
 from vaults.utils import sha256, ser_string
 from vaults.loggingconfig import logger
 
-from vaults.script_templates import (
+from vaults.models.script_templates import (
     ColdStorageScriptTemplate,
     ShardScriptTemplate,
     BasicPresignedScriptTemplate,
