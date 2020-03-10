@@ -8,7 +8,9 @@ of the funds.
 
 See a
 **[visualization](https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png)**
-of the planned transaction tree.
+of the planned transaction tree:
+
+<a href="https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png"><img src="https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png" width=510 height=401></a>
 
 # WARNING
 
