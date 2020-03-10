@@ -1,5 +1,7 @@
 """
 Make signatures for every transaction in the planned transaction tree.
+
+entrypoint: sign_transaction_tree
 """
 
 from copy import copy

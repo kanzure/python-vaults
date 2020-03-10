@@ -1,3 +1,8 @@
+"""
+Setup python logging system- log to a file in the current working directory
+(for each vault), and also log to console stdout and stderr.
+"""
+
 import os
 import logging
 

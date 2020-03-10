@@ -1,3 +1,7 @@
+"""
+Some miscellaneous functions.
+"""
+
 import struct
 import hashlib
 

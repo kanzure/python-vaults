@@ -1,3 +1,8 @@
+"""
+Persistence functions - save, load, convert to and from dictionaries for saving
+and loading.
+"""
+
 import os
 import json
 

@@ -1,3 +1,7 @@
+"""
+Functions dealing with RPC communication to bitcoind.
+"""
+
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 
 import bitcoin.rpc

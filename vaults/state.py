@@ -1,3 +1,8 @@
+"""
+Functions for checking the state of the vault on the blockchain by querying
+bitcoind over RPC.
+"""
+
 from vaults.rpc import (
     get_bitcoin_rpc_connection,
     check_blockchain_has_transaction,

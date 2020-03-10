@@ -1,3 +1,9 @@
+"""
+The "vault" tool checks for the presence of a "vaultfile" in the current
+working directory so that a pre-existing vault doesn't get overwritten by a new
+vault.
+"""
+
 import os
 import sys
 import json

@@ -1,3 +1,7 @@
+"""
+unused- destroy file
+"""
+
 from .exceptions import (
     VaultException,
     VaultNotImplementedError,

@@ -1,5 +1,11 @@
 """
 Transaction tree planning
+
+Funcitons for generating a planned unsigned transaction tree, based on
+pre-signed transacions. The signatures are not created by these functions, they
+are created later by another set of functions related to signing.
+
+entrypoint: setup_vault
 """
 
 import os
