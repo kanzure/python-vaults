@@ -191,6 +191,8 @@ parameters.
 **vault broadcast** transmits a pre-signed bitcoin transaction to the bitcoin
 network.
 
+----
+
 The following commands don't quite work yet:
 
 **vault lock** takes a user-given UTXO and locks the UTXO and its amount into a
