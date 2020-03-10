@@ -44,27 +44,6 @@ Additional background:
 
 <https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2019-August/017231.html>
 
-# Installation
-
-```
-# clone the repository
-git clone ...
-
-# setup a new virtualenv to avoid system-wide installation
-python3 -m venv venv/
-
-# enter into the virtualenv
-source ./venv/bin/activate
-
-# install all python requirements
-pip3 install -r requirements.txt
-
-# Use install to copy the code into the virtualenv's python modules directory,
-# or "develop" to use symlinks such that updates to the code propagate without
-# requiring re-installation.
-python3 setup.py install
-```
-
 # What's in here?
 
 This repository contains an experimental prototype of Bitcoin vaults using
@@ -236,6 +215,27 @@ stored. They are nearly as dangerous as a private key, and although the
 possibilities are constrained compared to a thief stealing a private key, the
 end result is the same (loss of funds).
 
+# Installation
+
+```
+# clone the repository
+git clone ...
+
+# setup a new virtualenv to avoid system-wide installation
+python3 -m venv venv/
+
+# enter into the virtualenv
+source ./venv/bin/activate
+
+# install all python requirements
+pip3 install -r requirements.txt
+
+# Use install to copy the code into the virtualenv's python modules directory,
+# or "develop" to use symlinks such that updates to the code propagate without
+# requiring re-installation.
+python3 setup.py install
+```
+
 # bitcoin.conf
 
 bitcoind configuration must include:
@@ -285,6 +285,10 @@ Run the tests like this:
 ```
 python3 -m unittest
 ```
+
+# License
+
+BSD ???
 
 # Other pre-signed vault implementations
 
