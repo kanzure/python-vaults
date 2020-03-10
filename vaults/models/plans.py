@@ -9,6 +9,7 @@ from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.loggingconfig import logger
 
 from vaults.models.script_templates import (
+    ScriptTemplate,
     CPFPHookScriptTemplate,
     UserScriptTemplate,
 )
