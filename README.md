@@ -133,7 +133,9 @@ Source code:
 
 The two main entrypoints of interest are `setup_vault` in the
 [planner.py](vaults/planner.py) file and `sign_transaction_tree` in the
-[signing.py](vaults/signing.py) file.
+[signing.py](vaults/signing.py) file. In practical usage, `vault init` calls
+the entrypoint [commands/initialize.py](vaults/commands/initialize.py) which
+calls the subsequent functions.
 
 The project can only be run if `bitcoind -regtest` is running in the background.
 It currently looks for `~/bitcoin/bitcoin.conf` to figure out the bitcoin RPC
