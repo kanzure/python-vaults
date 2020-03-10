@@ -55,7 +55,7 @@ from vaults.models.plans import (
     InitialTransaction,
 )
 
-from vaults.planner import setup_vault
+from vaults.planner import setup_vault, safety_check
 from vaults.bip119_ctv import make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY
 from vaults.signing import sign_transaction_tree
 
@@ -239,51 +239,10 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
 
     return output_text
 
-def safety_check(initial_tx=None):
-    """
-    Check that the planned transaction tree conforms to some specific rules.
-    """
-
-    if initial_tx == None:
-        initial_tx = load()
-
-    initial_utxo = initial_tx.output_utxos[0]
-
-    (planned_utxos, planned_transactions) = initial_utxo.crawl()
-
-    # Every transaction should have at least one output, including the burner
-    # transactions (unless they are burning to miner fee...).
-    counter = 0
-    for some_transaction in planned_transactions:
-        counter += 1
-        if len(some_transaction.output_utxos) == 0:
-            raise VaultException("Transaction {} has no outputs".format(str(some_transaction.internal_id)))
-
-        # The sum of the input amounts should equal the sum of the output
-        # amounts.
-        input_amounts = sum([some_input.utxo.amount for some_input in some_transaction.inputs])
-        output_amounts = sum([some_output.amount for some_output in some_transaction.output_utxos])
-        if input_amounts != output_amounts and some_transaction.id != -1:
-            raise VaultException("Transaction {} takes {} and spends {}, not equal".format(str(some_transaction.internal_id), input_amounts, output_amounts))
-
-        for some_output in some_transaction.output_utxos:
-            if some_output.name in ["CPFP hook", "burned UTXO"]:
-                continue
-            elif len(some_output.child_transactions) == 0:
-                raise VaultException("UTXO {} has no child transactions".format(str(some_output.internal_id)))
-
-        # TODO: There should be other rule checks as well, possibly including
-        # things like "does this transaction have the correct scripts and
-        # correct outputs" and "does this UTXO have any scripts at all".
-
-    if counter < 1 or counter < len(planned_transactions):
-        raise VaultException("Length of the list of planned transactions is too low.")
-
-    return True
-
 def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME):
     """
-    Dump some text describing the planned transaction tree to a text file.
+    Dump some text describing the planned transaction tree to a text file. This
+    is primarily for human debugging.
     """
     logger.info("Rendering to text...")
     output = some_utxo.to_text()
