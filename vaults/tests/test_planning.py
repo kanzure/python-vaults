@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from vaults.experiment import (
+from vaults.commands.initialize import (
     PlannedTransaction,
     PlannedUTXO,
     InitialTransaction,
@@ -9,8 +9,9 @@ from vaults.experiment import (
     sha256,
     b2x,
     make_private_keys,
-    load,
 )
+
+from vaults.persist import load
 
 class AbstractPlanningTests(unittest.TestCase):
     def test_planned_transaction(self):
