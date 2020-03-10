@@ -5,8 +5,9 @@ Command line interface for the Vault library.
 import click
 
 from vaults.exceptions import VaultNotImplementedError
-from vaults.experiment import main, get_info
+from vaults.experiment import main
 from vaults.commands.broadcast import broadcast_next_transaction
+from vaults.commands.info import get_info
 
 @click.group()
 def cli():
