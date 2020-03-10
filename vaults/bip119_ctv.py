@@ -1,3 +1,19 @@
+"""
+An implementation of bitcoin vaults using bip119 OP_CHECKTEMPLATEVERIFY.
+
+Basic idea is to convert from the previous planned transaction tree objects to
+some new objects that re-make the tree using different scripts and witnesses.
+To do this, it requires two passes over the planned transaction tree: (1)
+crawling the whole tree and generating standard template hashes (starting wit
+hthe deepest elements in the tree and working backwrds towards the root of the
+tree), and then (2) crawling the whole tree and assigning txids to the inputs.
+This is only possible because OP_CHECKTEMPLATEVERIFY doesn't include the hash
+of the inputs in the standard template hash, otherwise there would be a recsive
+hash commitment dependency loop error.
+
+entrypoint: make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY
+"""
+
 import struct
 
 import bitcoin
