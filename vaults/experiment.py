@@ -15,6 +15,7 @@ from bitcoin import SelectParams
 SelectParams("regtest")
 
 from vaults.helpers.formatting import b2x, x, b2lx, lx
+from vaults.helpers.prototyping import make_private_keys
 from vaults.exceptions import VaultException
 from vaults.loggingconfig import logger
 from vaults.graphics import generate_graphviz
@@ -62,41 +63,8 @@ from vaults.signing import sign_transaction_tree
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
 from bitcoin.core.script import CScript, OP_0, Hash160, OP_NOP3
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
+from bitcoin.wallet import CBitcoinAddress, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 import bitcoin.rpc
-
-def make_private_keys():
-    """
-    Convert a list of passphrases into a list of private keys. For the purposes
-    of prototyping, the passphrases are static values. System random should be
-    used for the real deal, though.
-    """
-    # Note that this function uses python-bitcoinlib CBitcoinSecret objects.
-
-    private_keys = []
-
-    passphrases = [
-        "password",
-        "passphrase",
-        "hello world",
-        "hello cruel world",
-        "correct horse battery staple",
-        "correct horse battery staple 1",
-        "correct horse battery staple 2",
-        "correct horse battery staple 3",
-        "correct horse battery staple 4",
-    ]
-    passphrases = [bytes(each, "utf-8") for each in passphrases]
-
-    for passphrase in passphrases:
-        hashed = sha256(passphrase)
-
-        # compressed=True is default
-        private_key = CBitcoinSecret.from_secret_bytes(hashed, compressed=True)
-
-        private_keys.append(private_key)
-
-    return private_keys
 
 def get_next_possible_transactions_by_walking_tree(current_transaction, connection=None):
     """
