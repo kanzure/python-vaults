@@ -5,7 +5,7 @@ Command line interface for the Vault library.
 import click
 
 from vaults.exceptions import VaultNotImplementedError
-from vaults.experiment import main
+from vaults.commands.initialize import initialize
 from vaults.commands.broadcast import broadcast_next_transaction
 from vaults.commands.info import get_info
 
@@ -18,7 +18,7 @@ def init():
     """
     Create a new vault in the current working directory.
     """
-    main()
+    initialize()
 
 @cli.command()
 def info():

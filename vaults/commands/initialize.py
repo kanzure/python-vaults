@@ -55,7 +55,7 @@ from bitcoin.core.script import CScript, OP_0, Hash160, OP_NOP3
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import P2WPKHBitcoinAddress
 
-def main():
+def initialize():
 
     check_vaultfile_existence()
 
