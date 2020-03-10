@@ -1,3 +1,7 @@
+"""
+Convenient explanations for b2x, b2lx, lx, and x functions.
+"""
+
 from bitcoin.core import (
     # convert bytes to hex (see x)
     b2x,

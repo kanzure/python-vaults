@@ -1,3 +1,8 @@
+"""
+Functions in this file should only be used during prototype, and not for any
+sort of real-world use.
+"""
+
 from bitcoin.wallet import CBitcoinSecret
 
 from vaults.utils import sha256
