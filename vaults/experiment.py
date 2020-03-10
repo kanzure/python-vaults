@@ -56,43 +56,13 @@ from vaults.models.plans import (
 from vaults.planner import setup_vault, safety_check
 from vaults.bip119_ctv import make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY
 from vaults.signing import sign_transaction_tree
+from vaults.state import get_current_confirmed_transaction
 
 from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
 from bitcoin.core.script import CScript, OP_0, Hash160, OP_NOP3
 from bitcoin.core.key import CPubKey
 from bitcoin.wallet import CBitcoinAddress, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 import bitcoin.rpc
-
-from vaults.state import get_current_confirmed_transaction
-
-def broadcast_next_transaction(internal_id):
-    """
-    Broadcast a transaction, but only if it is one of the valid next
-    transactions.
-    """
-    transaction_store_filename = TRANSACTION_STORE_FILENAME
-    initial_tx = load(transaction_store_filename=transaction_store_filename)
-    recentdata = get_current_confirmed_transaction(initial_tx)
-
-    internal_id = str(internal_id)
-    internal_ids = [str(blah.internal_id) for blah in recentdata["next"]]
-
-    if internal_id not in internal_ids:
-        logger.error(f"Error: internal_id {internal_id} is an invalid next step")
-        sys.exit(1)
-
-    internal_map = dict([(str(blah.internal_id), blah) for blah in recentdata["next"]])
-    requested_tx = internal_map[str(internal_id)]
-    bitcoin_transaction = requested_tx.bitcoin_transaction
-
-    connection = get_bitcoin_rpc_connection()
-    result = connection.sendrawtransaction(bitcoin_transaction)
-
-    if type(result) == bytes:
-        result = b2lx(result)
-    logger.info("Broadcasted, txid: {}".format(result))
-
-    return result
 
 def render_planned_output(planned_output, depth=0):
     """
