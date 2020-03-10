@@ -1,3 +1,7 @@
+"""
+Generate a graphviz rendering of the planned transaction tree.
+"""
+
 # pip3 install graphviz
 from graphviz import Digraph
 
