@@ -1,6 +1,8 @@
 """
 Experimental prototype of bitcoin vaults based on pre-signed transactions,
 using trusted key deletion.
+
+The primary entrypoint is the "initialize" function in this file.
 """
 
 import os

@@ -1,3 +1,9 @@
+"""
+broadcast_next_transaction - Check the database to see what are the
+valid/available next transactions, and then broadcast the user-selected
+transaction to the bitcoin p2p network.
+"""
+
 import sys
 
 from vaults.helpers.formatting import b2x, x, b2lx, lx

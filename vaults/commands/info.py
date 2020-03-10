@@ -1,3 +1,8 @@
+"""
+get_info - A function for displaying information about the vault and checking
+the current state of the vault on the blockchain.
+"""
+
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.config import TRANSACTION_STORE_FILENAME
 from vaults.persist import load
