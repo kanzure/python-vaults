@@ -290,11 +290,20 @@ python3 -m unittest
 
 BSD ???
 
+# Future work and TODO
+
+**Multi-client protocol**: Right now the prototype assumes control of two
+private keys for the pre-signed transaction tree. However, in practice, there
+should be multiple clients that pass data off to each other.
+
 # Other pre-signed vault implementations
 
 * [python-vaults](https://github.com/kanzure/python-vaults) (you are here)
 * <https://github.com/fmr-llc/Vault-mbed>
 * <https://github.com/JSwambo/bitcoin-vault>
 * kloaec's implementation?
+
+There are also two related upcoming manuscripts presently nearing final draft
+status. (As of 2020-03-10)
 
 
