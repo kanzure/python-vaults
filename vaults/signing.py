@@ -1,6 +1,10 @@
 """
 Make signatures for every transaction in the planned transaction tree.
 
+Note that some aspects of signing - specifically the construction of a
+praameterized and signed witness template- are located in
+PlannedInput.parameterize_witness_template_by_signing in the models/ folder.
+
 entrypoint: sign_transaction_tree
 """
 

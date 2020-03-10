@@ -1,3 +1,10 @@
+"""
+Classes for storing information about script templates. Different transaction
+outputs use different kinds of script tepmlates. The script templates specify
+the scriptpubkey but also the witness and how to populate the script template
+and how to populate the witness template.
+"""
+
 class ScriptTemplate(object):
 
     miniscript_policy_definitions = {}

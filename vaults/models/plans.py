@@ -1,3 +1,11 @@
+"""
+Classes for representing planned transaction trees, transactions, inputs, and
+outputs.
+
+Of particular interest is PlannedInput.parameterize_witness_template_by_signing
+which is used during the transaction tree signing process.
+"""
+
 import uuid
 from copy import copy
 
