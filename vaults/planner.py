@@ -6,6 +6,9 @@ import os
 
 from bitcoin.core import COIN
 
+from vaults.config import TEXT_RENDERING_FILENAME
+from vaults.loggingconfig import logger
+
 from vaults.models.script_templates import (
     ScriptTemplate,
     UserScriptTemplate,
@@ -436,5 +439,19 @@ def safety_check(initial_tx=None):
         raise VaultException("Length of the list of planned transactions is too low.")
 
     return True
+
+def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME):
+    """
+    Dump some text describing the planned transaction tree to a text file. This
+    is primarily for human debugging.
+    """
+    logger.info("Rendering to text...")
+    output = some_utxo.to_text()
+    filename = TEXT_RENDERING_FILENAME
+    fd = open(os.path.join(os.getcwd(), filename), "w")
+    fd.write(output)
+    fd.close()
+    logger.info(f"Wrote to {filename}")
+    return
 
 

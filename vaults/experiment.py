@@ -53,7 +53,7 @@ from vaults.models.plans import (
     InitialTransaction,
 )
 
-from vaults.planner import setup_vault, safety_check
+from vaults.planner import setup_vault, safety_check, render_planned_tree_to_text_file
 from vaults.bip119_ctv import make_planned_transaction_tree_using_bip119_OP_CHECKTEMPLATEVERIFY
 from vaults.signing import sign_transaction_tree
 from vaults.state import get_current_confirmed_transaction
@@ -120,20 +120,6 @@ def get_info(transaction_store_filename=TRANSACTION_STORE_FILENAME, connection=N
     output_text += "\nTo broadcast the next transaction, run:\n\tvault broadcast <internal_id>\n"
 
     return output_text
-
-def render_planned_tree_to_text_file(some_utxo, filename=TEXT_RENDERING_FILENAME):
-    """
-    Dump some text describing the planned transaction tree to a text file. This
-    is primarily for human debugging.
-    """
-    logger.info("Rendering to text...")
-    output = some_utxo.to_text()
-    filename = TEXT_RENDERING_FILENAME
-    fd = open(os.path.join(os.getcwd(), filename), "w")
-    fd.write(output)
-    fd.close()
-    logger.info(f"Wrote to {filename}")
-    return
 
 def main():
 
@@ -236,7 +222,7 @@ def main():
     # assert (second_utxo_amount * 99) + first_utxo_amount == amount
 
     # Display all UTXOs and transactions-- render the tree of possible
-    # transactions.
+    # transactions. Mostly helpful for debugging purposes.
     render_planned_tree_to_text_file(segwit_utxo, filename=TEXT_RENDERING_FILENAME)
 
     # stats
