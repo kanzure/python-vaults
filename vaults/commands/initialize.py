@@ -56,6 +56,10 @@ from bitcoin.core.key import CPubKey
 from bitcoin.wallet import P2WPKHBitcoinAddress
 
 def initialize():
+    """
+    Setup and initialize a new vault in the current working directory. This is
+    the primary entrypoint for the prototype.
+    """
 
     check_vaultfile_existence()
 
