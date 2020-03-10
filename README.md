@@ -101,7 +101,9 @@ Modules:
 
 Source code:
 
-* [cli.py](vaults/cli.py) - command line interface, main wrapper
+* [models/plans.py](vaults/models/plans.py) - transaction tree models
+* [models/script_templates.py](vaults/models/script_templates.py) - script templates
+  defining scriptpubkeys and witness templates
 * [planner.py](vaults/planner.py) - transaction tree generator
 * [signing.py](vaults/signing.py) - sign the planned transaction tree
 * [state.py](vaults/state.py) - tools to check vault state on blockchain
@@ -111,6 +113,7 @@ Source code:
 * [graphics.py](vaults/graphics.py) - graphviz visualization for the planned
   transaction tree
 * [rpc.py](vaults/rpc.py) - bitcoind RPC
+* [cli.py](vaults/cli.py) - command line interface, main wrapper
 * [config.py](vaults/config.py) - static configuration, not interesting
 * [loggingconfig.py](vaults/loggingconfig.py) - python logging configuration
 * [exceptions.py](vaults/exceptions.py) - vault-related exception definitions
