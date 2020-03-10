@@ -1,7 +1,10 @@
-# Sharding Vaults
+# Bitcoin vaults
 
 This project provides some tools and a prototype for bitcoin vaults based
-around the concept of sharding and pre-signed transactions.
+around the concept of sharding and pre-signed transactions. The advantage of
+sharding into many UTXOs with different relative timelocks is that it gives the
+user an opportunity to observe on-chain thefts and react to them, without
+losing 100% of the funds.
 
 See a
 **[visualization](https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png)**
@@ -65,8 +68,8 @@ python3 setup.py install
 This repository contains an experimental prototype of Bitcoin vaults using
 pre-signed transactions.
 
-All of the interesting work is in [vaults/experiment.py](vaults/experiment.py)
-for now.
+The main entry point is in [initialize.py](vaults/commands/initialize.py) in
+the `commands/` directory.
 
 It works by connecting to bitcoind using RPC, mining some BTC to a specific
 address, and then begins planning an entire tree of pre-signed transactions
@@ -87,7 +90,40 @@ This will produce a few files. The interesting one is `log.txt` and
 In `log.txt` or `text-rendering.txt` scroll to the line that starts with
 "Start" and those will be the signed transactions ready for broadcast.
 
-----
+Modules:
+
+* [vaults](vaults/) - primary python source code
+* [vaults.commands](vaults/commands/) - functions for command line interface
+  (see also [cli.py](vaults/cli.py)).
+* [vaults.models](vaults/models/) - script templates and transaction tree
+  modeling
+* [vaults.tests](vaults/tests/) - basic tests, nothing special
+
+Source code:
+
+* [cli.py](vaults/cli.py) - command line interface, main wrapper
+* [planner.py](vaults/planner.py) - transaction tree generator
+* [signing.py](vaults/signing.py) - sign the planned transaction tree
+* [state.py](vaults/state.py) - tools to check vault state on blockchain
+* [bip119_ctv.py](vaults/bip119_ctv.py) - bip119 OP_CHECKTEMPLATEVERIFY
+  implementation
+* [persist.py](vaults/persist.py) - save/load data
+* [graphics.py](vaults/graphics.py) - graphviz visualization for the planned
+  transaction tree
+* [rpc.py](vaults/rpc.py) - bitcoind RPC
+* [config.py](vaults/config.py) - static configuration, not interesting
+* [loggingconfig.py](vaults/loggingconfig.py) - python logging configuration
+* [exceptions.py](vaults/exceptions.py) - vault-related exception definitions
+* [utils.py](vaults/utils.py) - miscellaneous functions (see also
+  [helpers](vaults/helpers/))
+* [vaultfile.py](vaults/vaultfile.py) - safety check for current working
+  directory
+* [loggingserver.py](vaults/loggingserver.py) - a sketch of what a logging
+  server might look like
+* [watchtower.py](vaults/watchtower.py) - a sketch of what a watchtower might
+  look like
+
+# Internal details
 
 Internal details... let's see.. Well, everything begins in `__main__` at the
 end. The two magic functions are `setup_vault` and `sign_transaction_tree`.
