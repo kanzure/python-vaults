@@ -9,32 +9,24 @@ from copy import copy
 import json
 import struct
 
+# use python-bitcoinlib for bitcoin primitives
 import bitcoin
-from bitcoin import SelectParams
+
 # configure bitcoinlib as soon as possible
+from bitcoin import SelectParams
 SelectParams("regtest")
 
+from vaults.config import TEXT_RENDERING_FILENAME
+from vaults.loggingconfig import logger
+from vaults.exceptions import VaultException
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.helpers.prototyping import make_private_keys
-from vaults.exceptions import VaultException
-from vaults.loggingconfig import logger
-from vaults.graphics import generate_graphviz
-from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
 from vaults.utils import sha256
-
-from vaults.config import (
-    TRANSACTION_STORE_FILENAME,
-    TEXT_RENDERING_FILENAME,
-)
+from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
+from vaults.graphics import generate_graphviz
 
 from vaults.rpc import get_bitcoin_rpc_connection
-
-from vaults.persist import (
-    to_dict,
-    from_dict,
-    save,
-    load,
-)
+from vaults.persist import save
 
 from vaults.models.script_templates import (
     ScriptTemplate,
@@ -58,11 +50,10 @@ from vaults.bip119_ctv import make_planned_transaction_tree_using_bip119_OP_CHEC
 from vaults.signing import sign_transaction_tree
 from vaults.state import get_current_confirmed_transaction
 
-from bitcoin.core import COIN, CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
+from bitcoin.core import COIN
 from bitcoin.core.script import CScript, OP_0, Hash160, OP_NOP3
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import CBitcoinAddress, P2WSHBitcoinAddress, P2WPKHBitcoinAddress
-import bitcoin.rpc
+from bitcoin.wallet import P2WPKHBitcoinAddress
 
 def main():
 
