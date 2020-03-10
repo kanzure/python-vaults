@@ -1,10 +1,10 @@
 # Bitcoin vaults
 
-This project provides some tools and a prototype for bitcoin vaults based
-around the concept of sharding and pre-signed transactions. The advantage of
-sharding into many UTXOs with different relative timelocks is that it gives the
-user an opportunity to observe on-chain thefts and react to them, without
-losing 100% of the funds.
+This project provides a prototype for bitcoin vaults based around the concept
+of sharding and pre-signed transactions. The advantage of sharding into many
+UTXOs with different relative timelocks is that it gives the user an
+opportunity to observe on-chain thefts and react to them, without losing 100%
+of the funds.
 
 See a
 **[visualization](https://diyhpl.us/~bryan/irc/graphviz-transaction-tree.png)**
@@ -14,7 +14,9 @@ of the planned transaction tree.
 
 This is not production-ready code. Do not use this on bitcoin mainnet or any
 other mainnet. In fact, the private keys are static and hard coded into the
-prototype. Don't use this right now.
+prototype. Don't use this right now. It's only been used for about ~50 vaults,
+and before any real-world usage there should be many thousands of tested
+vaults.
 
 # Background (summary)
 
@@ -128,26 +130,29 @@ Source code:
 
 # Internal details
 
-Internal details... let's see.. Well, everything begins in `__main__` at the
-end. The two magic functions are `setup_vault` and `sign_transaction_tree`.
 
-The script can only be run if `bitcoind -regtest` is running in the background.
+The two main entrypoints of interest are `setup_vault` in the
+[planner.py](vaults/planner.py) file and `sign_transaction_tree` in the
+[signing.py](vaults/signing.py) file.
+
+The project can only be run if `bitcoind -regtest` is running in the background.
 It currently looks for `~/bitcoin/bitcoin.conf` to figure out the bitcoin RPC
 parameters. (TODO: Spin up regtest nodes automatically, especially for tests.)
 
 `PlannedInput`, `PlannedOutput`, and `PlannedTransaction` are custom classes
-that represent the transaction tree. The real bitcoin transactions are
-assembled in place hanging off of these objects. `output_utxos` is for the
-outputs on the current transaction, while `child_transactions` on a
-`PlannedUTXO` are a list of possible child transactions. Obviously, because
-double spending is forbidden, only one of those child transactions can make it
-into the blockchain.
+that represent the transaction tree, as defined in the
+[models](vaults/models/). The real bitcoin transactions are assembled in place
+hanging off of these objects. `output_utxos` is for the outputs on the current
+transaction, while `child_transactions` on a `PlannedUTXO` are a list of
+possible child transactions. Obviously, because double spending is forbidden,
+only one of those child transactions can make it into the blockchain.
 
-`ScriptTemplate` and its descendents are how UTXOs can describe themselves.
-Each UTXO in the planned transaction tree can use one of a limited number of
-scripts that were used to design the transaction tree. `ScriptTemplate` is used
-to derive the `scriptPubKey` value and the witness necessary to spend that
-UTXO. The witness is obviously applied to the input that spends the UTXO.
+`ScriptTemplate` and its [descendents](vaults/models/script_templates.py) are
+how UTXOs can describe themselves.  Each UTXO in the planned transaction tree
+can use one of a limited number of scripts that were used to design the
+transaction tree. `ScriptTemplate` is used to derive the `scriptPubKey` value
+and the witness necessary to spend that UTXO. The witness is obviously applied
+to the input that spends the UTXO.
 
 `PlannedInput.parameterize_witness_template_by_signing` is responsible for
 parsing a witness template, signing, and producing a valid witness. This is
@@ -155,12 +160,7 @@ based off of one of those `ScriptTemplate` classes that each UTXO picks: the
 input has to have a witness that satisfies that UTXO's script template and
 script.
 
-Run the `AbstractPlanningTests` tests with `python3 -m unittest experiment.py`
-I think? They don't test much, right now....
-
-Serialization works: `python3 experiment.py > output.txt` will also write to a
-file `output-auto.txt` that contains json data. To load the serialized data, do
-the following:
+After running `vault init`, to load the serialized data, do the following:
 
 ```
 from vaults.experiment import *
@@ -180,7 +180,7 @@ name = initial_tx.output_utxos[0].child_transactions[0].name
 assert name == "Vault locking transaction"
 ```
 
-# Usage (not working yet)
+# Usage
 
 This package installs the `vault` command, which is an interface for working
 with the vault library based on vault files stored in the current working
@@ -209,6 +209,8 @@ parameters.
 
 **vault broadcast** transmits a pre-signed bitcoin transaction to the bitcoin
 network.
+
+The following commands don't quite work yet:
 
 **vault lock** takes a user-given UTXO and locks the UTXO and its amount into a
 new vault with the parameters defined by the current working directory.
