@@ -300,7 +300,11 @@ BSD ???
 private keys for the pre-signed transaction tree. However, in practice, there
 should be multiple clients that pass data off to each other.
 
-# Other pre-signed vault implementations
+# See also
+
+* [bip119 OP\_CHECKTEMPLATEVERIFY workshop transcript](https://diyhpl.us/wiki/transcripts/ctv-bip-review-workshop/)
+
+## Other pre-signed vault implementations
 
 * [python-vaults](https://github.com/kanzure/python-vaults) (you are here)
 * <https://github.com/fmr-llc/Vault-mbed>
