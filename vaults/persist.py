@@ -68,10 +68,10 @@ def from_dict(transaction_dicts):
     # Second pass to add back object-to-object references. Maybe I should have
     # just used an ORM tool....
     for some_utxo in outputs:
-        some_utxo.connect_objects(inputs, outputs, transactions)
+        some_utxo.reconnect_deserialized_objects(inputs, outputs, transactions)
 
     for some_transaction in transactions:
-        some_transaction.connect_objects(inputs, outputs, transactions)
+        some_transaction.reconnect_deserialized_objects(inputs, outputs, transactions)
 
     return transactions[0]
 

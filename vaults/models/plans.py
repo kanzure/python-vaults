@@ -175,7 +175,7 @@ class PlannedUTXO(object):
         data = json.loads(payload)
         return cls.from_dict(data)
 
-    def connect_objects(self, inputs, outputs, transactions):
+    def reconnect_deserialized_objects(self, inputs, outputs, transactions):
         """
         Upgrades _transaction_internal_id to self.transaction association.
         """
@@ -354,7 +354,7 @@ class PlannedInput(object):
         data = json.loads(payload)
         return cls.from_dict(data)
 
-    def connect_objects(self, inputs, outputs, transactions):
+    def reconnect_deserialized_objects(self, inputs, outputs, transactions):
         """
         Upgrades _transaction_internal_id to self.transaction association.
         """
@@ -559,16 +559,16 @@ class PlannedTransaction(object):
         data = json.loads(payload)
         return cls.from_dict(data)
 
-    def connect_objects(self, inputs, outputs, transactions):
+    def reconnect_deserialized_objects(self, inputs, outputs, transactions):
         """
         Upgrade the inputs and outputs and connect them to the existing
         objects.
         """
         for some_input in self.inputs:
-            some_input.connect_objects(inputs, outputs, transactions)
+            some_input.reconnect_deserialized_objects(inputs, outputs, transactions)
 
         for some_output in self.output_utxos:
-            some_output.connect_objects(inputs, outputs, transactions)
+            some_output.reconnect_deserialized_objects(inputs, outputs, transactions)
 
 class InitialTransaction(object):
     """
@@ -625,6 +625,6 @@ class InitialTransaction(object):
         transaction.is_finalized = True
         return transaction
 
-    def connect_objects(self, inputs, outputs, transactions):
+    def reconnect_deserialized_objects(self, inputs, outputs, transactions):
         for some_utxo in self.output_utxos:
-            some_utxo.connect_objects(inputs, outputs, transactions)
+            some_utxo.reconnect_deserialized_objects(inputs, outputs, transactions)
