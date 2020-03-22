@@ -75,6 +75,8 @@ def initialize(private_key=None):
     #amount = 7084449357
     amount = 2 * COIN
 
+    # TODO: A more sophisticated private key system is required, for any real
+    # production use.
     some_private_keys = [CBitcoinSecret(private_key)] * 6
 
     parameter_names = [
