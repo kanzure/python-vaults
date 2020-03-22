@@ -19,13 +19,80 @@ from vaults.models.script_templates import UserScriptTemplate
 
 import bitcoin.core.script
 from bitcoin.core import CTxOut, COutPoint, CTxIn, CMutableTransaction, CTxWitness, CTxInWitness, CScriptWitness
-from bitcoin.core.script import CScript, OP_0, OP_NOP3
-from bitcoin.wallet import P2WSHBitcoinAddress
+from bitcoin.core.script import CScript, OP_0, OP_NOP3, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160
+from bitcoin.wallet import P2WSHBitcoinAddress, P2WPKHBitcoinAddress
 
 # TODO: VerifyScript doesn't work with segwit yet...
 #from bitcoin.core.scripteval import VerifyScript
 # python-bitcointx just farms this out to libbitcoinconsensus, so that's an
 # option...
+
+def parameterize_witness_template_by_signing(some_input, parameters):
+    """
+    Take a specific witness template, a bag of parameters, and a
+    transaction, and then produce a parameterized witness (including all
+    necessary valid signatures).
+
+    Make a sighash for the bitcoin transaction.
+    """
+    p2wsh_redeem_script = some_input.utxo.p2wsh_redeem_script
+    tx = some_input.transaction.bitcoin_transaction
+    txin_index = some_input.transaction.inputs.index(some_input)
+
+    computed_witness = []
+
+    selection = some_input.witness_template_selection
+    script_template = some_input.utxo.script_template
+    witness_template = script_template.witness_templates[selection]
+
+    amount = some_input.utxo.amount
+
+    # TODO: Might have to update the witness_templates values to give a
+    # correct ordering for which signature should be supplied first.
+    # (already did this? Re-check for VerifyScript errors)
+
+    witness_tmp = witness_template.split(" ")
+    for (idx, section) in enumerate(witness_tmp):
+        if section[0] == "<" and section[-1] == ">":
+            section = section[1:-1]
+            if section == "user_key":
+                computed_witness.append(parameters["user_key"]["public_key"])
+                continue
+            elif section not in script_template.witness_template_map.keys():
+                raise VaultException("Missing key mapping for {}".format(section))
+
+            key_param_name = script_template.witness_template_map[section]
+            private_key = parameters[key_param_name]["private_key"]
+
+            if script_template != UserScriptTemplate:
+                # This is a P2WSH transaction.
+                redeem_script = p2wsh_redeem_script
+            elif script_template == UserScriptTemplate:
+                # This is a P2WPKH transaction.
+                user_address = P2WPKHBitcoinAddress.from_scriptPubKey(CScript([OP_0, Hash160(parameters["user_key"]["public_key"])]))
+                redeem_script = user_address.to_redeemScript()
+                # P2WPKH redeemScript: OP_DUP OP_HASH160 ....
+
+            sighash = SignatureHash(redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
+            signature = private_key.sign(sighash) + bytes([SIGHASH_ALL])
+            computed_witness.append(signature)
+
+        else:
+            # dunno what to do with this, probably just pass it on really..
+            computed_witness.append(section)
+
+    if script_template == UserScriptTemplate:
+        # P2WPKH
+        # Witness already completed. No redeem_script to append.
+        pass
+    else:
+        # P2WSH
+        # Append the p2wsh redeem script.
+        computed_witness.append(p2wsh_redeem_script)
+
+    computed_witness = CScript(computed_witness)
+    some_input.witness = computed_witness
+    return computed_witness
 
 def parameterize_planned_utxo(planned_utxo, parameters=None):
     """
@@ -199,7 +266,7 @@ def sign_planned_transaction(planned_transaction, parameters=None):
     for planned_input in planned_transaction.inputs:
         # sign!
         # Make a signature. Use some code defined in the PlannedInput model.
-        witness = planned_input.parameterize_witness_template_by_signing(parameters)
+        witness = parameterize_witness_template_by_signing(planned_input, parameters)
         witnesses.append(witness)
 
     # Now take the list of CScript objects and do the needful.

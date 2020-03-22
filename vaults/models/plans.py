@@ -1,9 +1,6 @@
 """
 Classes for representing planned transaction trees, transactions, inputs, and
 outputs.
-
-Of particular interest is PlannedInput.parameterize_witness_template_by_signing
-which is used during the transaction tree signing process.
 """
 
 import uuid
@@ -11,7 +8,6 @@ from copy import copy
 
 from bitcoin.core import CMutableTransaction
 from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0, Hash160
-from bitcoin.wallet import P2WPKHBitcoinAddress
 
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.loggingconfig import logger
@@ -241,73 +237,6 @@ class PlannedInput(object):
 
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
-
-    def parameterize_witness_template_by_signing(self, parameters):
-        """
-        Take a specific witness template, a bag of parameters, and a
-        transaction, and then produce a parameterized witness (including all
-        necessary valid signatures).
-
-        Make a sighash for the bitcoin transaction.
-        """
-        p2wsh_redeem_script = self.utxo.p2wsh_redeem_script
-        tx = self.transaction.bitcoin_transaction
-        txin_index = self.transaction.inputs.index(self)
-
-        computed_witness = []
-
-        selection = self.witness_template_selection
-        script_template = self.utxo.script_template
-        witness_template = script_template.witness_templates[selection]
-
-        amount = self.utxo.amount
-
-        # TODO: Might have to update the witness_templates values to give a
-        # correct ordering for which signature should be supplied first.
-        # (already did this? Re-check for VerifyScript errors)
-
-        witness_tmp = witness_template.split(" ")
-        for (idx, section) in enumerate(witness_tmp):
-            if section[0] == "<" and section[-1] == ">":
-                section = section[1:-1]
-                if section == "user_key":
-                    computed_witness.append(parameters["user_key"]["public_key"])
-                    continue
-                elif section not in script_template.witness_template_map.keys():
-                    raise VaultException("Missing key mapping for {}".format(section))
-
-                key_param_name = script_template.witness_template_map[section]
-                private_key = parameters[key_param_name]["private_key"]
-
-                if script_template != UserScriptTemplate:
-                    # This is a P2WSH transaction.
-                    redeem_script = p2wsh_redeem_script
-                elif script_template == UserScriptTemplate:
-                    # This is a P2WPKH transaction.
-                    user_address = P2WPKHBitcoinAddress.from_scriptPubKey(CScript([OP_0, Hash160(parameters["user_key"]["public_key"])]))
-                    redeem_script = user_address.to_redeemScript()
-                    # P2WPKH redeemScript: OP_DUP OP_HASH160 ....
-
-                sighash = SignatureHash(redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
-                signature = private_key.sign(sighash) + bytes([SIGHASH_ALL])
-                computed_witness.append(signature)
-
-            else:
-                # dunno what to do with this, probably just pass it on really..
-                computed_witness.append(section)
-
-        if script_template == UserScriptTemplate:
-            # P2WPKH
-            # Witness already completed. No redeem_script to append.
-            pass
-        else:
-            # P2WSH
-            # Append the p2wsh redeem script.
-            computed_witness.append(p2wsh_redeem_script)
-
-        computed_witness = CScript(computed_witness)
-        self.witness = computed_witness
-        return computed_witness
 
     def to_dict(self):
         """
