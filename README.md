@@ -267,11 +267,42 @@ bitcoin-cli -regtest sendtoaddress bcrt1q08alc0e5ua69scxhvyma568nvguqccrvah6ml0 
 
 BSD ???
 
-# Future work and TODO
+# Is this ready for production?
+
+No, this software is not ready for production. There are a number of things
+that need to be done before this could be used in production. This list is a
+good starting point, but it is not exhaustive.
+
+**Private keys**: The way that private keys are handled should be improved.
+Secure key deletion is currently not occurring. Private keys could be generated
+from some entropy- or from dice rolls- but this is also currently not
+occurring.
 
 **Multi-client protocol**: Right now the prototype assumes control of two
 private keys for the pre-signed transaction tree. However, in practice, there
 should be multiple clients that pass data off to each other.
+
+**Extensive testing**: There should be substantial more unit testing of all the
+various functions, and a test framework to simulate many thousands of different
+scenarios with different initial configurations or parameters. Also, these
+tests should all be performed on not just the regtest network but also signet
+and testnet, and only then moving on to small-scale mainnet tests.
+
+**Improved initialization**: The current workflow for working with Bitcoin Core
+wallets is a little weird-- based on using RPC against a bitcoin wallet with
+bitcoin stored on the wallet. Instead, the initial transaction should be
+constructed aonther way, perhaps with some steps that the user has to manually
+run to feed in a txid, vout, etc.
+
+**User guides**: User documentation should be written for all procedures and
+operations, including information about how to operate airgapped devices and
+how to store the key material.
+
+**Watchtower**: A watchtower implementation is required. This also needs to be
+tested and setup for production use.
+
+**Code review**: This work should be extensively reviewed for best practices
+with a deep knowledge of bitcoin software development.
 
 # See also
 
