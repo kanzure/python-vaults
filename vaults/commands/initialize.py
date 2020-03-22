@@ -22,7 +22,6 @@ from vaults.config import TEXT_RENDERING_FILENAME
 from vaults.loggingconfig import logger
 from vaults.exceptions import VaultException
 from vaults.helpers.formatting import b2x, x, b2lx, lx
-from vaults.helpers.prototyping import make_private_keys
 from vaults.utils import sha256
 from vaults.vaultfile import check_vaultfile_existence, make_vaultfile
 from vaults.graphics import generate_graphviz
@@ -55,21 +54,28 @@ from vaults.state import get_current_confirmed_transaction
 from bitcoin.core import COIN
 from bitcoin.core.script import CScript, OP_0, Hash160, OP_NOP3
 from bitcoin.core.key import CPubKey
-from bitcoin.wallet import P2WPKHBitcoinAddress
+from bitcoin.wallet import P2WPKHBitcoinAddress, CBitcoinSecret
 
-def initialize():
+def check_private_key_is_conformant(private_key):
+    """
+    Raise an exception if the format of the private key is in the wrong format.
+    """
+    CBitcoinSecret(private_key)
+
+def initialize(private_key=None):
     """
     Setup and initialize a new vault in the current working directory. This is
     the primary entrypoint for the prototype.
     """
 
     check_vaultfile_existence()
+    check_private_key_is_conformant(private_key)
 
     #amount = random.randrange(0, 100 * COIN)
     #amount = 7084449357
     amount = 2 * COIN
 
-    some_private_keys = make_private_keys()
+    some_private_keys = [CBitcoinSecret(private_key)] * 6
 
     parameter_names = [
         "user_key",

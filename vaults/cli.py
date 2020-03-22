@@ -13,11 +13,15 @@ def cli():
     pass
 
 @cli.command()
-def init():
+@click.option("--private-key", default="cUB8G5cFtxc4usfgfovqRgCo8qTQUJtctLV8t6YYNfULg3GtehdX", help="Override insecure default bitcoin private key.")
+def init(private_key):
     """
     Create a new vault in the current working directory.
+
+    **Note**: The default --private-key value is insecure, it's the famous
+    "correct horse battery staple" key.
     """
-    initialize()
+    initialize(private_key=private_key)
 
 @cli.command()
 def info():
@@ -35,6 +39,4 @@ def broadcast(internal_id):
     next possible transactions.
     """
     broadcast_next_transaction(internal_id)
-
-cli.add_command(unlock)
 
