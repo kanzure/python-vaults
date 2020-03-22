@@ -254,6 +254,15 @@ Run the tests like this:
 python3 -m unittest
 ```
 
+For regtest testing, some setup is required (and this changes based on the
+secret key, and also based on the amount that is being inserted into the vault
+as defined in the initialization function):
+
+```
+bitcoin-cli -regtest generatetoaddress 100 bcrt1q08alc0e5ua69scxhvyma568nvguqccrvah6ml0
+bitcoin-cli -regtest sendtoaddress bcrt1q08alc0e5ua69scxhvyma568nvguqccrvah6ml0 5
+```
+
 # License
 
 BSD ???
