@@ -301,6 +301,10 @@ how to store the key material.
 **Watchtower**: A watchtower implementation is required. This also needs to be
 tested and setup for production use.
 
+**Rust implementation**: Using python in production may not be a good idea.
+Evaluate which segments of the source code should be written in rust, and then
+build a rust implementation. Also convert all appropriate tests.
+
 **Code review**: This work should be extensively reviewed for best practices
 with a deep knowledge of bitcoin software development.
 
