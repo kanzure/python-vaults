@@ -173,16 +173,6 @@ directory. The vault subcommands are as follows:
 vault init
 vault info
 vault broadcast
-
-# The following don't work yet.
-vault lock
-vault sync
-vault unlock single
-vault sync
-vault unlock all
-vault sync
-vault rotate
-vault burn
 ```
 
 **vault init** turns the current working directory into a new vault with new
@@ -192,32 +182,6 @@ parameters.
 
 **vault broadcast** transmits a pre-signed bitcoin transaction to the bitcoin
 network.
-
-----
-
-The following commands don't quite work yet:
-
-**vault lock** takes a user-given UTXO and locks the UTXO and its amount into a
-new vault with the parameters defined by the current working directory.
-
-**vault unlock single** gives a single shard UTXO and makes it available to the
-first layer hot wallet. The remaining amount is put back into the vault in a
-new vault UTXO.
-
-**vault sync** synchronizes the vault's internal database with the bitcoin
-blockchain by communicating with a bitcoind node over RPC. (*This may be
-unnecessary now that bitcoind is responsible for syncing.*)
-
-**vault unlock many** starts the pre-determined stipend. This creates many
-sharded UTXOs.
-
-**vault rotate** sends all of the UTXOs and coins to the cold storage layer.
-
-**vault burn** broadcasts transactions that will burn coins. These transactions
-are very dangerous and it is important to think carefully about where they are
-stored. They are nearly as dangerous as a private key, and although the
-possibilities are constrained compared to a thief stealing a private key, the
-end result is the same (loss of funds).
 
 # Installation
 
