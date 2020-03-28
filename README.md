@@ -183,6 +183,16 @@ parameters.
 **vault broadcast** transmits a pre-signed bitcoin transaction to the bitcoin
 network.
 
+# Filesystem
+
+The `vault init` should be run after creating a new directory via the `mkdir`
+command. Inside of the directory, run `vault init` and it will check for the
+presence of a `vaultfile` file. The purpose of the `vaultfile` is to place a
+marker on the filesystem indicating that the folder already contains a vault
+and that the program should not overwrite it. Inside the file is some
+versioning information for future upgrade and file format version management
+reasons.
+
 # Installation
 
 ```
