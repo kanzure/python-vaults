@@ -176,7 +176,11 @@ vault broadcast
 ```
 
 **vault init** turns the current working directory into a new vault with new
-parameters.
+parameters. It creates all of the pre-signed transaction trees and also creates
+the signatures. Note that `vault init` does not broadcast the transaction
+putting the coins into the vault-- that is the user's responsibility using the
+other commands, as are any other broadcast actions- again using the other
+available commands.
 
 **vault info** gives information about the current status of the vault.
 
