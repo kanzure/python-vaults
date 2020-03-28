@@ -29,7 +29,15 @@ def info():
     Display vault state information, including last sync time.
     """
     output = get_info()
-    print(output)
+    print(output) # TODO: switch to logger?
+
+@cli.command()
+def status():
+    """
+    same as info
+    """
+    output = get_info()
+    print(output) # TODO: switch to logger?
 
 @cli.command()
 @click.argument("internal_id")
