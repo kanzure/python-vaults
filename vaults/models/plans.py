@@ -11,6 +11,7 @@ from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVE
 
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.loggingconfig import logger
+from vaults.rpc import get_bitcoin_rpc_connection
 
 from vaults.models.script_templates import (
     ScriptTemplate,
@@ -526,8 +527,10 @@ class InitialTransaction(object):
 
     @classmethod
     def serialize(self):
-        # TODO: could use getrawtransaction over RPC
-        return "(not implemented)"
+        # The transaction was already created by the user's wallet, so just
+        # retrieve it from the wallet.
+        connection = get_bitcoin_rpc_connection()
+        return connection.getrawtransaction(self.txid)
 
     @property
     def child_transactions(self):
