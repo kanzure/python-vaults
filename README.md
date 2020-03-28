@@ -263,6 +263,25 @@ bitcoin-cli -regtest generatetoaddress 100 bcrt1q08alc0e5ua69scxhvyma568nvguqccr
 bitcoin-cli -regtest sendtoaddress bcrt1q08alc0e5ua69scxhvyma568nvguqccrvah6ml0 5
 ```
 
+# Private key
+
+Pre-signed vaults are reliant on secure key deletion of a private key.
+
+In python-vaults, the prototype has two ways to provide a private key-- one way
+is the default private key is constructed using the "correct horse battery
+staple" passphrase, and the other way is to pass
+`--private-key=$regtestprivatekey` to the `vault init` command.
+
+In the prototype, all of the keys- including for cold storage- are equal to the
+given private key. In the future, this needs to be updated and configured to
+include real values for the user's cold storage system and the other required
+keys.
+
+The default private key is not secure. Instead of passing an override private
+key, another option (in the future) would be to implement something that uses
+system entropy to generate keys. However, the keys for cold storage and the hot
+wallet should be from other machines.
+
 # License
 
 BSD ???
