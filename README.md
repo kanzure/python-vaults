@@ -341,6 +341,9 @@ build a rust implementation. Also convert all appropriate tests.
 **Code review**: This work should be extensively reviewed for best practices
 with a deep knowledge of bitcoin software development.
 
+The burn transactions are pretty dangerous. Users should store those in either
+their cold storage system or in a similar secure offline system.
+
 # See also
 
 * [bip119 OP\_CHECKTEMPLATEVERIFY workshop transcript](https://diyhpl.us/wiki/transcripts/ctv-bip-review-workshop/)
