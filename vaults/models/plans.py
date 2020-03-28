@@ -12,6 +12,7 @@ from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVE
 from vaults.helpers.formatting import b2x, x, b2lx, lx
 from vaults.loggingconfig import logger
 from vaults.rpc import get_bitcoin_rpc_connection
+from vaults.exceptions import VaultException
 
 from vaults.models.script_templates import (
     ScriptTemplate,
@@ -190,7 +191,7 @@ class PlannedUTXO(object):
             if internal_id_requirement and child_count==len(self._child_transaction_internal_ids):
                 break
         else:
-            raise Exception("Failed to break")
+            raise VaultException("Failed to break")
 
 class PlannedInput(object):
     """
@@ -234,7 +235,7 @@ class PlannedInput(object):
                 self.relative_timelock = relative_timelock_value
 
                 if relative_timelock_value > 0xfff:
-                    raise Exception("Timelock {} exceeds max timelock {}".format(relative_timelock_value, 0xfff))
+                    raise VaultException("Timelock {} exceeds max timelock {}".format(relative_timelock_value, 0xfff))
 
                 # Note that timelock_multiplier should appear again in another
                 # place, when inserting the timelocks into the script itself.
@@ -298,7 +299,7 @@ class PlannedInput(object):
                 self.utxo = some_utxo
                 break
         else:
-            raise Exception("can't find UTXO {}".format(self._utxo_internal_id))
+            raise VaultException("can't find UTXO {}".format(self._utxo_internal_id))
 
 class PlannedTransaction(object):
     """

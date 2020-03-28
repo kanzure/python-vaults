@@ -137,7 +137,7 @@ def initialize(private_key=None):
     # Now find an unspent UTXO.
     unspent = connection._call("listunspent", 6, 9999, [str(user_address)], True, {"minimumAmount": amount / COIN})
     if len(unspent) == 0:
-        raise Exception("can't find a good UTXO for amount {}".format(amount))
+        raise VaultException("can't find a good UTXO for amount {}".format(amount))
 
     # pick the first UTXO
     utxo_details = unspent[0]

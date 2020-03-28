@@ -52,6 +52,7 @@ from vaults.models.script_templates import (
 )
 
 from vaults.models.plans import InitialTransaction
+from vaults.exceptions import VaultException
 
 def compute_standard_template_hash(child_transaction, nIn):
     """
@@ -61,7 +62,7 @@ def compute_standard_template_hash(child_transaction, nIn):
     pulled from bitcoin/test/functional/test_framework/messages.py get_standard_template_hash
     """
     if child_transaction.ctv_baked == False and child_transaction.ctv_bitcoin_transaction == None:
-        raise Exception("Error: child transaction is not baked.")
+        raise VaultException("Error: child transaction is not baked.")
 
     bitcoin_transaction = child_transaction.ctv_bitcoin_transaction
 
@@ -149,7 +150,7 @@ def construct_ctv_script_fragment_and_witness_fragments(child_transactions, para
     if num_1drops == 1:
         some_script.append(OP_DROP)
     elif num_1drops > 1:
-        raise Exception("this shouldn't happen.. more than one 1drop required?")
+        raise VaultException("this shouldn't happen.. more than one 1drop required?")
 
     witness_fragments = {}
     for child_transaction in child_transactions:
@@ -251,7 +252,7 @@ def bake_ctv_output(some_planned_utxo, parameters=None):
         utxo.ctv_bypass = True
 
         if utxo.name == "vault initial UTXO":
-            raise Exception("Should have been processed earlier...")
+            raise VaultException("Should have been processed earlier...")
 
         return
 
@@ -274,7 +275,7 @@ def bake_ctv_output(some_planned_utxo, parameters=None):
                 specific_input = some_input
                 break
         else:
-            raise Exception("Couldn't find a relevant input. Why is this considered a child transaction...?")
+            raise VaultException("Couldn't find a relevant input. Why is this considered a child transaction...?")
 
         specific_input.ctv_witness = CScript(appropriate_witness)
         specific_input.ctv_p2wsh_redeem_script = script
