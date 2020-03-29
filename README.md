@@ -356,6 +356,6 @@ their cold storage system or in a similar secure offline system.
 * kloaec's implementation?
 
 There are also two related upcoming manuscripts presently nearing final draft
-status. (As of 2020-03-10)
+status. (As of 2020-03-28)
 
 
