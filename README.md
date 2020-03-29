@@ -307,7 +307,7 @@ that need to be done before this could be used in production. This list is a
 good starting point, but it is not exhaustive.
 
 **Private keys**: The way that private keys are handled should be improved.
-Secure key deletion is currently not occurring. Private keys could be generated
+Secure key deletion is currently not happening. Private keys could be generated
 from some entropy- or from dice rolls- but this is also currently not
 occurring.
 
@@ -324,7 +324,7 @@ and testnet, and only then moving on to small-scale mainnet tests.
 **Improved initialization**: The current workflow for working with Bitcoin Core
 wallets is a little weird-- based on using RPC against a bitcoin wallet with
 bitcoin stored on the wallet. Instead, the initial transaction should be
-constructed aonther way, perhaps with some steps that the user has to manually
+constructed another way, perhaps with some steps that the user has to manually
 run to feed in a txid, vout, etc.
 
 **User guides**: User documentation should be written for all procedures and
