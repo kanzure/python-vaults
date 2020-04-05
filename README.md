@@ -353,7 +353,7 @@ their cold storage system or in a similar secure offline system.
 * [python-vaults](https://github.com/kanzure/python-vaults) (you are here)
 * <https://github.com/fmr-llc/Vault-mbed>
 * <https://github.com/JSwambo/bitcoin-vault> (see also the [dynamic fee allocation](https://github.com/JSwambo/bitcoin-vault/pull/2) pull request)
-* kloaec's implementation?
+* kloaec's implementation? see a [comparison video](https://www.youtube.com/watch?v=kmb2UDcbi50&t=21m38s)
 
 There are also two related upcoming manuscripts presently nearing final draft
 status. (As of 2020-03-28)
