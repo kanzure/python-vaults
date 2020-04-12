@@ -298,7 +298,7 @@ wallet should be from other machines.
 
 # License
 
-BSD ???
+BSD
 
 # Is this ready for production?
 
